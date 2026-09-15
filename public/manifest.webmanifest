@@ -1,0 +1,26 @@
+{
+    "name": "IPS NefroChocó · Telemedicina",
+    "short_name": "NefroChocó",
+    "description": "Seguimiento de enfermedades crónicas no transmisibles en el departamento del Chocó.",
+    "start_url": "/dashboard",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#faf9f5",
+    "theme_color": "#1a6b6f",
+    "lang": "es-CO",
+    "icons": [
+        {
+            "src": "/icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-maskable.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        }
+    ]
+}
