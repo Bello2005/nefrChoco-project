@@ -1,0 +1,87 @@
+import { PageHeader } from '@/components/page-header';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
+import { formatDate } from '@/lib/format';
+import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
+import { FileHeart, Printer, ShieldCheck } from 'lucide-react';
+
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Historia clínica', href: '#' }];
+
+interface ClinicalHistoryData {
+    id: number;
+    medical_history: string | null;
+    ecnt_diagnosis: string | null;
+    allergies: string | null;
+    current_medication: string | null;
+    created_at: string;
+    patient: {
+        id: number;
+        full_name: string;
+        municipality: string;
+        document_type: string;
+        document_number: string;
+    };
+}
+
+export default function HistoriaClinicaShow({ clinicalHistory }: { clinicalHistory: ClinicalHistoryData }) {
+    const sections = [
+        { label: 'Antecedentes', value: clinicalHistory.medical_history },
+        { label: 'Alergias', value: clinicalHistory.allergies },
+        { label: 'Medicación actual', value: clinicalHistory.current_medication },
+    ];
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={`Historia clínica · ${clinicalHistory.patient.full_name}`} />
+
+            <div className="mx-auto max-w-3xl space-y-6">
+                <PageHeader
+                    title="Historia clínica"
+                    description={`${clinicalHistory.patient.full_name} · ${clinicalHistory.patient.municipality}`}
+                    icon={FileHeart}
+                    actions={
+                        <Button variant="outline" asChild>
+                            <a href={route('historias-clinicas.print', clinicalHistory.id)} target="_blank" rel="noreferrer noopener">
+                                <Printer />
+                                Imprimir
+                            </a>
+                        </Button>
+                    }
+                />
+
+                <Card>
+                    <CardHeader className="flex-row items-start justify-between space-y-0">
+                        <div>
+                            <CardTitle>{clinicalHistory.ecnt_diagnosis ?? 'Sin diagnóstico ECNT registrado'}</CardTitle>
+                            <p className="text-muted-foreground mt-1 text-sm">Registrada el {formatDate(clinicalHistory.created_at)}</p>
+                        </div>
+                        <Badge variant="outline">
+                            {clinicalHistory.patient.document_type} {clinicalHistory.patient.document_number}
+                        </Badge>
+                    </CardHeader>
+                    <CardContent>
+                        <dl className="divide-border/70 divide-y">
+                            {sections.map((section) => (
+                                <div key={section.label} className="grid gap-1 py-4 first:pt-0 last:pb-0 sm:grid-cols-4 sm:gap-4">
+                                    <dt className="text-muted-foreground text-sm font-medium">{section.label}</dt>
+                                    <dd className="text-sm whitespace-pre-line sm:col-span-3">{section.value || '—'}</dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </CardContent>
+                </Card>
+
+                <div className="text-muted-foreground flex items-start gap-2.5 rounded-xl border border-dashed p-4 text-xs">
+                    <ShieldCheck className="mt-0.5 size-4 shrink-0" />
+                    <p>
+                        Esta consulta quedó registrada en la auditoría de la plataforma con tu usuario, fecha y hora, conforme a la Ley 1581 de 2012
+                        de protección de datos personales.
+                    </p>
+                </div>
+            </div>
+        </AppLayout>
+    );
+}
