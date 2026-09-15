@@ -127,6 +127,23 @@ class DemoDataSeeder extends Seeder
                 $teleconsultationService->createForAppointment($appointment);
             }
         }
+
+        // El paciente con cuenta propia siempre arranca con una teleconsulta en
+        // curso: sin ella no hay forma de revisar la sala desde su lado sin
+        // esperar a que coincida la hora de una cita fija.
+        $patientWithAccount = $patients->first(fn (Patient $patient) => $patient->user_id !== null);
+
+        if ($patientWithAccount) {
+            $liveAppointment = Appointment::create([
+                'patient_id' => $patientWithAccount->id,
+                'doctor_id' => $doctor->id,
+                'scheduled_at' => now()->subMinutes(5),
+                'status' => Appointment::STATUS_SCHEDULED,
+                'type' => Appointment::TYPE_TELECONSULTATION,
+            ]);
+
+            $teleconsultationService->createForAppointment($liveAppointment);
+        }
     }
 
     private function seedVitalSigns($patients, User $doctor): void
