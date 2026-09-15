@@ -10,7 +10,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateTime, formatRelative } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { BookOpen, CalendarDays, FileHeart, HeartPulse, UserRoundX } from 'lucide-react';
+import { BookOpen, CalendarDays, FileHeart, HeartPulse, UserRoundX, Video } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Inicio', href: '/paciente/dashboard' }];
 
@@ -34,6 +34,7 @@ interface Content {
 interface Props {
     patientName: string;
     hasProfile: boolean;
+    activeTeleconsultation: Appointment | null;
     nextAppointment: Appointment | null;
     upcomingCount: number;
     series: VitalSeries[];
@@ -44,6 +45,7 @@ interface Props {
 export default function PacienteDashboard({
     patientName,
     hasProfile,
+    activeTeleconsultation,
     nextAppointment,
     upcomingCount,
     series,
@@ -66,6 +68,23 @@ export default function PacienteDashboard({
                         <p className="text-sm">
                             Tu cuenta todavía no está vinculada a una ficha de paciente. Comunícate con la IPS para activar tu seguimiento.
                         </p>
+                    </div>
+                )}
+
+                {activeTeleconsultation && (
+                    <div className="border-brand/30 bg-brand-soft flex flex-wrap items-center justify-between gap-4 rounded-xl border p-5">
+                        <div className="min-w-0">
+                            <p className="font-display text-base font-bold">Tu teleconsulta está lista</p>
+                            <p className="text-muted-foreground mt-1 text-sm">
+                                {activeTeleconsultation.doctor?.name ?? 'Equipo médico'} · {formatDateTime(activeTeleconsultation.scheduled_at)}
+                            </p>
+                        </div>
+                        <Button asChild>
+                            <Link href={route('paciente.mis-citas.teleconsulta', activeTeleconsultation.id)}>
+                                <Video />
+                                Unirse a la teleconsulta
+                            </Link>
+                        </Button>
                     </div>
                 )}
 

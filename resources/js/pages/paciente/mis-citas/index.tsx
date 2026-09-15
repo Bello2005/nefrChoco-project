@@ -1,11 +1,12 @@
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
+import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { formatDateTime, formatRelative } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
-import { CalendarDays } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { CalendarDays, Video } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Mis citas', href: '/paciente/mis-citas' }];
 
@@ -15,11 +16,14 @@ interface AppointmentRow {
     status: string;
     type: string;
     doctor: { id: number; name: string } | null;
+    can_join: boolean;
 }
 
 export default function MisCitasIndex({ appointments }: { appointments: AppointmentRow[] }) {
-    const upcoming = appointments.filter((appointment) => new Date(appointment.scheduled_at) >= new Date());
-    const past = appointments.filter((appointment) => new Date(appointment.scheduled_at) < new Date());
+    // Una teleconsulta que empezó hace un rato sigue estando "en curso": no
+    // puede caer en el historial mientras el paciente todavía pueda entrar.
+    const upcoming = appointments.filter((appointment) => appointment.can_join || new Date(appointment.scheduled_at) >= new Date());
+    const past = appointments.filter((appointment) => !appointment.can_join && new Date(appointment.scheduled_at) < new Date());
 
     const renderCard = (appointment: AppointmentRow, isPast: boolean) => (
         <li
@@ -43,6 +47,14 @@ export default function MisCitasIndex({ appointments }: { appointments: Appointm
             <div className="flex flex-wrap items-center gap-2">
                 <AppointmentTypeBadge type={appointment.type} />
                 <AppointmentStatusBadge status={appointment.status} />
+                {appointment.can_join && (
+                    <Button size="sm" asChild>
+                        <Link href={route('paciente.mis-citas.teleconsulta', appointment.id)}>
+                            <Video />
+                            Unirse a la teleconsulta
+                        </Link>
+                    </Button>
+                )}
             </div>
         </li>
     );

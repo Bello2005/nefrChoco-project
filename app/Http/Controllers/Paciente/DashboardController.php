@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Paciente;
 
 use App\Http\Controllers\Controller;
 use App\Models\EducationalContent;
+use App\Services\TeleconsultationService;
 use App\Services\VitalSignService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -13,6 +14,7 @@ class DashboardController extends Controller
 {
     public function __construct(
         private readonly VitalSignService $vitalSignService,
+        private readonly TeleconsultationService $teleconsultationService,
     ) {}
 
     public function index(): Response
@@ -23,6 +25,7 @@ class DashboardController extends Controller
         return Inertia::render('paciente/dashboard', [
             'patientName' => $patient?->full_name ?? $user->name,
             'hasProfile' => $patient !== null,
+            'activeTeleconsultation' => $patient ? $this->teleconsultationService->joinableForPatient($patient) : null,
             'nextAppointment' => $patient
                 ?->appointments()
                 ->with('doctor:id,name')
