@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Http\Controllers\Paciente;
+
+use App\Http\Controllers\Controller;
+use App\Models\EducationalContent;
+use App\Services\VitalSignService;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class DashboardController extends Controller
+{
+    public function __construct(
+        private readonly VitalSignService $vitalSignService,
+    ) {}
+
+    public function index(): Response
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        return Inertia::render('paciente/dashboard', [
+            'patientName' => $patient?->full_name ?? $user->name,
+            'hasProfile' => $patient !== null,
+            'nextAppointment' => $patient
+                ?->appointments()
+                ->with('doctor:id,name')
+                ->where('scheduled_at', '>=', now())
+                ->where('status', 'programada')
+                ->orderBy('scheduled_at')
+                ->first(['id', 'doctor_id', 'scheduled_at', 'status', 'type']),
+            'upcomingCount' => $patient
+                ?->appointments()
+                ->where('scheduled_at', '>=', now())
+                ->where('status', 'programada')
+                ->count() ?? 0,
+            'series' => $patient ? $this->vitalSignService->seriesFor($patient, 8) : [],
+            'clinicalHistoryId' => $patient?->latestClinicalHistory?->id,
+            'suggestedContents' => EducationalContent::latest()->limit(3)->get(['id', 'title', 'description', 'type', 'url_or_path', 'ecnt_category']),
+        ]);
+    }
+}

@@ -1,0 +1,317 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    --radius-sm: calc(var(--radius) - 6px);
+    --radius-md: calc(var(--radius) - 3px);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 10px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary-soft: var(--primary-soft);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-brand: var(--brand);
+    --color-brand-foreground: var(--brand-foreground);
+    --color-brand-soft: var(--brand-soft);
+
+    --color-success: var(--success);
+    --color-success-foreground: var(--success-foreground);
+    --color-success-soft: var(--success-soft);
+
+    --color-warning: var(--warning);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning-soft: var(--warning-soft);
+
+    --color-info: var(--info);
+    --color-info-foreground: var(--info-foreground);
+    --color-info-soft: var(--info-soft);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --color-destructive-soft: var(--destructive-soft);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    --shadow-xs: 0 1px 2px 0 hsl(195 30% 12% / 0.04);
+    --shadow-sm: 0 1px 3px 0 hsl(195 30% 12% / 0.05), 0 1px 2px -1px hsl(195 30% 12% / 0.04);
+    --shadow-md: 0 4px 12px -2px hsl(195 30% 12% / 0.07), 0 2px 6px -2px hsl(195 30% 12% / 0.04);
+    --shadow-lg: 0 12px 28px -6px hsl(195 30% 12% / 0.1), 0 4px 10px -4px hsl(195 30% 12% / 0.05);
+    --shadow-xl: 0 24px 48px -12px hsl(195 30% 12% / 0.16);
+
+    --ease-spring: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+    /* Lienzo cálido, no blanco clínico */
+    --background: hsl(40 30% 98%);
+    --foreground: hsl(196 28% 12%);
+
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(196 28% 12%);
+
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(196 28% 12%);
+
+    /* Teal profundo: salud, agua, confianza */
+    --primary: hsl(182 62% 26%);
+    --primary-foreground: hsl(180 40% 98%);
+    --primary-soft: hsl(180 44% 94%);
+
+    --secondary: hsl(190 24% 95%);
+    --secondary-foreground: hsl(196 30% 20%);
+
+    --muted: hsl(195 24% 96%);
+    --muted-foreground: hsl(199 14% 44%);
+
+    --accent: hsl(180 40% 94%);
+    --accent-foreground: hsl(184 58% 22%);
+
+    /* Coral cálido para acentos humanos */
+    --brand: hsl(12 82% 60%);
+    --brand-foreground: hsl(0 0% 100%);
+    --brand-soft: hsl(16 90% 96%);
+
+    --success: hsl(158 68% 32%);
+    --success-foreground: hsl(0 0% 100%);
+    --success-soft: hsl(152 60% 95%);
+
+    --warning: hsl(33 92% 44%);
+    --warning-foreground: hsl(0 0% 100%);
+    --warning-soft: hsl(40 92% 95%);
+
+    --info: hsl(214 84% 50%);
+    --info-foreground: hsl(0 0% 100%);
+    --info-soft: hsl(214 90% 96%);
+
+    --destructive: hsl(354 72% 50%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --destructive-soft: hsl(354 90% 96%);
+
+    --border: hsl(195 22% 90%);
+    --input: hsl(195 22% 88%);
+    --ring: hsl(182 62% 32%);
+
+    --chart-1: hsl(182 62% 34%);
+    --chart-2: hsl(12 82% 62%);
+    --chart-3: hsl(214 80% 56%);
+    --chart-4: hsl(38 92% 52%);
+    --chart-5: hsl(268 58% 60%);
+
+    --radius: 0.875rem;
+
+    --sidebar-background: hsl(192 30% 97%);
+    --sidebar-foreground: hsl(198 20% 32%);
+    --sidebar-primary: hsl(182 62% 26%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(182 44% 92%);
+    --sidebar-accent-foreground: hsl(184 60% 20%);
+    --sidebar-border: hsl(195 22% 90%);
+    --sidebar-ring: hsl(182 62% 40%);
+}
+
+.dark {
+    /* Carbón azulado con vida, nunca negro puro */
+    --background: hsl(200 24% 8%);
+    --foreground: hsl(185 20% 95%);
+
+    --card: hsl(199 22% 11%);
+    --card-foreground: hsl(185 20% 95%);
+
+    --popover: hsl(199 24% 12%);
+    --popover-foreground: hsl(185 20% 95%);
+
+    --primary: hsl(172 62% 44%);
+    --primary-foreground: hsl(196 40% 8%);
+    --primary-soft: hsl(184 40% 17%);
+
+    --secondary: hsl(199 18% 17%);
+    --secondary-foreground: hsl(185 20% 92%);
+
+    --muted: hsl(199 18% 15%);
+    --muted-foreground: hsl(195 12% 62%);
+
+    --accent: hsl(186 32% 19%);
+    --accent-foreground: hsl(176 60% 78%);
+
+    --brand: hsl(14 86% 64%);
+    --brand-foreground: hsl(20 40% 8%);
+    --brand-soft: hsl(14 40% 20%);
+
+    --success: hsl(156 62% 44%);
+    --success-foreground: hsl(160 40% 8%);
+    --success-soft: hsl(158 40% 16%);
+
+    --warning: hsl(38 92% 56%);
+    --warning-foreground: hsl(36 60% 10%);
+    --warning-soft: hsl(36 44% 18%);
+
+    --info: hsl(212 88% 62%);
+    --info-foreground: hsl(214 60% 10%);
+    --info-soft: hsl(214 44% 20%);
+
+    --destructive: hsl(356 76% 58%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --destructive-soft: hsl(356 40% 20%);
+
+    --border: hsl(198 16% 20%);
+    --input: hsl(198 16% 23%);
+    --ring: hsl(172 62% 44%);
+
+    --chart-1: hsl(172 62% 50%);
+    --chart-2: hsl(14 86% 66%);
+    --chart-3: hsl(212 86% 64%);
+    --chart-4: hsl(40 92% 60%);
+    --chart-5: hsl(272 66% 70%);
+
+    --sidebar-background: hsl(200 26% 10%);
+    --sidebar-foreground: hsl(195 14% 72%);
+    --sidebar-primary: hsl(172 62% 44%);
+    --sidebar-primary-foreground: hsl(196 40% 8%);
+    --sidebar-accent: hsl(186 32% 18%);
+    --sidebar-accent-foreground: hsl(176 58% 80%);
+    --sidebar-border: hsl(198 16% 19%);
+    --sidebar-ring: hsl(172 62% 44%);
+}
+
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--border);
+    }
+
+    * {
+        @apply border-border;
+    }
+
+    html {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+        font-feature-settings: 'cv02', 'cv03', 'cv04', 'ss01';
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+        @apply font-display tracking-tight;
+        font-feature-settings: 'ss01';
+    }
+
+    /* Tipografía más compacta y precisa en titulares grandes */
+    h1 {
+        letter-spacing: -0.028em;
+    }
+
+    h2 {
+        letter-spacing: -0.022em;
+    }
+
+    ::selection {
+        background: var(--primary-soft);
+        color: var(--accent-foreground);
+    }
+}
+
+@layer components {
+    /* Superficie elevada estándar de la app */
+    .surface {
+        @apply bg-card border-border/70 rounded-xl border shadow-sm;
+    }
+
+    /* Anillo de foco coherente en toda la interfaz */
+    .focus-ring {
+        @apply focus-visible:ring-ring/45 focus-visible:ring-offset-background outline-hidden focus-visible:ring-2 focus-visible:ring-offset-2;
+    }
+}
+
+@layer utilities {
+    /* Malla suave de fondo para cabeceras y estados vacíos */
+    .bg-grid-soft {
+        background-image: radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0);
+        background-size: 22px 22px;
+    }
+
+    .animate-in-up {
+        animation: in-up 0.45s var(--ease-spring) both;
+    }
+
+    @keyframes in-up {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    /* Números tabulares para datos clínicos alineados */
+    .tabular {
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
