@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
 use App\Http\Requests\Patient\UpdatePatientRequest;
 use App\Models\Patient;
+use App\Services\ClinicalAccessAuditor;
 use App\Services\ClinicalDecisionSupport;
 use App\Services\PatientService;
 use App\Support\ClinicalRules\Recommendation;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,6 +19,7 @@ class PatientController extends Controller
     public function __construct(
         private readonly PatientService $patientService,
         private readonly ClinicalDecisionSupport $clinicalDecisionSupport,
+        private readonly ClinicalAccessAuditor $auditor,
     ) {}
 
     public function index(): Response
@@ -42,8 +45,13 @@ class PatientController extends Controller
         return to_route('medico.pacientes.show', $patient)->with('success', 'Paciente registrado correctamente.');
     }
 
-    public function show(Patient $patient): Response
+    public function show(Request $request, Patient $patient): Response
     {
+        // El acceso lo concede el middleware de rol: el padrón es institucional
+        // y no hay policy por recurso. Aun así la lectura queda registrada,
+        // porque esta pantalla arrastra historias, formularios y mediciones.
+        $this->auditor->recordPatientFileAccess($patient, $request);
+
         $patient->load([
             'clinicalHistories' => fn ($query) => $query->latest(),
             'appointments' => fn ($query) => $query->with('doctor:id,name')->latest('scheduled_at'),

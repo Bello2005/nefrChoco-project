@@ -93,7 +93,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 ## Cumplimiento normativo
 
-**Ley 1581 de 2012** — cifrado en reposo, consentimiento versionado del titular, auditoría de lecturas *y* de cambios sobre datos clínicos, y control de acceso reforzado con policies donde el rol no basta.
+**Ley 1581 de 2012** — cifrado en reposo, consentimiento versionado del titular, y auditoría de lecturas *y* de cambios sobre datos clínicos. La lectura se registra en las cuatro pantallas que exponen contenido clínico: ficha del paciente, historia clínica, formulario clínico y telemonitoreo. El control de acceso se refuerza con policies donde el rol no basta.
 
 **Resolución 2654 de 2019** — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse y que puede pedirse atención presencial. La Etapa 3 de la norma respalda además el segundo factor.
 
@@ -137,7 +137,7 @@ El paciente de demostración arranca con una teleconsulta en curso, para poder e
 php artisan test
 ```
 
-**170 pruebas con Pest** (657 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, los dos consentimientos, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+**180 pruebas con Pest** (694 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
 
 ## Pendiente para producción
 

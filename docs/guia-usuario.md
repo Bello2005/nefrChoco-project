@@ -121,7 +121,7 @@ En **Contenido educativo** publicas los materiales que ven los pacientes, clasif
 
 En **Auditoría** consultas quién hizo qué y cuándo, con dos filtros:
 
-- **Accesos**: quién consultó una historia clínica, desde qué dirección y en qué momento. La ley exige poder demostrar las lecturas, no solo los cambios.
+- **Accesos**: quién consultó datos clínicos, qué pantalla abrió (ficha, historia clínica, formulario o telemonitoreo), desde qué dirección y en qué momento. La ley exige poder demostrar las lecturas, no solo los cambios. Las filas marcadas como *refresco* son recargas de una pantalla ya abierta.
 - **Cambios**: qué registros se crearon o modificaron y **qué campos** se tocaron.
 
 El registro guarda los nombres de los campos, nunca su contenido: copiar un diagnóstico al registro de auditoría anularía el cifrado con que se guarda.

@@ -188,13 +188,17 @@ La auditoría cubre dos cosas distintas que la Ley 1581 exige por separado:
 
 ```mermaid
 flowchart LR
-    A["Lectura de historia clínica"] --> B["ClinicalAccessAuditor<br/>log_name: acceso_clinico"]
+    A["Lectura de datos clínicos<br/>ficha · historia · formulario · telemonitoreo"] --> B["ClinicalAccessAuditor<br/>log_name: acceso_clinico"]
     C["Creación o cambio de un registro clínico"] --> D["Trait LogsChangedFields<br/>log_name: default"]
     B --> E[("activity_log")]
     D --> E
 ```
 
 El trait registra **los nombres de los campos tocados, nunca sus valores**. `activity_log.properties` es JSON sin cifrar: copiar ahí un diagnóstico anularía el cifrado de la tabla de origen. Con el nombre del campo alcanza para demostrar quién modificó qué, y el contenido vigente se consulta en la fila, cuya lectura queda auditada aparte.
+
+**Qué lecturas se registran.** No solo la historia clínica: también la ficha del paciente —que arrastra historias, formularios y mediciones— el detalle de un formulario clínico y el telemonitoreo, que expone la serie completa de signos vitales. Cada registro guarda el paciente, el tipo de recurso y la IP.
+
+**Recargas parciales de Inertia.** Se registran igual que una lectura completa, y se marcan aparte con `parcial: true`. Una recarga parcial devuelve las props que se le piden, así que el dato clínico vuelve a viajar al cliente: no registrarla dejaría un punto ciego alcanzable con solo forzar recargas. La marca permite distinguir en la auditoría un refresco de una consulta nueva.
 
 ## Modo sin conexión
 

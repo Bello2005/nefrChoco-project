@@ -6,7 +6,9 @@ use App\Enums\VitalSignType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\VitalSign\StoreVitalSignRequest;
 use App\Models\Patient;
+use App\Services\ClinicalAccessAuditor;
 use App\Services\VitalSignService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,6 +17,7 @@ class VitalSignController extends Controller
 {
     public function __construct(
         private readonly VitalSignService $vitalSignService,
+        private readonly ClinicalAccessAuditor $auditor,
     ) {}
 
     public function index(): Response
@@ -53,8 +56,11 @@ class VitalSignController extends Controller
         ]);
     }
 
-    public function show(Patient $patient): Response
+    public function show(Request $request, Patient $patient): Response
     {
+        // Expone la serie completa de signos vitales de la persona.
+        $this->auditor->recordMonitoringAccess($patient, $request);
+
         return Inertia::render('medico/telemonitoreo/show', [
             'patient' => $patient->only(['id', 'full_name', 'municipality', 'document_number']),
             'series' => $this->vitalSignService->seriesFor($patient),

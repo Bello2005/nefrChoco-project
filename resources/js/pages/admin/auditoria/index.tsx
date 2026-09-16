@@ -21,6 +21,14 @@ const subjectLabels: Record<string, string> = {
     ClinicalForm: 'Formulario clínico',
 };
 
+/** Qué pantalla se consultó. Es más informativo que el modelo tocado. */
+const resourceLabels: Record<string, string> = {
+    ficha: 'Ficha del paciente',
+    historia_clinica: 'Historia clínica',
+    formulario_clinico: 'Formulario clínico',
+    telemonitoreo: 'Telemonitoreo',
+};
+
 const eventLabels: Record<string, string> = {
     created: 'Creación',
     updated: 'Actualización',
@@ -118,9 +126,16 @@ export default function AuditoriaIndex({ activities, filters }: Props) {
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <span className="font-medium">{subjectLabels[activity.subject] ?? activity.subject}</span>
+                                                <span className="font-medium">
+                                                    {(isAccess ? resourceLabels[activity.properties?.recurso as string] : undefined) ??
+                                                        subjectLabels[activity.subject] ??
+                                                        activity.subject}
+                                                </span>
                                                 {activity.subjectId && (
                                                     <span className="text-muted-foreground tabular ml-1 text-xs">#{activity.subjectId}</span>
+                                                )}
+                                                {isAccess && activity.properties?.parcial === true && (
+                                                    <span className="text-muted-foreground ml-2 text-xs">(refresco)</span>
                                                 )}
                                             </TableCell>
                                             <TableCell className="font-medium">{activity.causer}</TableCell>

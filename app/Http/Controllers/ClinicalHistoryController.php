@@ -22,7 +22,7 @@ class ClinicalHistoryController extends Controller
 
         $clinicalHistory->load('patient:id,full_name,municipality,document_type,document_number');
 
-        $this->auditor->recordHistoryAccess($clinicalHistory, $request->user(), $request->ip());
+        $this->auditor->recordHistoryAccess($clinicalHistory, $request);
 
         return Inertia::render('historias-clinicas/show', [
             'clinicalHistory' => $clinicalHistory,
@@ -42,7 +42,7 @@ class ClinicalHistoryController extends Controller
 
         $clinicalHistory->load('patient');
 
-        $this->auditor->recordHistoryAccess($clinicalHistory, $request->user(), $request->ip());
+        $this->auditor->recordHistoryAccess($clinicalHistory, $request);
 
         return view('clinical-history-print', [
             'history' => $clinicalHistory,

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ClinicalForm\StoreClinicalFormRequest;
 use App\Models\ClinicalForm;
 use App\Models\Patient;
+use App\Services\ClinicalAccessAuditor;
 use App\Services\ClinicalFormService;
 use App\Support\ClinicalFormCatalog;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ class ClinicalFormController extends Controller
 {
     public function __construct(
         private readonly ClinicalFormService $clinicalFormService,
+        private readonly ClinicalAccessAuditor $auditor,
     ) {}
 
     public function index(Request $request): Response
@@ -74,9 +76,11 @@ class ClinicalFormController extends Controller
             ->with('success', 'Formulario clínico registrado correctamente.');
     }
 
-    public function show(ClinicalForm $clinicalForm): Response
+    public function show(Request $request, ClinicalForm $clinicalForm): Response
     {
         $clinicalForm->load(['patient:id,full_name,municipality', 'recordedBy:id,name']);
+
+        $this->auditor->recordClinicalFormAccess($clinicalForm, $request);
 
         return Inertia::render('medico/formularios-clinicos/show', [
             'form' => [

@@ -129,7 +129,9 @@ Al agregar una prueba que renderiza una página nueva, compilar antes con `npm r
 
 **Vincular un paciente a su cuenta.** La ficha clínica (`patients`) y la cuenta (`users`) son cosas distintas: muchas fichas del programa corresponden a personas sin acceso a la plataforma. Para dar acceso, se crea el usuario con rol `paciente` y se asocia su `user_id` a la ficha.
 
-**Auditoría.** `/admin/auditoria` permite filtrar entre accesos a historias clínicas y cambios sobre registros. Los cambios guardan qué campos se tocaron, nunca sus valores.
+**Auditoría.** `/admin/auditoria` permite filtrar entre accesos y cambios. Los cambios guardan qué campos se tocaron, nunca sus valores.
+
+Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínica (incluida su versión imprimible), detalle de formulario clínico y telemonitoreo. Cada fila indica el tipo de recurso. Las recargas parciales de Inertia también se registran y aparecen marcadas como **(refresco)**, para distinguirlas de una consulta nueva sin perder la constancia.
 
 ## Problemas frecuentes
 
