@@ -26,6 +26,8 @@ use App\Enums\BiologicalSex;
  * mostrara 89,7 y clasificara como G2 mientras el laboratorio informa 90,
  * el profesional vería una contradicción sin explicación.
  */
+// TODO doc: arquitectura.md no describe el cálculo de TFGe ni la
+// clasificación KDIGO, y README no lista el módulo renal.
 final class EgfrCalculator
 {
     private const MULTIPLICADOR = 142;

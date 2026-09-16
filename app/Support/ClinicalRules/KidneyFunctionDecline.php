@@ -14,6 +14,8 @@ use App\Models\ClinicalForm;
  *
  * Ninguna recalcula la TFGe: usa la que quedó congelada con cada formulario.
  */
+// TODO doc: falta esta regla en el diagrama de apoyo a decisiones de
+// arquitectura.md y en la sección del profesional de guia-usuario.md.
 final class KidneyFunctionDecline implements ClinicalRule
 {
     public function key(): string

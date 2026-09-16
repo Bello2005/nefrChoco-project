@@ -2,6 +2,9 @@
 
 return [
 
+    // TODO doc: manual-tecnico.md no menciona este archivo de configuración
+    // ni la variable de rangos; agregar a la tabla de configuración.
+
     /*
     |--------------------------------------------------------------------------
     | Rangos de referencia de los signos vitales

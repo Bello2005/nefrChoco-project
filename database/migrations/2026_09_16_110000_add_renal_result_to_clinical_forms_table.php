@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Schema;
  * dos códigos cortos que se grafican, se comparan entre controles y se filtran,
  * no contenido clínico narrativo.
  */
+// TODO doc: el ERD de arquitectura.md no incluye egfr, kdigo_g ni kdigo_a
+// en clinical_forms.
 return new class extends Migration
 {
     public function up(): void

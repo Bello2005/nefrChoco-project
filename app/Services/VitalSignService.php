@@ -11,6 +11,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 
+// TODO doc: guia-usuario.md no explica que la presión se registra como
+// par sistólica/diastólica en un mismo envío.
 class VitalSignService
 {
     public function record(Patient $patient, User $author, array $data): VitalSign
