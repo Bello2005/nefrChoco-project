@@ -15,6 +15,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Render (como cualquier plataforma que termina el HTTPS por delante
+        // de la app) no publica rangos de IP fijos para sus proxies, así que
+        // se confía en cualquiera en este punto de la cadena. Sin esto,
+        // Laravel ve la petición como HTTP y genera URLs y redirects de
+        // Inertia con ese esquema, lo que rompe el CSRF detrás del proxy.
+        $middleware->trustProxies(at: '*');
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
