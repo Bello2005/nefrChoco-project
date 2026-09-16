@@ -31,6 +31,22 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Con doble factor activo la contraseña sola no alcanza: se cierra la
+        // sesión recién abierta y queda únicamente una marca con el id
+        // pendiente, así que un desafío abandonado no deja a nadie dentro.
+        if ($user->hasTwoFactorEnabled()) {
+            Auth::guard('web')->logout();
+
+            $request->session()->put([
+                'login.id' => $user->id,
+                'login.remember' => $request->boolean('remember'),
+            ]);
+
+            return to_route('two-factor.login');
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false));

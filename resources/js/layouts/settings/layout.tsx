@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 const sidebarNavItems: NavItem[] = [
     {
@@ -17,6 +17,11 @@ const sidebarNavItems: NavItem[] = [
         icon: null,
     },
     {
+        title: 'Doble factor',
+        url: '/settings/two-factor',
+        icon: null,
+    },
+    {
         title: 'Apariencia',
         url: '/settings/appearance',
         icon: null,
@@ -24,7 +29,9 @@ const sidebarNavItems: NavItem[] = [
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-    const currentPath = window.location.pathname;
+    // La ruta se lee de Inertia y no de window.location: este componente
+    // también se renderiza en el servidor, donde window no existe.
+    const currentPath = usePage().url.split('?')[0];
 
     return (
         <div>
