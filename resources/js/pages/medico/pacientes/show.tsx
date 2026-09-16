@@ -1,12 +1,13 @@
+import { DecisionSupportNotice, RecommendationList } from '@/components/clinical-recommendations';
 import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { calculateAge, formatDateTime, formatRelative, formatShortDate, initialsFrom } from '@/lib/format';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type ClinicalRecommendation } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Activity, CalendarPlus, ClipboardList, FileHeart, HeartPulse, Pencil, Phone } from 'lucide-react';
+import { Activity, CalendarPlus, ClipboardList, FileHeart, HeartPulse, ListChecks, Pencil, Phone } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/medico/dashboard' },
@@ -57,11 +58,12 @@ interface PatientData {
 
 interface Props {
     patient: PatientData;
+    recommendations: ClinicalRecommendation[];
     clinicalForms: { id: number; templateName: string; riskLevel: string | null; score: number | null; createdAt: string }[];
     vitalSigns: { id: number; label: string; value: number; unit: string; status: string; recordedAt: string }[];
 }
 
-export default function PacientesShow({ patient, clinicalForms, vitalSigns }: Props) {
+export default function PacientesShow({ patient, recommendations, clinicalForms, vitalSigns }: Props) {
     const latestHistory = patient.clinical_histories[0];
 
     return (
@@ -127,6 +129,23 @@ export default function PacientesShow({ patient, clinicalForms, vitalSigns }: Pr
 
                 <div className="grid gap-5 lg:grid-cols-3">
                     <div className="space-y-5 lg:col-span-2">
+                        {recommendations.length > 0 && (
+                            <Card className="border-warning/30">
+                                <CardHeader>
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="bg-warning-soft text-warning flex size-9 items-center justify-center rounded-lg">
+                                            <ListChecks className="size-4.5" aria-hidden="true" />
+                                        </span>
+                                        <CardTitle>Apoyo a la decisión</CardTitle>
+                                    </div>
+                                    <DecisionSupportNotice className="mt-1.5" />
+                                </CardHeader>
+                                <CardContent>
+                                    <RecommendationList recommendations={recommendations} />
+                                </CardContent>
+                            </Card>
+                        )}
+
                         <Card>
                             <CardHeader className="flex-row items-center justify-between space-y-0">
                                 <CardTitle>Historia clínica</CardTitle>

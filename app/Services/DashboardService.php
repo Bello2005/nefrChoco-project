@@ -15,6 +15,7 @@ class DashboardService
 {
     public function __construct(
         private readonly VitalSignService $vitalSignService,
+        private readonly ClinicalDecisionSupport $clinicalDecisionSupport,
     ) {}
 
     /** @return array<string, mixed> */
@@ -44,6 +45,8 @@ class DashboardService
                 ->orderBy('scheduled_at')
                 ->limit(5)
                 ->get(['id', 'patient_id', 'scheduled_at', 'status', 'type']),
+            // Apoyo a decisiones: a quién conviene revisar primero y por qué.
+            'priorityPatients' => $this->clinicalDecisionSupport->priorityPatients($doctor),
             'ecntDistribution' => $this->ecntDistribution(),
             'appointmentsTrend' => $this->appointmentsTrend($doctor),
             'alerts' => $this->vitalSignService->outOfRangeAlerts()->map(fn ($sign) => [

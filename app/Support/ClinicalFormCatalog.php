@@ -242,6 +242,28 @@ class ClinicalFormCatalog
     }
 
     /**
+     * Conducta sugerida que el propio instrumento define para un nivel de riesgo.
+     *
+     * La expone el apoyo a decisiones clínicas para no inventar conductas por su
+     * cuenta: lo que se recomienda hacer ante un riesgo alto ya está escrito en
+     * el instrumento validado, y debe salir de una sola fuente.
+     */
+    public static function adviceFor(string $key, ?string $level): ?string
+    {
+        if ($level === null) {
+            return null;
+        }
+
+        foreach (self::find($key)['scoring']['thresholds'] ?? [] as $threshold) {
+            if ($threshold['level'] === $level) {
+                return $threshold['advice'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Calcula el puntaje del instrumento y su interpretación clínica.
      *
      * @param  array<string, mixed>  $answers

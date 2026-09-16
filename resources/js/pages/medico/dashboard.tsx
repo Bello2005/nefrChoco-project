@@ -1,4 +1,5 @@
 import { BarChart, DonutChart } from '@/components/charts';
+import { DecisionSupportNotice, RecommendationList } from '@/components/clinical-recommendations';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
@@ -7,9 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
 import { formatDateTime, formatRelative, initialsFrom } from '@/lib/format';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type ClinicalRecommendation } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Activity, CalendarCheck, CalendarDays, MonitorSmartphone, TriangleAlert, UserPlus, Users, Video } from 'lucide-react';
+import { Activity, CalendarCheck, CalendarDays, ListChecks, MonitorSmartphone, TriangleAlert, UserPlus, Users, Video } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/medico/dashboard' }];
 
@@ -34,16 +35,32 @@ interface Alert {
     recordedAt: string;
 }
 
+interface PriorityPatient {
+    patientId: number;
+    patientName: string;
+    municipality: string;
+    recommendations: ClinicalRecommendation[];
+}
+
 interface Props {
     doctorName: string;
     stats: { patients: number; appointmentsToday: number; appointmentsWeek: number; pendingTeleconsultations: number };
+    priorityPatients: PriorityPatient[];
     upcomingAppointments: UpcomingAppointment[];
     ecntDistribution: { label: string; value: number }[];
     appointmentsTrend: { label: string; value: number }[];
     alerts: Alert[];
 }
 
-export default function MedicoDashboard({ doctorName, stats, upcomingAppointments, ecntDistribution, appointmentsTrend, alerts }: Props) {
+export default function MedicoDashboard({
+    doctorName,
+    stats,
+    priorityPatients,
+    upcomingAppointments,
+    ecntDistribution,
+    appointmentsTrend,
+    alerts,
+}: Props) {
     const firstName = doctorName.split(' ').slice(0, 2).join(' ');
     const totalDiagnoses = ecntDistribution.reduce((sum, item) => sum + item.value, 0);
 
@@ -79,6 +96,36 @@ export default function MedicoDashboard({ doctorName, stats, upcomingAppointment
                     <StatCard label="Citas esta semana" value={stats.appointmentsWeek} icon={CalendarDays} tone="success" />
                     <StatCard label="Teleconsultas pendientes" value={stats.pendingTeleconsultations} icon={MonitorSmartphone} tone="brand" />
                 </div>
+
+                {priorityPatients.length > 0 && (
+                    <Card className="border-warning/30">
+                        <CardHeader>
+                            <div className="flex items-center gap-2.5">
+                                <span className="bg-warning-soft text-warning flex size-9 items-center justify-center rounded-lg">
+                                    <ListChecks className="size-4.5" aria-hidden="true" />
+                                </span>
+                                <CardTitle>Pacientes para revisar primero</CardTitle>
+                            </div>
+                            <DecisionSupportNotice className="mt-1.5" />
+                        </CardHeader>
+                        <CardContent className="space-y-5">
+                            {priorityPatients.map((entry) => (
+                                <div key={entry.patientId} className="space-y-2.5">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Link
+                                            href={route('medico.pacientes.show', entry.patientId)}
+                                            className="font-display text-base font-bold hover:underline"
+                                        >
+                                            {entry.patientName}
+                                        </Link>
+                                        <span className="text-muted-foreground text-xs">{entry.municipality}</span>
+                                    </div>
+                                    <RecommendationList recommendations={entry.recommendations} />
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="grid gap-4 lg:grid-cols-5">
                     <Card className="lg:col-span-3">

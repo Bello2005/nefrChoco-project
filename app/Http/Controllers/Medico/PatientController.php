@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
 use App\Http\Requests\Patient\UpdatePatientRequest;
 use App\Models\Patient;
+use App\Services\ClinicalDecisionSupport;
 use App\Services\PatientService;
+use App\Support\ClinicalRules\Recommendation;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,6 +16,7 @@ class PatientController extends Controller
 {
     public function __construct(
         private readonly PatientService $patientService,
+        private readonly ClinicalDecisionSupport $clinicalDecisionSupport,
     ) {}
 
     public function index(): Response
@@ -50,6 +53,8 @@ class PatientController extends Controller
 
         return Inertia::render('medico/pacientes/show', [
             'patient' => $patient,
+            'recommendations' => $this->clinicalDecisionSupport->forPatient($patient)
+                ->map(fn (Recommendation $recommendation) => $recommendation->toArray()),
             'clinicalForms' => $patient->clinicalForms->map(fn ($form) => [
                 'id' => $form->id,
                 'templateName' => $form->templateName(),

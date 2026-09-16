@@ -29,6 +29,17 @@ export interface NavSection {
     items: NavItem[];
 }
 
+/** Recomendación del apoyo a decisiones clínicas por reglas. */
+export interface ClinicalRecommendation {
+    rule: string;
+    priority: string;
+    priorityLabel: string;
+    title: string;
+    /** Qué dato concreto disparó la regla. Nunca viene vacío. */
+    reason: string;
+    action: string;
+}
+
 export interface AppNotification {
     id: string;
     title: string;
