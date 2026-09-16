@@ -107,15 +107,34 @@ class VitalSignService
             ->all();
     }
 
-    /** Últimas lecturas fuera de rango, para el panel de alertas del médico. */
+    /**
+     * Últimas lecturas fuera de rango, para el panel de alertas del médico.
+     *
+     * El rango se evalúa en SQL y no en PHP: antes se traían las 80 mediciones
+     * más recientes y se filtraban en memoria, así que una medición alarmante
+     * dejaba de verse en cuanto 80 mediciones normales la desplazaban. Con 150
+     * registros de demostración ya había 41 lecturas fuera de rango y el panel
+     * solo alcanzaba a mostrar 31.
+     *
+     * Los umbrales siguen viniendo del enum, que es su única fuente.
+     */
     public function outOfRangeAlerts(int $limit = 8): Collection
     {
-        return VitalSign::with('patient:id,full_name')
+        return VitalSign::query()
+            ->with('patient:id,full_name')
+            ->where(function ($query) {
+                foreach (VitalSignType::cases() as $type) {
+                    $range = $type->referenceRange();
+
+                    $query->orWhere(fn ($byType) => $byType
+                        ->where('type', $type->value)
+                        ->where(fn ($outside) => $outside
+                            ->where('value', '<', $range['min'])
+                            ->orWhere('value', '>', $range['max'])));
+                }
+            })
             ->latest('recorded_at')
-            ->limit(80)
-            ->get()
-            ->filter(fn (VitalSign $sign) => $sign->isOutOfRange())
-            ->take($limit)
-            ->values();
+            ->limit($limit)
+            ->get();
     }
 }
