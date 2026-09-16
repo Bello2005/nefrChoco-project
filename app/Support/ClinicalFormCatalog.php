@@ -192,6 +192,55 @@ class ClinicalFormCatalog
                 ],
                 'scoring' => ['enabled' => false],
             ],
+
+            'seguimiento_erc' => [
+                'key' => 'seguimiento_erc',
+                'name' => 'Seguimiento de enfermedad renal crónica',
+                'description' => 'Control periódico de la función renal: creatinina de laboratorio, albuminuria y plan de manejo.',
+                'category' => EcntCategory::ChronicKidneyDisease->value,
+                'fields' => [
+                    [
+                        'key' => 'creatinina',
+                        'label' => 'Creatinina sérica (mg/dL)',
+                        'type' => 'number',
+                        // Límites de verosimilitud para atajar errores de
+                        // digitación, no criterios clínicos: un valor fuera de
+                        // este rango casi siempre es una coma mal puesta.
+                        'min' => 0.1,
+                        'max' => 20,
+                    ],
+                    [
+                        'key' => 'fecha_laboratorio',
+                        'label' => 'Fecha del laboratorio',
+                        'type' => 'date',
+                    ],
+                    [
+                        'key' => 'relacion_albumina_creatinina',
+                        'label' => 'Relación albúmina/creatinina en orina (mg/g)',
+                        'type' => 'number',
+                        'min' => 0,
+                        'max' => 25000,
+                        // No todo paciente rural llega con este examen.
+                        'optional' => true,
+                    ],
+                    [
+                        'key' => 'sintomas',
+                        'label' => 'Síntomas referidos desde el último control',
+                        'type' => 'textarea',
+                        'optional' => true,
+                    ],
+                    [
+                        'key' => 'plan',
+                        'label' => 'Plan de manejo',
+                        'type' => 'textarea',
+                        'optional' => true,
+                    ],
+                ],
+                // Sin puntuación tipo FINDRISC: el resultado de este instrumento
+                // es la TFG estimada y su categoría KDIGO, que calcula
+                // EgfrCalculator al guardar, no una suma de respuestas.
+                'scoring' => ['enabled' => false],
+            ],
         ];
     }
 
@@ -234,6 +283,8 @@ class ClinicalFormCatalog
             $rules["answers.{$field['key']}"] = match ($field['type']) {
                 'select' => [$required, 'string', 'in:'.implode(',', array_column($field['options'], 'value'))],
                 'number' => [$required, 'numeric', 'min:'.($field['min'] ?? 0), 'max:'.($field['max'] ?? 10000)],
+                // Una fecha de laboratorio futura siempre es un error de captura.
+                'date' => [$required, 'date', 'before_or_equal:today'],
                 default => [$required, 'string', 'max:2000'],
             };
         }

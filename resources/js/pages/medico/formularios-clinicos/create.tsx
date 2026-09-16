@@ -26,7 +26,7 @@ interface TemplateOption {
 interface TemplateField {
     key: string;
     label: string;
-    type: 'select' | 'number' | 'textarea';
+    type: 'select' | 'number' | 'textarea' | 'date';
     options?: TemplateOption[];
     optional?: boolean;
     min?: number;
@@ -203,6 +203,18 @@ export default function FormulariosCreate({ templates, selectedTemplate, patient
                                                 inputMode="decimal"
                                                 min={field.min}
                                                 max={field.max}
+                                                value={value}
+                                                onChange={(e) => update(e.target.value)}
+                                                required={!field.optional}
+                                            />
+                                        )}
+
+                                        {/* La fecha del examen no es la de captura: un resultado
+                                            puede cargarse días después de la toma de la muestra. */}
+                                        {field.type === 'date' && (
+                                            <Input
+                                                id={field.key}
+                                                type="date"
                                                 value={value}
                                                 onChange={(e) => update(e.target.value)}
                                                 required={!field.optional}
