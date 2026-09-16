@@ -41,6 +41,7 @@
     --color-brand: var(--brand);
     --color-brand-foreground: var(--brand-foreground);
     --color-brand-soft: var(--brand-soft);
+    --color-brand-strong: var(--brand-strong);
 
     --color-success: var(--success);
     --color-success-foreground: var(--success-foreground);
@@ -111,24 +112,31 @@
     --accent: hsl(180 40% 94%);
     --accent-foreground: hsl(184 58% 22%);
 
-    /* Coral cálido para acentos humanos */
+    /* Coral cálido para acentos humanos.
+       Conserva su viveza como relleno y lleva texto oscuro encima: oscurecer el
+       coral para que el blanco contrastara habría apagado la identidad visual.
+       `brand-strong` es la versión legible sobre el fondo suave. */
     --brand: hsl(12 82% 60%);
-    --brand-foreground: hsl(0 0% 100%);
+    --brand-foreground: hsl(20 45% 12%);
     --brand-soft: hsl(16 90% 96%);
+    --brand-strong: hsl(12 82% 44%);
 
-    --success: hsl(158 68% 32%);
+    /* Los colores semánticos se oscurecieron lo justo para alcanzar AA (4.5:1)
+       en sus dos papeles: como texto sobre su fondo suave y como relleno con
+       texto blanco encima. Los valores salen de medir, no de estimar. */
+    --success: hsl(158 68% 30%);
     --success-foreground: hsl(0 0% 100%);
     --success-soft: hsl(152 60% 95%);
 
-    --warning: hsl(33 92% 44%);
+    --warning: hsl(33 92% 34%);
     --warning-foreground: hsl(0 0% 100%);
     --warning-soft: hsl(40 92% 95%);
 
-    --info: hsl(214 84% 50%);
+    --info: hsl(214 84% 47%);
     --info-foreground: hsl(0 0% 100%);
     --info-soft: hsl(214 90% 96%);
 
-    --destructive: hsl(354 72% 50%);
+    --destructive: hsl(354 72% 48%);
     --destructive-foreground: hsl(0 0% 100%);
     --destructive-soft: hsl(354 90% 96%);
 
@@ -181,6 +189,7 @@
     --brand: hsl(14 86% 64%);
     --brand-foreground: hsl(20 40% 8%);
     --brand-soft: hsl(14 40% 20%);
+    --brand-strong: hsl(14 86% 64%);
 
     --success: hsl(156 62% 44%);
     --success-foreground: hsl(160 40% 8%);
@@ -194,8 +203,11 @@
     --info-foreground: hsl(214 60% 10%);
     --info-soft: hsl(214 44% 20%);
 
-    --destructive: hsl(356 76% 58%);
-    --destructive-foreground: hsl(0 0% 100%);
+    /* En modo oscuro destructive era el único que llevaba texto blanco encima,
+       y fallaba en ambos papeles. Se aclara el relleno y pasa a foreground
+       oscuro, como ya hacían brand, success, warning e info en este tema. */
+    --destructive: hsl(356 76% 67%);
+    --destructive-foreground: hsl(356 40% 10%);
     --destructive-soft: hsl(356 40% 20%);
 
     --border: hsl(198 16% 20%);

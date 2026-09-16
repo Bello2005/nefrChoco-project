@@ -57,7 +57,7 @@ export default function ConsentimientoTeleconsulta({ appointment, version, conta
 
                     <ul className="space-y-4 text-sm">
                         <li className="flex items-start gap-3">
-                            <span className="bg-brand-soft text-brand flex size-8 shrink-0 items-center justify-center rounded-lg">
+                            <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
                                 <Stethoscope className="size-4" aria-hidden="true" />
                             </span>
                             <p>
@@ -66,7 +66,7 @@ export default function ConsentimientoTeleconsulta({ appointment, version, conta
                             </p>
                         </li>
                         <li className="flex items-start gap-3">
-                            <span className="bg-brand-soft text-brand flex size-8 shrink-0 items-center justify-center rounded-lg">
+                            <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
                                 <WifiOff className="size-4" aria-hidden="true" />
                             </span>
                             <p>
@@ -75,7 +75,7 @@ export default function ConsentimientoTeleconsulta({ appointment, version, conta
                             </p>
                         </li>
                         <li className="flex items-start gap-3">
-                            <span className="bg-brand-soft text-brand flex size-8 shrink-0 items-center justify-center rounded-lg">
+                            <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
                                 <ShieldCheck className="size-4" aria-hidden="true" />
                             </span>
                             <p>

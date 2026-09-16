@@ -5,7 +5,7 @@ type Tone = 'primary' | 'brand' | 'success' | 'warning' | 'info';
 
 const toneStyles: Record<Tone, string> = {
     primary: 'bg-primary-soft text-accent-foreground',
-    brand: 'bg-brand-soft text-brand',
+    brand: 'bg-brand-soft text-brand-strong',
     success: 'bg-success-soft text-success',
     warning: 'bg-warning-soft text-warning',
     info: 'bg-info-soft text-info',

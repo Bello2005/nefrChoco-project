@@ -88,7 +88,7 @@ export default function PacienteTeleconsultaShow({ appointment, roomName, jitsiD
                         </CardHeader>
                         <CardContent className="space-y-4 text-sm">
                             <div className="flex items-start gap-3">
-                                <span className="bg-brand-soft text-brand flex size-8 shrink-0 items-center justify-center rounded-lg">
+                                <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
                                     <MicVocal className="size-4" />
                                 </span>
                                 <p>
@@ -97,7 +97,7 @@ export default function PacienteTeleconsultaShow({ appointment, roomName, jitsiD
                                 </p>
                             </div>
                             <div className="flex items-start gap-3">
-                                <span className="bg-brand-soft text-brand flex size-8 shrink-0 items-center justify-center rounded-lg">
+                                <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
                                     <Signal className="size-4" />
                                 </span>
                                 <p>

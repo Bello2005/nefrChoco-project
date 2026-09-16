@@ -205,7 +205,7 @@ export default function PacienteDashboard({
                                         rel="noreferrer noopener"
                                         className="border-border/70 hover:border-ring/40 hover:bg-muted/40 rounded-lg border p-4 transition-colors"
                                     >
-                                        <span className="bg-brand-soft text-brand flex size-9 items-center justify-center rounded-lg">
+                                        <span className="bg-brand-soft text-brand-strong flex size-9 items-center justify-center rounded-lg">
                                             <BookOpen className="size-4" />
                                         </span>
                                         <p className="mt-3 text-sm font-semibold">{content.title}</p>

@@ -82,7 +82,7 @@ export default function EducativoIndex({ contents, categories, filters }: Props)
                                     className="bg-card border-border/70 flex flex-col rounded-xl border p-5 shadow-sm transition-shadow duration-300 hover:shadow-md"
                                 >
                                     <div className="flex items-start justify-between gap-3">
-                                        <span className="bg-brand-soft text-brand flex size-11 items-center justify-center rounded-xl">
+                                        <span className="bg-brand-soft text-brand-strong flex size-11 items-center justify-center rounded-xl">
                                             <Icon className="size-5" />
                                         </span>
                                         <Badge variant="outline">{config.label}</Badge>
