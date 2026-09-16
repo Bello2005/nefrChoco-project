@@ -71,4 +71,11 @@ EXPOSE 8080
 # Sin Nginx ni supervisord: para el trafico de una demo, el servidor de
 # desarrollo de Artisan alcanza y es menos superficie para que algo salga
 # mal. Si mas adelante hace falta mas rendimiento, se cambia por FPM.
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
+#
+# `migrate --force` corre en cada arranque del contenedor. En el plan
+# gratis de Render no hay Shell ni Jobs para correrla a mano una sola vez,
+# asi que esto es lo unico disponible. Es seguro repetirlo: una migracion ya
+# aplicada no se vuelve a correr. Si migrate falla (Neon caido, credenciales
+# mal puestas), el && evita que el servidor arranque en un estado a medias
+# en vez de servir paginas rotas silenciosamente.
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"]
