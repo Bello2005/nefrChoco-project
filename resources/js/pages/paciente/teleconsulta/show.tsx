@@ -36,9 +36,7 @@ function OfflineNotice() {
     return (
         <div className="border-warning/30 bg-warning-soft flex items-start gap-3 rounded-xl border p-4">
             <WifiOff className="text-warning mt-0.5 size-5 shrink-0" />
-            <p className="text-sm">
-                Estás sin conexión. La videollamada necesita internet: acércate a un punto con señal y la sala cargará sola.
-            </p>
+            <p className="text-sm">Estás sin conexión. La videollamada necesita internet: acércate a un punto con señal y la sala cargará sola.</p>
         </div>
     );
 }
