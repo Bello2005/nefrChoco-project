@@ -10,7 +10,7 @@ use App\Http\Controllers\Paciente\VitalSignController;
 use App\Http\Middleware\EnsureDataConsent;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:paciente'])->prefix('paciente')->name('paciente.')->group(function () {
+Route::middleware(['auth', 'role:paciente', 'throttle:zona-clinica'])->prefix('paciente')->name('paciente.')->group(function () {
     // Fuera del muro de consentimiento: es la pantalla donde se otorga.
     Route::get('consentimiento', [ConsentController::class, 'show'])->name('consentimiento.show');
     Route::post('consentimiento', [ConsentController::class, 'store'])->name('consentimiento.store');

@@ -9,7 +9,7 @@ use App\Http\Controllers\Medico\TeleconsultationController;
 use App\Http\Controllers\Medico\VitalSignController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'role:medico'])->prefix('medico')->name('medico.')->group(function () {
+Route::middleware(['auth', 'role:medico', 'throttle:zona-clinica'])->prefix('medico')->name('medico.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Sin destroy: eliminar una ficha arrastra su historia clínica y queda en
