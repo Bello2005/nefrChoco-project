@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
+import { eventLabels, humanizeEvent } from '@/lib/audit-events';
 import { formatDateTime } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
@@ -27,13 +28,6 @@ const resourceLabels: Record<string, string> = {
     historia_clinica: 'Historia clínica',
     formulario_clinico: 'Formulario clínico',
     telemonitoreo: 'Telemonitoreo',
-};
-
-const eventLabels: Record<string, string> = {
-    created: 'Creación',
-    updated: 'Actualización',
-    deleted: 'Eliminación',
-    consultado: 'Consulta',
 };
 
 interface ActivityRow {
@@ -122,7 +116,7 @@ export default function AuditoriaIndex({ activities, filters }: Props) {
                                             <TableCell>
                                                 <Badge variant={isAccess ? 'info' : 'accent'}>
                                                     {isAccess ? <Eye /> : <PencilLine />}
-                                                    {eventLabels[activity.event ?? ''] ?? activity.event ?? '—'}
+                                                    {eventLabels[activity.event ?? ''] ?? (activity.event ? humanizeEvent(activity.event) : '—')}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>

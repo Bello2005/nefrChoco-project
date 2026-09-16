@@ -5,6 +5,7 @@ import { StatCard } from '@/components/stat-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { eventVerbs, humanizeEvent } from '@/lib/audit-events';
 import { formatRelative } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -24,13 +25,6 @@ const rolePalette: Record<string, string> = {
     medico: 'var(--chart-1)',
     paciente: 'var(--chart-2)',
     sin_rol: 'var(--chart-4)',
-};
-
-const eventLabels: Record<string, string> = {
-    created: 'creó',
-    updated: 'actualizó',
-    deleted: 'eliminó',
-    consultado: 'consultó',
 };
 
 const subjectLabels: Record<string, string> = {
@@ -156,7 +150,7 @@ export default function AdminDashboard({ stats, usersByRole, patientsByMunicipal
                                         <p className="min-w-0 flex-1 text-sm">
                                             <span className="font-semibold">{activity.causer}</span>{' '}
                                             <span className="text-muted-foreground">
-                                                {eventLabels[activity.event ?? ''] ?? activity.event ?? 'modificó'}{' '}
+                                                {eventVerbs[activity.event ?? ''] ?? (activity.event ? humanizeEvent(activity.event) : 'modificó')}{' '}
                                                 {subjectLabels[activity.subject] ?? activity.subject}
                                             </span>
                                         </p>
