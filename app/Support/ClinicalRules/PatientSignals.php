@@ -6,6 +6,7 @@ use App\Enums\VitalSignType;
 use App\Models\ClinicalForm;
 use App\Models\Patient;
 use App\Models\VitalSign;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
 /**
@@ -22,6 +23,7 @@ final class PatientSignals
 {
     /**
      * @param  Collection<int, VitalSign>  $recentVitalSigns  ordenadas de más reciente a más antigua
+     * @param  Collection<int, ClinicalForm>  $renalControls  ordenados por fecha de laboratorio, el más reciente primero
      */
     private function __construct(
         public readonly Patient $patient,
@@ -29,9 +31,17 @@ final class PatientSignals
         public readonly ?ClinicalForm $adherence,
         public readonly ?string $ecntDiagnosis,
         public readonly Collection $recentVitalSigns,
+        public readonly Collection $renalControls,
     ) {}
 
-    public static function for(Patient $patient): self
+    /**
+     * Los controles renales se reciben aparte y no se sacan de la relación
+     * cargada: la ficha del paciente solo trae los cinco formularios más
+     * recientes, y la evolución renal necesita la serie completa.
+     *
+     * @param  Collection<int, ClinicalForm>|null  $renalControls
+     */
+    public static function for(Patient $patient, ?Collection $renalControls = null): self
     {
         $forms = $patient->clinicalForms->sortByDesc('created_at');
         $since = now()->subDays((int) config('clinical_support.vital_signs.lookback_days'));
@@ -45,7 +55,26 @@ final class PatientSignals
                 ->filter(fn (VitalSign $sign) => $sign->recorded_at->greaterThanOrEqualTo($since))
                 ->sortByDesc('recorded_at')
                 ->values(),
+            renalControls: $renalControls ?? collect(),
         );
+    }
+
+    /** Control renal más reciente por fecha de laboratorio. */
+    public function latestRenalControl(): ?ClinicalForm
+    {
+        return $this->renalControls->first();
+    }
+
+    /** El control anterior, para poder comparar dos puntos. */
+    public function previousRenalControl(): ?ClinicalForm
+    {
+        return $this->renalControls->get(1);
+    }
+
+    /** Fecha del examen, que no es la de captura del formulario. */
+    public function labDate(ClinicalForm $control): CarbonImmutable
+    {
+        return CarbonImmutable::parse($control->answers['fecha_laboratorio']);
     }
 
     /** Última medición de ese tipo que quedó fuera del rango de referencia. */

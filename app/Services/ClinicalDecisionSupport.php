@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\ClinicalForm;
 use App\Models\Patient;
 use App\Models\User;
 use App\Support\ClinicalRules\ClinicalRule;
 use App\Support\ClinicalRules\HighDiabetesRiskWithEvidence;
+use App\Support\ClinicalRules\KidneyFunctionDecline;
 use App\Support\ClinicalRules\NonAdherentWithDiagnosedEcnt;
 use App\Support\ClinicalRules\PatientSignals;
 use App\Support\ClinicalRules\Recommendation;
@@ -35,6 +37,7 @@ class ClinicalDecisionSupport
             new SustainedOutOfRangeVitalSign,
             new HighDiabetesRiskWithEvidence,
             new NonAdherentWithDiagnosedEcnt,
+            new KidneyFunctionDecline,
         ];
     }
 
@@ -47,12 +50,33 @@ class ClinicalDecisionSupport
     {
         $patient->loadMissing(['clinicalForms', 'vitalSigns', 'latestClinicalHistory']);
 
-        $signals = PatientSignals::for($patient);
+        $signals = PatientSignals::for($patient, $this->renalControls($patient));
 
         return collect($this->rules)
             ->map(fn (ClinicalRule $rule) => $rule->evaluate($signals))
             ->filter()
             ->sortByDesc(fn (Recommendation $recommendation) => $recommendation->priority->weight())
+            ->values();
+    }
+
+    /**
+     * Controles renales del paciente, del más reciente al más antiguo por
+     * fecha de laboratorio.
+     *
+     * Se consultan aparte en vez de filtrar la relación ya cargada: la ficha
+     * del paciente solo trae los cinco formularios más recientes, y bastaría
+     * con cinco instrumentos de otro tipo para que los controles renales
+     * quedaran fuera y la regla dejara de ver la progresión.
+     *
+     * @return Collection<int, ClinicalForm>
+     */
+    private function renalControls(Patient $patient): Collection
+    {
+        return $patient->clinicalForms()
+            ->where('form_type', ClinicalFormService::RENAL_FORM)
+            ->whereNotNull('egfr')
+            ->get()
+            ->sortByDesc(fn (ClinicalForm $form) => $form->answers['fecha_laboratorio'] ?? '')
             ->values();
     }
 

@@ -96,6 +96,12 @@ return [
         // Intervalo mínimo entre dos laboratorios para anualizar la caída sin
         // que un par de fechas casi iguales dispare una pendiente enorme.
         'minimum_days_between_labs' => 30,
+
+        // Categorías que ameritan sugerir valoración por nefrología sin
+        // necesidad de esperar a ver progresión entre controles.
+        // TODO: validar con la médica de la IPS.
+        'referral_gfr_categories' => ['G4', 'G5'],
+        'referral_albuminuria_categories' => ['A3'],
     ],
 
 ];
