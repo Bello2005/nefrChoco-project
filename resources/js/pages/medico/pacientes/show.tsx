@@ -15,6 +15,16 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Ficha', href: '#' },
 ];
 
+/** Categorías KDIGO: el deterioro de función renal crece con el número. */
+const kdigoVariants: Record<string, 'success' | 'info' | 'warning' | 'destructive'> = {
+    G1: 'success',
+    G2: 'info',
+    G3a: 'warning',
+    G3b: 'warning',
+    G4: 'destructive',
+    G5: 'destructive',
+};
+
 const riskVariants: Record<string, 'success' | 'info' | 'warning' | 'destructive'> = {
     bajo: 'success',
     adherente: 'success',
@@ -60,7 +70,16 @@ interface PatientData {
 interface Props {
     patient: PatientData;
     recommendations: ClinicalRecommendation[];
-    clinicalForms: { id: number; templateName: string; riskLevel: string | null; score: number | null; createdAt: string }[];
+    clinicalForms: {
+        id: number;
+        templateName: string;
+        riskLevel: string | null;
+        score: number | null;
+        egfr: number | null;
+        kdigoG: string | null;
+        kdigoA: string | null;
+        createdAt: string;
+    }[];
     vitalSigns: { id: number; label: string; value: number; unit: string; status: string; recordedAt: string }[];
 }
 
@@ -286,10 +305,19 @@ export default function PacientesShow({ patient, recommendations, clinicalForms,
                                                         <p className="truncate text-sm font-medium">{form.templateName}</p>
                                                         <p className="text-muted-foreground text-xs">{formatShortDate(form.createdAt)}</p>
                                                     </div>
-                                                    {form.riskLevel && (
+                                                    {form.riskLevel ? (
                                                         <Badge variant={riskVariants[form.riskLevel] ?? 'secondary'} className="shrink-0">
                                                             {form.score}
                                                         </Badge>
+                                                    ) : (
+                                                        // El seguimiento renal no puntúa: su resultado es la
+                                                        // categoría KDIGO, no un número dentro de una escala.
+                                                        form.kdigoG && (
+                                                            <Badge variant={kdigoVariants[form.kdigoG] ?? 'secondary'} className="shrink-0">
+                                                                {form.kdigoG}
+                                                                {form.kdigoA ? ` · ${form.kdigoA}` : ''}
+                                                            </Badge>
+                                                        )
                                                     )}
                                                 </Link>
                                             </li>

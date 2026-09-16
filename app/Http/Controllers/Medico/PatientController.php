@@ -71,6 +71,10 @@ class PatientController extends Controller
                 'templateName' => $form->templateName(),
                 'riskLevel' => $form->risk_level,
                 'score' => $form->score,
+                // El seguimiento renal no puntúa: su resultado es la TFGe.
+                'egfr' => $form->egfr,
+                'kdigoG' => $form->kdigo_g,
+                'kdigoA' => $form->kdigo_a,
                 'createdAt' => $form->created_at->toIso8601String(),
             ]),
             'vitalSigns' => $patient->vitalSigns->map(fn ($sign) => [

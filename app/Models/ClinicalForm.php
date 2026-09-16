@@ -20,6 +20,10 @@ class ClinicalForm extends Model
         'answers',
         'score',
         'risk_level',
+        // Resultado del seguimiento renal, congelado al guardar el formulario.
+        'egfr',
+        'kdigo_g',
+        'kdigo_a',
     ];
 
     protected function casts(): array
