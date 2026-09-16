@@ -9,7 +9,7 @@ import { useForm } from '@inertiajs/react';
 import { CloudOff } from 'lucide-react';
 import { FormEventHandler, useMemo, useState } from 'react';
 
-export interface VitalSignTypeOption {
+interface VitalSignCompanion {
     value: string;
     label: string;
     unit: string;
@@ -17,9 +17,46 @@ export interface VitalSignTypeOption {
     max: number;
 }
 
+export interface VitalSignTypeOption {
+    value: string;
+    label: string;
+    unit: string;
+    min: number;
+    max: number;
+    /** La presión arterial se registra junto a su diastólica en un mismo envío. */
+    companion?: VitalSignCompanion | null;
+}
+
 function localDateTimeValue(date: Date): string {
     const pad = (value: number) => value.toString().padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** 'alto', 'bajo' o null respecto del rango de referencia del tipo. */
+function evaluarRango(raw: string, range: { min: number; max: number } | undefined): 'alto' | 'bajo' | null {
+    if (!range || raw === '') return null;
+
+    const numeric = Number(raw);
+    if (Number.isNaN(numeric)) return null;
+
+    if (numeric < range.min) return 'bajo';
+    if (numeric > range.max) return 'alto';
+
+    return null;
+}
+
+function AvisoFueraDeRango({ estado, etiqueta }: { estado: 'alto' | 'bajo'; etiqueta: string }) {
+    return (
+        <p
+            className={`rounded-lg border px-3 py-2 text-xs font-medium ${
+                estado === 'alto'
+                    ? 'border-destructive/30 bg-destructive-soft text-destructive'
+                    : 'border-warning/30 bg-warning-soft text-warning'
+            }`}
+        >
+            {etiqueta} está por {estado === 'alto' ? 'encima' : 'debajo'} del rango de referencia. Verifica la medición antes de guardar.
+        </p>
+    );
 }
 
 export function VitalSignForm({ action, types }: { action: string; types: VitalSignTypeOption[] }) {
@@ -29,32 +66,48 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
     const { data, setData, post, processing, errors, reset } = useForm({
         type: types[0]?.value ?? '',
         value: '',
+        value_diastolic: '',
         recorded_at: localDateTimeValue(new Date()),
         notes: '',
     });
 
     const selectedType = useMemo(() => types.find((type) => type.value === data.type), [types, data.type]);
+    const companion = selectedType?.companion ?? null;
 
     // Aviso inmediato si la cifra queda fuera del rango de referencia, para que
     // quien digita pueda confirmar la medición antes de guardarla.
-    const outOfRange = useMemo(() => {
-        if (!selectedType || data.value === '') return null;
+    const outOfRange = useMemo(() => evaluarRango(data.value, selectedType), [selectedType, data.value]);
+    const diastolicOutOfRange = useMemo(
+        () => (companion ? evaluarRango(data.value_diastolic, companion) : null),
+        [companion, data.value_diastolic],
+    );
 
-        const numeric = Number(data.value);
-        if (Number.isNaN(numeric)) return null;
+    // Sin conexión el servidor no valida hasta la sincronización, así que un par
+    // invertido se encolaría para ser rechazado horas después. Se corta acá.
+    const pairError = useMemo(() => {
+        if (!companion || data.value === '' || data.value_diastolic === '') return null;
 
-        if (numeric < selectedType.min) return 'bajo';
-        if (numeric > selectedType.max) return 'alto';
+        const sistolica = Number(data.value);
+        const diastolica = Number(data.value_diastolic);
+        if (Number.isNaN(sistolica) || Number.isNaN(diastolica)) return null;
 
-        return null;
-    }, [selectedType, data.value]);
+        return diastolica >= sistolica ? 'La diastólica debe ser menor que la sistólica. Revisa si se intercambiaron las cifras.' : null;
+    }, [companion, data.value, data.value_diastolic]);
+
+    const changeType = (value: string) => {
+        setData('type', value);
+        setData('value_diastolic', '');
+    };
 
     const submit: FormEventHandler = async (e) => {
         e.preventDefault();
         setQueuedMessage(null);
 
+        if (pairError) return;
+
         // Sin conexión la medición no se pierde: se guarda en el dispositivo con
-        // su clave de idempotencia y se envía sola cuando vuelve la señal.
+        // su clave de idempotencia y se envía sola cuando vuelve la señal. El par
+        // de presión viaja en un mismo envío, así que nunca queda a medias.
         if (!isOnline) {
             await enqueue({
                 url: action,
@@ -63,7 +116,7 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
             });
 
             await refreshPending();
-            reset('value', 'notes');
+            reset('value', 'value_diastolic', 'notes');
             setQueuedMessage('Guardada en este dispositivo. Se enviará cuando vuelva la conexión.');
 
             return;
@@ -71,14 +124,14 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
 
         post(action, {
             preserveScroll: true,
-            onSuccess: () => reset('value', 'notes'),
+            onSuccess: () => reset('value', 'value_diastolic', 'notes'),
         });
     };
 
     return (
         <form onSubmit={submit} className="space-y-4">
             <Field label="Tipo de medición" htmlFor="type" error={errors.type}>
-                <NativeSelect id="type" value={data.type} onChange={(e) => setData('type', e.target.value)}>
+                <NativeSelect id="type" value={data.type} onChange={(e) => changeType(e.target.value)}>
                     {types.map((type) => (
                         <option key={type.value} value={type.value}>
                             {type.label}
@@ -87,34 +140,69 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                 </NativeSelect>
             </Field>
 
-            <Field
-                label={`Valor${selectedType ? ` (${selectedType.unit})` : ''}`}
-                htmlFor="value"
-                error={errors.value}
-                hint={selectedType ? `Rango de referencia: ${selectedType.min} - ${selectedType.max} ${selectedType.unit}` : undefined}
-            >
-                <Input
-                    id="value"
-                    type="number"
-                    step="0.1"
-                    inputMode="decimal"
-                    value={data.value}
-                    onChange={(e) => setData('value', e.target.value)}
-                    required
-                />
-            </Field>
+            {companion ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                    <Field
+                        label={`Sistólica (${selectedType?.unit})`}
+                        htmlFor="value"
+                        error={errors.value}
+                        hint={`Rango ${selectedType?.min} - ${selectedType?.max}`}
+                    >
+                        <Input
+                            id="value"
+                            type="number"
+                            step="0.1"
+                            inputMode="decimal"
+                            value={data.value}
+                            onChange={(e) => setData('value', e.target.value)}
+                            required
+                        />
+                    </Field>
 
-            {outOfRange && (
-                <p
-                    className={`rounded-lg border px-3 py-2 text-xs font-medium ${
-                        outOfRange === 'alto'
-                            ? 'border-destructive/30 bg-destructive-soft text-destructive'
-                            : 'border-warning/30 bg-warning-soft text-warning'
-                    }`}
+                    <Field
+                        label={`Diastólica (${companion.unit})`}
+                        htmlFor="value_diastolic"
+                        error={errors.value_diastolic}
+                        hint={`Rango ${companion.min} - ${companion.max}`}
+                    >
+                        <Input
+                            id="value_diastolic"
+                            type="number"
+                            step="0.1"
+                            inputMode="decimal"
+                            value={data.value_diastolic}
+                            onChange={(e) => setData('value_diastolic', e.target.value)}
+                            required
+                        />
+                    </Field>
+                </div>
+            ) : (
+                <Field
+                    label={`Valor${selectedType ? ` (${selectedType.unit})` : ''}`}
+                    htmlFor="value"
+                    error={errors.value}
+                    hint={selectedType ? `Rango de referencia: ${selectedType.min} - ${selectedType.max} ${selectedType.unit}` : undefined}
                 >
-                    Este valor está por {outOfRange === 'alto' ? 'encima' : 'debajo'} del rango de referencia. Verifica la medición antes de guardar.
+                    <Input
+                        id="value"
+                        type="number"
+                        step="0.1"
+                        inputMode="decimal"
+                        value={data.value}
+                        onChange={(e) => setData('value', e.target.value)}
+                        required
+                    />
+                </Field>
+            )}
+
+            {pairError && (
+                <p className="border-destructive/30 bg-destructive-soft text-destructive rounded-lg border px-3 py-2 text-xs font-medium">
+                    {pairError}
                 </p>
             )}
+
+            {outOfRange && <AvisoFueraDeRango estado={outOfRange} etiqueta={companion ? 'La sistólica' : 'Este valor'} />}
+            {diastolicOutOfRange && <AvisoFueraDeRango estado={diastolicOutOfRange} etiqueta="La diastólica" />}
 
             <Field label="Fecha y hora" htmlFor="recorded_at" error={errors.recorded_at}>
                 <Input
@@ -137,7 +225,7 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                 </p>
             )}
 
-            <Button className="w-full" disabled={processing}>
+            <Button className="w-full" disabled={processing || pairError !== null}>
                 {isOnline ? 'Registrar medición' : 'Guardar sin conexión'}
             </Button>
         </form>
