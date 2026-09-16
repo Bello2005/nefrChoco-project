@@ -2,17 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsChangedFields;
 use App\Support\ClinicalFormCatalog;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class ClinicalForm extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsChangedFields, SoftDeletes;
 
     protected $fillable = [
         'patient_id',
@@ -28,14 +27,6 @@ class ClinicalForm extends Model
         return [
             'answers' => 'array',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnlyDirty()
-            ->logFillable()
-            ->dontLogEmptyChanges();
     }
 
     public function patient(): BelongsTo

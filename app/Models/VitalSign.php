@@ -3,16 +3,15 @@
 namespace App\Models;
 
 use App\Enums\VitalSignType;
+use App\Models\Concerns\LogsChangedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class VitalSign extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsChangedFields, SoftDeletes;
 
     protected $fillable = [
         'patient_id',
@@ -34,14 +33,6 @@ class VitalSign extends Model
             // la nota libre del paciente sí es contenido sensible.
             'notes' => 'encrypted',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnlyDirty()
-            ->logFillable()
-            ->dontLogEmptyChanges();
     }
 
     public function patient(): BelongsTo

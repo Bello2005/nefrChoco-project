@@ -2,18 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsChangedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Spatie\Activitylog\Models\Concerns\LogsActivity;
-use Spatie\Activitylog\Support\LogOptions;
 
 class Patient extends Model
 {
-    use HasFactory, LogsActivity, SoftDeletes;
+    use HasFactory, LogsChangedFields, SoftDeletes;
 
     protected $fillable = [
         'user_id',
@@ -46,14 +45,6 @@ class Patient extends Model
             'emergency_contact_name' => 'encrypted',
             'emergency_contact_phone' => 'encrypted',
         ];
-    }
-
-    public function getActivitylogOptions(): LogOptions
-    {
-        return LogOptions::defaults()
-            ->logOnlyDirty()
-            ->logFillable()
-            ->dontLogEmptyChanges();
     }
 
     public function user(): BelongsTo
