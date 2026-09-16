@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import AppLayout from '@/layouts/app-layout';
 import { initialsFrom } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Search, UserPlus, Users } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -38,12 +38,6 @@ export default function PacientesIndex({ patients }: { patients: PatientRow[] })
                 patient.municipality.toLowerCase().includes(term),
         );
     }, [patients, query]);
-
-    const handleDelete = (id: number) => {
-        if (confirm('¿Eliminar este paciente? Sus datos dejarán de estar disponibles en los listados.')) {
-            router.delete(route('medico.pacientes.destroy', id));
-        }
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -117,17 +111,9 @@ export default function PacientesIndex({ patients }: { patients: PatientRow[] })
                                     <TableCell className="text-sm">{patient.municipality}</TableCell>
                                     <TableCell className="text-muted-foreground tabular text-sm">{patient.phone}</TableCell>
                                     <TableCell>
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end">
                                             <Button variant="outline" size="sm" asChild>
                                                 <Link href={route('medico.pacientes.edit', patient.id)}>Editar</Link>
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                className="text-destructive hover:bg-destructive-soft"
-                                                onClick={() => handleDelete(patient.id)}
-                                            >
-                                                Eliminar
                                             </Button>
                                         </div>
                                     </TableCell>

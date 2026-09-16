@@ -7,6 +7,7 @@ use App\Http\Requests\Teleconsultation\UpdateTeleconsultationRequest;
 use App\Models\Appointment;
 use App\Services\TeleconsultationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,6 +19,8 @@ class TeleconsultationController extends Controller
 
     public function show(Appointment $appointment): Response|RedirectResponse
     {
+        Gate::authorize('manageTeleconsultation', $appointment);
+
         if ($appointment->type !== Appointment::TYPE_TELECONSULTATION) {
             return to_route('medico.citas.index')->with('error', 'Esta cita no es una teleconsulta.');
         }
@@ -33,6 +36,8 @@ class TeleconsultationController extends Controller
 
     public function complete(UpdateTeleconsultationRequest $request, Appointment $appointment): RedirectResponse
     {
+        Gate::authorize('manageTeleconsultation', $appointment);
+
         $teleconsultation = $this->teleconsultationService->findOrCreateForAppointment($appointment);
 
         $this->teleconsultationService->complete($teleconsultation, $request->string('notes')->toString());

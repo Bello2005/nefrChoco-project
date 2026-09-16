@@ -3,7 +3,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavSection, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Activity, BookOpen, CalendarDays, ClipboardList, FileHeart, HeartPulse, LayoutDashboard, ScrollText, Users } from 'lucide-react';
+import { Activity, BookOpen, CalendarDays, ClipboardList, FileHeart, HeartPulse, LayoutDashboard, ScrollText, UserRound, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navByRole: Record<string, NavSection[]> = {
@@ -16,6 +16,7 @@ const navByRole: Record<string, NavSection[]> = {
             label: 'Gestión',
             items: [
                 { title: 'Usuarios', url: '/admin/usuarios', icon: Users },
+                { title: 'Pacientes', url: '/admin/pacientes', icon: UserRound },
                 { title: 'Contenido educativo', url: '/admin/educativo', icon: BookOpen },
             ],
         },

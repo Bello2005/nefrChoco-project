@@ -9,6 +9,7 @@ use App\Models\Appointment;
 use App\Models\Patient;
 use App\Services\AppointmentService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,6 +51,8 @@ class AppointmentController extends Controller
 
     public function edit(Appointment $appointment): Response
     {
+        Gate::authorize('update', $appointment);
+
         return Inertia::render('medico/citas/edit', [
             'appointment' => $appointment,
             'patients' => Patient::orderBy('full_name')->get(['id', 'full_name']),
@@ -58,6 +61,8 @@ class AppointmentController extends Controller
 
     public function update(UpdateAppointmentRequest $request, Appointment $appointment)
     {
+        Gate::authorize('update', $appointment);
+
         $this->appointmentService->update($appointment, $request->validated());
 
         return to_route('medico.citas.index')->with('success', 'Cita actualizada correctamente.');
@@ -65,6 +70,8 @@ class AppointmentController extends Controller
 
     public function destroy(Appointment $appointment)
     {
+        Gate::authorize('delete', $appointment);
+
         $this->appointmentService->delete($appointment);
 
         return to_route('medico.citas.index')->with('success', 'Cita eliminada correctamente.');

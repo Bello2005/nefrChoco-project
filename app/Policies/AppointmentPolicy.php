@@ -8,6 +8,36 @@ use App\Models\User;
 class AppointmentPolicy
 {
     /**
+     * Gestionar la cita: reprogramar, cambiar su estado o eliminarla.
+     *
+     * El padrón de pacientes es institucional, pero la agenda no: una cita es
+     * el compromiso de un profesional concreto con una persona, y dejar que
+     * otro médico la mueva o la cancele rompe tanto la agenda ajena como la
+     * trazabilidad de quién decidió qué.
+     */
+    public function update(User $user, Appointment $appointment): bool
+    {
+        return $this->isTreatingDoctor($user, $appointment);
+    }
+
+    public function delete(User $user, Appointment $appointment): bool
+    {
+        return $this->isTreatingDoctor($user, $appointment);
+    }
+
+    /**
+     * Abrir la sala de teleconsulta y cerrarla con sus notas clínicas.
+     *
+     * Es la acción más sensible del sistema: las notas quedan firmadas en la
+     * historia del paciente, así que solo puede hacerlas el profesional que
+     * efectivamente atiende esa cita.
+     */
+    public function manageTeleconsultation(User $user, Appointment $appointment): bool
+    {
+        return $this->isTreatingDoctor($user, $appointment);
+    }
+
+    /**
      * Abrir la sala de teleconsulta desde la zona del paciente.
      *
      * La sala es el punto de encuentro de una atención clínica, no un recurso
@@ -18,5 +48,11 @@ class AppointmentPolicy
     {
         return $user->patient !== null
             && $appointment->patient_id === $user->patient->id;
+    }
+
+    private function isTreatingDoctor(User $user, Appointment $appointment): bool
+    {
+        return $user->hasRole('medico')
+            && $appointment->doctor_id === $user->id;
     }
 }

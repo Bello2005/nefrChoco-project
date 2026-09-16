@@ -81,11 +81,4 @@ class PatientController extends Controller
 
         return to_route('medico.pacientes.show', $patient)->with('success', 'Paciente actualizado correctamente.');
     }
-
-    public function destroy(Patient $patient)
-    {
-        $this->patientService->delete($patient);
-
-        return to_route('medico.pacientes.index')->with('success', 'Paciente eliminado correctamente.');
-    }
 }

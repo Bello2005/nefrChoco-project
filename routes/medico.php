@@ -12,7 +12,11 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['auth', 'role:medico'])->prefix('medico')->name('medico.')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::resource('pacientes', PatientController::class)->parameters(['pacientes' => 'patient']);
+    // Sin destroy: eliminar una ficha arrastra su historia clínica y queda en
+    // administración, que responde por la custodia del dato (Ley 1581 de 2012).
+    Route::resource('pacientes', PatientController::class)
+        ->parameters(['pacientes' => 'patient'])
+        ->except(['destroy']);
 
     Route::get('pacientes/{patient}/historia-clinica/crear', [ClinicalHistoryController::class, 'create'])->name('pacientes.historia-clinica.create');
     Route::post('pacientes/{patient}/historia-clinica', [ClinicalHistoryController::class, 'store'])->name('pacientes.historia-clinica.store');
