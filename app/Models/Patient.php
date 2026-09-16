@@ -18,6 +18,8 @@ class Patient extends Model
         'user_id',
         'consent_accepted_at',
         'consent_version',
+        'teleconsultation_consent_accepted_at',
+        'teleconsultation_consent_version',
         'full_name',
         'document_type',
         'document_number',
@@ -41,6 +43,7 @@ class Patient extends Model
         return [
             'birth_date' => 'date',
             'consent_accepted_at' => 'datetime',
+            'teleconsultation_consent_accepted_at' => 'datetime',
             'phone' => 'encrypted',
             'emergency_contact_name' => 'encrypted',
             'emergency_contact_phone' => 'encrypted',
@@ -57,6 +60,19 @@ class Patient extends Model
     {
         return $this->consent_accepted_at !== null
             && $this->consent_version === config('privacy.consent_version');
+    }
+
+    /**
+     * Autorización para ser atendido por videollamada (Resolución 2654 de 2019).
+     *
+     * Va aparte del consentimiento de datos: aceptar que traten tu información
+     * no es lo mismo que aceptar que te atiendan sin examen físico y con una
+     * conexión que puede cortarse a mitad de la consulta.
+     */
+    public function hasCurrentTeleconsultationConsent(): bool
+    {
+        return $this->teleconsultation_consent_accepted_at !== null
+            && $this->teleconsultation_consent_version === config('privacy.teleconsultation_consent_version');
     }
 
     public function clinicalHistories(): HasMany

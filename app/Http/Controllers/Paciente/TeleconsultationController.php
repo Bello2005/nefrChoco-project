@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Appointment;
 use App\Services\TeleconsultationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +23,13 @@ class TeleconsultationController extends Controller
 
         if ($reason = $this->teleconsultationService->joinBlockedReason($appointment)) {
             return to_route('paciente.mis-citas.index')->with('error', $reason);
+        }
+
+        // La atención por videollamada se autoriza aparte del tratamiento de
+        // datos (Resolución 2654 de 2019), y se pide aquí, con la cita a la
+        // vista, en vez de en un muro general al iniciar sesión.
+        if (! Auth::user()->patient?->hasCurrentTeleconsultationConsent()) {
+            return to_route('paciente.mis-citas.teleconsulta.consentimiento', $appointment);
         }
 
         // La misma fila que abre el médico, así ambos caen en la misma sala.

@@ -67,6 +67,10 @@ class DemoDataSeeder extends Seeder
                     // el flujo de consentimiento completo en la revisión.
                     'consent_accepted_at' => $userId ? null : now(),
                     'consent_version' => $userId ? null : config('privacy.consent_version'),
+                    // Igual con el consentimiento de teleconsulta: el paciente
+                    // de demo lo recorre completo al entrar a su primera sala.
+                    'teleconsultation_consent_accepted_at' => $userId ? null : now(),
+                    'teleconsultation_consent_version' => $userId ? null : config('privacy.teleconsultation_consent_version'),
                     'full_name' => $name,
                     'document_type' => 'CC',
                     'birth_date' => $birthDate,

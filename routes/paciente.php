@@ -5,6 +5,7 @@ use App\Http\Controllers\Paciente\ClinicalHistoryController;
 use App\Http\Controllers\Paciente\ConsentController;
 use App\Http\Controllers\Paciente\DashboardController;
 use App\Http\Controllers\Paciente\EducationalContentController;
+use App\Http\Controllers\Paciente\TeleconsultationConsentController;
 use App\Http\Controllers\Paciente\TeleconsultationController;
 use App\Http\Controllers\Paciente\VitalSignController;
 use App\Http\Middleware\EnsureDataConsent;
@@ -20,6 +21,11 @@ Route::middleware(['auth', 'role:paciente', 'throttle:zona-clinica'])->prefix('p
 
         Route::get('mis-citas', [AppointmentController::class, 'index'])->name('mis-citas.index');
         Route::get('mis-citas/{appointment}/teleconsulta', [TeleconsultationController::class, 'show'])->name('mis-citas.teleconsulta');
+
+        Route::get('mis-citas/{appointment}/teleconsulta/consentimiento', [TeleconsultationConsentController::class, 'show'])
+            ->name('mis-citas.teleconsulta.consentimiento');
+        Route::post('mis-citas/{appointment}/teleconsulta/consentimiento', [TeleconsultationConsentController::class, 'store'])
+            ->name('mis-citas.teleconsulta.consentimiento.store');
 
         Route::get('mi-historia-clinica', [ClinicalHistoryController::class, 'show'])->name('mi-historia-clinica.show');
 

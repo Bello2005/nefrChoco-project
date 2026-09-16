@@ -16,6 +16,20 @@ return [
 
     'consent_version' => env('PRIVACY_CONSENT_VERSION', '2026-01'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Consentimiento informado de teleconsulta
+    |--------------------------------------------------------------------------
+    |
+    | Versión del consentimiento específico para ser atendido por videollamada
+    | (Resolución 2654 de 2019). Es independiente del anterior: uno autoriza
+    | tratar los datos, este autoriza la modalidad de atención. Se versiona por
+    | separado porque sus textos cambian por razones distintas.
+    |
+    */
+
+    'teleconsultation_consent_version' => env('PRIVACY_TELECONSULTATION_CONSENT_VERSION', '2026-01'),
+
     'contact_email' => env('PRIVACY_CONTACT_EMAIL', 'habeasdata@nefrochoco.co'),
 
 ];

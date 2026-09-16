@@ -15,6 +15,8 @@ class PatientFactory extends Factory
             // withoutConsent() en las pruebas que lo necesitan.
             'consent_accepted_at' => now(),
             'consent_version' => config('privacy.consent_version'),
+            'teleconsultation_consent_accepted_at' => now(),
+            'teleconsultation_consent_version' => config('privacy.teleconsultation_consent_version'),
             'full_name' => $this->faker->name(),
             'document_type' => 'CC',
             'document_number' => $this->faker->unique()->numerify('##########'),
@@ -31,6 +33,14 @@ class PatientFactory extends Factory
         return $this->state(fn () => [
             'consent_accepted_at' => null,
             'consent_version' => null,
+        ]);
+    }
+
+    public function withoutTeleconsultationConsent(): static
+    {
+        return $this->state(fn () => [
+            'teleconsultation_consent_accepted_at' => null,
+            'teleconsultation_consent_version' => null,
         ]);
     }
 }
