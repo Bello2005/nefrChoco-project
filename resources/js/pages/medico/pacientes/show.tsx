@@ -1,4 +1,5 @@
 import { DecisionSupportNotice, RecommendationList } from '@/components/clinical-recommendations';
+import { EgfrSeries, kdigoVariants, type EgfrPoint } from '@/components/egfr-series';
 import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,16 +15,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Pacientes', href: '/medico/pacientes' },
     { title: 'Ficha', href: '#' },
 ];
-
-/** Categorías KDIGO: el deterioro de función renal crece con el número. */
-const kdigoVariants: Record<string, 'success' | 'info' | 'warning' | 'destructive'> = {
-    G1: 'success',
-    G2: 'info',
-    G3a: 'warning',
-    G3b: 'warning',
-    G4: 'destructive',
-    G5: 'destructive',
-};
 
 const riskVariants: Record<string, 'success' | 'info' | 'warning' | 'destructive'> = {
     bajo: 'success',
@@ -70,6 +61,7 @@ interface PatientData {
 interface Props {
     patient: PatientData;
     recommendations: ClinicalRecommendation[];
+    egfrSeries: EgfrPoint[];
     clinicalForms: {
         id: number;
         templateName: string;
@@ -83,7 +75,7 @@ interface Props {
     vitalSigns: { id: number; label: string; value: number; unit: string; status: string; recordedAt: string }[];
 }
 
-export default function PacientesShow({ patient, recommendations, clinicalForms, vitalSigns }: Props) {
+export default function PacientesShow({ patient, recommendations, egfrSeries, clinicalForms, vitalSigns }: Props) {
     const latestHistory = patient.clinical_histories[0];
 
     return (
@@ -179,6 +171,8 @@ export default function PacientesShow({ patient, recommendations, clinicalForms,
                                 </CardContent>
                             </Card>
                         )}
+
+                        <EgfrSeries points={egfrSeries} />
 
                         <Card>
                             <CardHeader className="flex-row items-center justify-between space-y-0">

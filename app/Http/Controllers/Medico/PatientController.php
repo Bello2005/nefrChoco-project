@@ -6,11 +6,14 @@ use App\Enums\BiologicalSex;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
 use App\Http\Requests\Patient\UpdatePatientRequest;
+use App\Models\ClinicalForm;
 use App\Models\Patient;
 use App\Services\ClinicalAccessAuditor;
 use App\Services\ClinicalDecisionSupport;
+use App\Services\ClinicalFormService;
 use App\Services\PatientService;
 use App\Support\ClinicalRules\Recommendation;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -66,6 +69,7 @@ class PatientController extends Controller
             'patient' => $patient,
             'recommendations' => $this->clinicalDecisionSupport->forPatient($patient)
                 ->map(fn (Recommendation $recommendation) => $recommendation->toArray()),
+            'egfrSeries' => $this->egfrSeries($patient),
             'clinicalForms' => $patient->clinicalForms->map(fn ($form) => [
                 'id' => $form->id,
                 'templateName' => $form->templateName(),
@@ -86,6 +90,34 @@ class PatientController extends Controller
                 'recordedAt' => $sign->recorded_at->toIso8601String(),
             ]),
         ]);
+    }
+
+    /**
+     * Evolución de la TFGe del paciente.
+     *
+     * Consulta aparte porque la ficha solo carga los cinco formularios más
+     * recientes, y la evolución renal necesita la serie completa.
+     *
+     * Se ordena por fecha de laboratorio y no por fecha de captura: un
+     * resultado puede cargarse después de otro más reciente.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function egfrSeries(Patient $patient): array
+    {
+        return $patient->clinicalForms()
+            ->where('form_type', ClinicalFormService::RENAL_FORM)
+            ->whereNotNull('egfr')
+            ->get()
+            ->sortBy(fn (ClinicalForm $form) => $form->answers['fecha_laboratorio'] ?? '')
+            ->map(fn (ClinicalForm $form) => [
+                'label' => CarbonImmutable::parse($form->answers['fecha_laboratorio'])->format('d/m/y'),
+                'value' => (int) $form->egfr,
+                'category' => $form->kdigo_g,
+                'albuminuria' => $form->kdigo_a,
+            ])
+            ->values()
+            ->all();
     }
 
     public function edit(Patient $patient): Response
