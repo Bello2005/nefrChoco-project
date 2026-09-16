@@ -17,6 +17,7 @@ test('un médico puede registrar un paciente', function () {
         'document_type' => 'CC',
         'document_number' => '1077123456',
         'birth_date' => '1980-05-10',
+        'biological_sex' => 'femenino',
         'municipality' => 'Quibdó',
         'phone' => '3001234567',
         'emergency_contact_name' => 'Pedro Palacios',

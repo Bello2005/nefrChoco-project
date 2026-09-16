@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\BiologicalSex;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class PatientFactory extends Factory
@@ -21,6 +22,7 @@ class PatientFactory extends Factory
             'document_type' => 'CC',
             'document_number' => $this->faker->unique()->numerify('##########'),
             'birth_date' => $this->faker->date(),
+            'biological_sex' => $this->faker->randomElement(array_column(BiologicalSex::cases(), 'value')),
             'municipality' => $this->faker->randomElement(['Quibdó', 'Istmina', 'Condoto', 'Tadó', 'Nuquí']),
             'phone' => $this->faker->numerify('3#########'),
             'emergency_contact_name' => $this->faker->name(),
@@ -34,6 +36,12 @@ class PatientFactory extends Factory
             'consent_accepted_at' => null,
             'consent_version' => null,
         ]);
+    }
+
+    /** Ficha anterior a que el dato existiera, como las ya registradas. */
+    public function withoutBiologicalSex(): static
+    {
+        return $this->state(fn () => ['biological_sex' => null]);
     }
 
     public function withoutTeleconsultationConsent(): static

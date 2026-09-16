@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Medico;
 
+use App\Enums\BiologicalSex;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
 use App\Http\Requests\Patient\UpdatePatientRequest;
@@ -35,7 +36,9 @@ class PatientController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('medico/pacientes/create');
+        return Inertia::render('medico/pacientes/create', [
+            'biologicalSexOptions' => BiologicalSex::options(),
+        ]);
     }
 
     public function store(StorePatientRequest $request)
@@ -85,6 +88,7 @@ class PatientController extends Controller
     {
         return Inertia::render('medico/pacientes/edit', [
             'patient' => $patient,
+            'biologicalSexOptions' => BiologicalSex::options(),
         ]);
     }
 

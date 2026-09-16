@@ -1,5 +1,5 @@
 import { FormCard } from '@/components/forms/field';
-import { PatientFields } from '@/components/forms/patient-fields';
+import { PatientFields, type BiologicalSexOption } from '@/components/forms/patient-fields';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
@@ -14,12 +14,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Registrar', href: '/medico/pacientes/create' },
 ];
 
-export default function PacientesCreate() {
+export default function PacientesCreate({ biologicalSexOptions }: { biologicalSexOptions: BiologicalSexOption[] }) {
     const { data, setData, post, processing, errors } = useForm({
         full_name: '',
         document_type: 'CC',
         document_number: '',
         birth_date: '',
+        biological_sex: '',
         municipality: '',
         phone: '',
         emergency_contact_name: '',
@@ -44,7 +45,7 @@ export default function PacientesCreate() {
 
                 <form onSubmit={submit}>
                     <FormCard>
-                        <PatientFields data={data} errors={errors} setData={setData} />
+                        <PatientFields data={data} errors={errors} setData={setData} biologicalSexOptions={biologicalSexOptions} />
 
                         <div className="flex items-center gap-3 pt-1">
                             <Button disabled={processing}>Registrar paciente</Button>

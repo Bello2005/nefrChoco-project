@@ -7,10 +7,16 @@ export interface PatientFormData {
     document_type: string;
     document_number: string;
     birth_date: string;
+    biological_sex: string;
     municipality: string;
     phone: string;
     emergency_contact_name: string;
     emergency_contact_phone: string;
+}
+
+export interface BiologicalSexOption {
+    value: string;
+    label: string;
 }
 
 const municipalities = ['Quibdó', 'Istmina', 'Condoto', 'Tadó', 'Nuquí', 'Bahía Solano', 'Riosucio', 'Acandí', 'Bojayá', 'El Carmen de Atrato'];
@@ -19,9 +25,10 @@ interface Props {
     data: PatientFormData;
     errors: Partial<Record<keyof PatientFormData, string>>;
     setData: (key: keyof PatientFormData, value: string) => void;
+    biologicalSexOptions: BiologicalSexOption[];
 }
 
-export function PatientFields({ data, errors, setData }: Props) {
+export function PatientFields({ data, errors, setData, biologicalSexOptions }: Props) {
     return (
         <>
             <Field label="Nombre completo" htmlFor="full_name" error={errors.full_name}>
@@ -54,6 +61,29 @@ export function PatientFields({ data, errors, setData }: Props) {
                     <Input id="birth_date" type="date" value={data.birth_date} onChange={(e) => setData('birth_date', e.target.value)} required />
                 </Field>
 
+                <Field
+                    label="Sexo biológico"
+                    htmlFor="biological_sex"
+                    error={errors.biological_sex}
+                    hint="Se pide solo para calcular la función renal (TFGe). No es una pregunta sobre identidad de género."
+                >
+                    <NativeSelect
+                        id="biological_sex"
+                        value={data.biological_sex}
+                        onChange={(e) => setData('biological_sex', e.target.value)}
+                        required
+                    >
+                        <option value="">Selecciona una opción</option>
+                        {biologicalSexOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                                {option.label}
+                            </option>
+                        ))}
+                    </NativeSelect>
+                </Field>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Municipio" htmlFor="municipality" error={errors.municipality}>
                     <Input
                         id="municipality"

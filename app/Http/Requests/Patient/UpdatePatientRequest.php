@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Patient;
 
+use App\Enums\BiologicalSex;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,6 +25,8 @@ class UpdatePatientRequest extends FormRequest
                 Rule::unique('patients', 'document_number')->ignore($this->route('patient')),
             ],
             'birth_date' => ['required', 'date', 'before:today'],
+            // Editar una ficha antigua es la vía para completar el dato faltante.
+            'biological_sex' => ['required', Rule::enum(BiologicalSex::class)],
             'municipality' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
             'emergency_contact_name' => ['nullable', 'string', 'max:255'],
@@ -38,6 +41,7 @@ class UpdatePatientRequest extends FormRequest
             'document_type' => 'tipo de documento',
             'document_number' => 'número de documento',
             'birth_date' => 'fecha de nacimiento',
+            'biological_sex' => 'sexo biológico',
             'municipality' => 'municipio',
             'phone' => 'teléfono',
             'emergency_contact_name' => 'contacto de emergencia',

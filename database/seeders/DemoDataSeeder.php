@@ -46,18 +46,18 @@ class DemoDataSeeder extends Seeder
         $patientUser->assignRole(Role::Paciente->value);
 
         $people = [
-            ['María Palacios', '1077123456', 'Quibdó', '1979-05-10', 'Hipertensión arterial', null],
+            ['María Palacios', 'femenino', '1077123456', 'Quibdó', '1979-05-10', 'Hipertensión arterial', null],
             // Única ficha con cuenta propia: permite probar la vista del paciente.
-            ['Juan Perea', '1077998877', 'Istmina', '1968-11-02', 'Diabetes mellitus tipo 2', $patientUser->id],
-            ['Rosalba Mosquera', '1077445566', 'Condoto', '1955-03-21', 'Enfermedad renal crónica', null],
-            ['Efraín Moreno', '1077223344', 'Tadó', '1972-08-14', 'Hipertensión arterial', null],
-            ['Yined Asprilla', '1077667788', 'Nuquí', '1988-01-30', 'Obesidad', null],
-            ['Gilberto Cuesta', '1077334455', 'Quibdó', '1961-06-25', 'Diabetes mellitus tipo 2', null],
-            ['Luz Dary Rivas', '1077556677', 'Bahía Solano', '1990-09-05', 'Riesgo cardiovascular', null],
+            ['Juan Perea', 'masculino', '1077998877', 'Istmina', '1968-11-02', 'Diabetes mellitus tipo 2', $patientUser->id],
+            ['Rosalba Mosquera', 'femenino', '1077445566', 'Condoto', '1955-03-21', 'Enfermedad renal crónica', null],
+            ['Efraín Moreno', 'masculino', '1077223344', 'Tadó', '1972-08-14', 'Hipertensión arterial', null],
+            ['Yined Asprilla', 'femenino', '1077667788', 'Nuquí', '1988-01-30', 'Obesidad', null],
+            ['Gilberto Cuesta', 'masculino', '1077334455', 'Quibdó', '1961-06-25', 'Diabetes mellitus tipo 2', null],
+            ['Luz Dary Rivas', 'femenino', '1077556677', 'Bahía Solano', '1990-09-05', 'Riesgo cardiovascular', null],
         ];
 
         $patients = collect($people)->map(function (array $person) {
-            [$name, $document, $municipality, $birthDate, $diagnosis, $userId] = $person;
+            [$name, $sex, $document, $municipality, $birthDate, $diagnosis, $userId] = $person;
 
             $patient = Patient::firstOrCreate(
                 ['document_number' => $document],
@@ -74,6 +74,7 @@ class DemoDataSeeder extends Seeder
                     'full_name' => $name,
                     'document_type' => 'CC',
                     'birth_date' => $birthDate,
+                    'biological_sex' => $sex,
                     'municipality' => $municipality,
                     'phone' => '31'.random_int(10000000, 99999999),
                     'emergency_contact_name' => 'Contacto familiar',

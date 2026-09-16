@@ -7,7 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { calculateAge, formatDateTime, formatRelative, formatShortDate, initialsFrom } from '@/lib/format';
 import { type BreadcrumbItem, type ClinicalRecommendation } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Activity, CalendarPlus, ClipboardList, FileHeart, HeartPulse, ListChecks, Pencil, Phone } from 'lucide-react';
+import { Activity, CalendarPlus, ClipboardList, FileHeart, HeartPulse, ListChecks, Pencil, Phone, TriangleAlert } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/medico/dashboard' },
@@ -48,6 +48,7 @@ interface PatientData {
     document_type: string;
     document_number: string;
     birth_date: string;
+    biological_sex: string | null;
     municipality: string;
     phone: string;
     emergency_contact_name: string | null;
@@ -105,6 +106,20 @@ export default function PacientesShow({ patient, recommendations, clinicalForms,
                         </Button>
                     </div>
                 </div>
+
+                {!patient.biological_sex && (
+                    <div className="border-warning/30 bg-warning-soft flex items-start gap-3 rounded-xl border p-4">
+                        <TriangleAlert className="text-warning mt-0.5 size-5 shrink-0" aria-hidden="true" />
+                        <p className="text-sm">
+                            <span className="font-semibold">Falta el sexo biológico en esta ficha.</span> Es un dato que se pide solo para
+                            calcular la función renal (TFGe), y sin él no se puede aplicar el seguimiento de enfermedad renal crónica.{' '}
+                            <Link href={route('medico.pacientes.edit', patient.id)} className="text-primary font-semibold hover:underline">
+                                Completar la ficha
+                            </Link>
+                            .
+                        </p>
+                    </div>
+                )}
 
                 <div className="grid gap-3 sm:grid-cols-3">
                     <Button variant="outline" className="h-auto justify-start py-3" asChild>

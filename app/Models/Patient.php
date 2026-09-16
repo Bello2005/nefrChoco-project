@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BiologicalSex;
 use App\Models\Concerns\LogsChangedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,6 +25,7 @@ class Patient extends Model
         'document_type',
         'document_number',
         'birth_date',
+        'biological_sex',
         'municipality',
         'phone',
         'emergency_contact_name',
@@ -42,6 +44,7 @@ class Patient extends Model
     {
         return [
             'birth_date' => 'date',
+            'biological_sex' => BiologicalSex::class,
             'consent_accepted_at' => 'datetime',
             'teleconsultation_consent_accepted_at' => 'datetime',
             'phone' => 'encrypted',

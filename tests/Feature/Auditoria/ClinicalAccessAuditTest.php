@@ -48,6 +48,7 @@ test('crear un paciente queda registrado en el log de cambios', function () {
         'document_type' => 'CC',
         'document_number' => '1099887766',
         'birth_date' => '1990-01-01',
+        'biological_sex' => 'femenino',
         'municipality' => 'Quibdó',
         'phone' => '3001112233',
     ]);
