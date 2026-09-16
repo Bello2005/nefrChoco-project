@@ -1,0 +1,44 @@
+# Blueprint de Render para el ambiente de demo. No afecta el despliegue de
+# produccion en el VPS.
+#
+# Variables que dependen de la instancia de Neon (host, base, usuario,
+# contraseña) y APP_URL quedan con sync: false: hay que completarlas a mano
+# en el dashboard al crear el servicio a partir de este blueprint.
+services:
+  - type: web
+    name: nefrochoco-demo
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    branch: develop
+    healthCheckPath: /up
+    envVars:
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_LOCALE
+        value: es
+      - key: APP_FALLBACK_LOCALE
+        value: es
+      - key: APP_TIMEZONE
+        value: America/Bogota
+      - key: APP_URL
+        sync: false
+
+      # config/database.php cae en sqlite si DB_CONNECTION no esta seteada
+      # (es el default de fabrica de Laravel 12), asi que hay que fijarla
+      # explicitamente para que use la Postgres de Neon.
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: '5432'
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
