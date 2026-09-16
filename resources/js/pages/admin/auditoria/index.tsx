@@ -121,9 +121,10 @@ export default function AuditoriaIndex({ activities, filters }: Props) {
                                             </TableCell>
                                             <TableCell>
                                                 <span className="font-medium">
-                                                    {(isAccess ? resourceLabels[activity.properties?.recurso as string] : undefined) ??
-                                                        subjectLabels[activity.subject] ??
-                                                        activity.subject}
+                                                    {((isAccess ? resourceLabels[activity.properties?.recurso as string] : undefined) ??
+                                                        subjectLabels[activity.subject]) ||
+                                                        activity.subject ||
+                                                        '—'}
                                                 </span>
                                                 {activity.subjectId && (
                                                     <span className="text-muted-foreground tabular ml-1 text-xs">#{activity.subjectId}</span>
