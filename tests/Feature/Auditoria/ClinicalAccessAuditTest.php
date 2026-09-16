@@ -76,3 +76,21 @@ test('un médico no puede consultar el registro de auditoría', function () {
 
     $this->actingAs($medico)->get(route('admin.auditoria.index'))->assertForbidden();
 });
+
+test('los enlaces de paginación del registro de auditoría están traducidos', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    // paginate(20): hacen falta más de 20 filas para que aparezcan enlaces de
+    // «anterior»/«siguiente» y no solo números de página.
+    Patient::factory()->count(21)->create();
+
+    $this->actingAs($admin)
+        ->get(route('admin.auditoria.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('admin/auditoria/index')
+            ->where('activities.links.0.label', '&laquo; Anterior')
+            ->where('activities.links.3.label', 'Siguiente &raquo;')
+        );
+});
