@@ -12,8 +12,15 @@ services:
     branch: develop
     healthCheckPath: /up
     envVars:
+      # generateValue: true no sirve aca: Render genera un base64 crudo
+      # ("B0jrph...") sin el prefijo "base64:" que Laravel exige para
+      # reconocerlo como clave ya codificada. Sin el prefijo, el encriptador
+      # lee esos caracteres como la clave literal (largo incorrecto) y tira
+      # excepcion en cuanto una request toca una cookie o la sesion, es
+      # decir, en cualquier pagina. Generar la clave real con
+      # `php artisan key:generate --show` y pegarla en el dashboard.
       - key: APP_KEY
-        generateValue: true
+        sync: false
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
