@@ -19,7 +19,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
-        remember: false,
+        remember: false as boolean,
     });
 
     const submit: FormEventHandler = (e) => {
@@ -80,7 +80,13 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <Checkbox id="remember" name="remember" tabIndex={3} />
+                    <Checkbox
+                        id="remember"
+                        name="remember"
+                        tabIndex={3}
+                        checked={data.remember}
+                        onCheckedChange={(checked) => setData('remember', checked === true)}
+                    />
                     <Label htmlFor="remember" className="text-sm font-normal">
                         Mantener la sesión iniciada
                     </Label>
