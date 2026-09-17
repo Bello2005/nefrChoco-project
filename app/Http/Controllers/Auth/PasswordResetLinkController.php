@@ -37,6 +37,8 @@ class PasswordResetLinkController extends Controller
             $request->only('email')
         );
 
-        return back()->with('status', __('A reset link will be sent if the account exists.'));
+        // Mensaje deliberadamente ambiguo, sin usar __($status) del broker: no
+        // hay que revelar si el correo existe o no en la base.
+        return back()->with('status', 'Si la cuenta existe, te enviamos un enlace para restablecer la contraseña.');
     }
 }
