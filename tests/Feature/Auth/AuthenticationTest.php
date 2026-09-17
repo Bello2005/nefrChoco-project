@@ -35,12 +35,16 @@ class AuthenticationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->post('/login', [
+        $response = $this->post('/login', [
             'email' => $user->email,
             'password' => 'wrong-password',
         ]);
 
         $this->assertGuest();
+
+        // LoginRequest usa __('auth.failed'): sin lang/es/auth.php esto
+        // mostraba la clave cruda en vez del mensaje.
+        $response->assertSessionHasErrors(['email' => 'Esas credenciales no coinciden con nuestros registros.']);
     }
 
     /**

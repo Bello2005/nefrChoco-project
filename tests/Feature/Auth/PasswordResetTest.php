@@ -25,9 +25,14 @@ class PasswordResetTest extends TestCase
 
         $user = User::factory()->create();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
 
         Notification::assertSentTo($user, ResetPassword::class);
+
+        // El mensaje es un texto propio, no __($status) del broker de Laravel
+        // (que sin lang/es/passwords.php mostraría la clave cruda): confirma
+        // que quedó en español y no delata si el correo existe o no.
+        $response->assertSessionHas('status', 'Si la cuenta existe, te enviamos un enlace para restablecer la contraseña.');
     }
 
     public function test_reset_password_screen_can_be_rendered()
