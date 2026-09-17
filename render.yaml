@@ -39,6 +39,15 @@ services:
       # explicitamente para que use la Postgres de Neon.
       - key: DB_CONNECTION
         value: pgsql
+      # DB_HOST tiene que ser el endpoint DIRECTO de Neon (sin "-pooler" en
+      # el nombre), no el agrupado. Probado: el endpoint agrupado (PgBouncer
+      # en modo transaccion) rompe la transaccion explicita con bloqueo de
+      # fila que usa el limitador de peticiones (cache de base de datos),
+      # con "current transaction is aborted" en la siguiente consulta.
+      # Reproducido en request real contra los dos endpoints: falla 100% de
+      # las veces contra el agrupado, funciona 100% contra el directo. Con
+      # WEB_CONCURRENCY=1 (una sola conexion a la vez) el limite de
+      # conexiones del endpoint directo no es un problema para esta demo.
       - key: DB_HOST
         sync: false
       - key: DB_PORT
