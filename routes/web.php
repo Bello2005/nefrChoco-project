@@ -18,7 +18,7 @@ Route::middleware(['auth'])->group(function () {
             $user->hasRole('admin') => to_route('admin.dashboard'),
             $user->hasRole('medico') => to_route('medico.dashboard'),
             $user->hasRole('paciente') => to_route('paciente.dashboard'),
-            default => Inertia::render('dashboard'),
+            default => Inertia::render('sin-rol'),
         };
     })->name('dashboard');
 
