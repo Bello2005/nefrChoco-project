@@ -3,7 +3,19 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavSection, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { Activity, BookOpen, CalendarDays, ClipboardList, FileHeart, HeartPulse, LayoutDashboard, ScrollText, UserRound, Users } from 'lucide-react';
+import {
+    Activity,
+    BookOpen,
+    CalendarDays,
+    ClipboardCheck,
+    ClipboardList,
+    FileHeart,
+    HeartPulse,
+    LayoutDashboard,
+    ScrollText,
+    UserRound,
+    Users,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const navByRole: Record<string, NavSection[]> = {
@@ -22,7 +34,10 @@ const navByRole: Record<string, NavSection[]> = {
         },
         {
             label: 'Cumplimiento',
-            items: [{ title: 'Auditoría', url: '/admin/auditoria', icon: ScrollText }],
+            items: [
+                { title: 'Auditoría', url: '/admin/auditoria', icon: ScrollText },
+                { title: 'Usabilidad', url: '/admin/usabilidad', icon: ClipboardCheck },
+            ],
         },
     ],
     medico: [
