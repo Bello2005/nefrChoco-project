@@ -14,11 +14,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nuevo', href: '/admin/educativo/crear' },
 ];
 
-export default function EducativoCreate({ categories }: { categories: { value: string; label: string }[] }) {
+export default function EducativoCreate({
+    categories,
+    maxBodyCharacters,
+}: {
+    categories: { value: string; label: string }[];
+    maxBodyCharacters: number;
+}) {
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
         type: 'articulo',
+        body: '',
+        available_offline: true,
         url_or_path: '',
         ecnt_category: categories[0]?.value ?? '',
     });
@@ -37,7 +45,13 @@ export default function EducativoCreate({ categories }: { categories: { value: s
 
                 <form onSubmit={submit}>
                     <FormCard>
-                        <EducationalContentFields data={data} errors={errors} setData={setData} categories={categories} />
+                        <EducationalContentFields
+                            data={data}
+                            errors={errors}
+                            setData={setData}
+                            categories={categories}
+                            maxBodyCharacters={maxBodyCharacters}
+                        />
 
                         <div className="flex items-center gap-3 pt-1">
                             <Button disabled={processing}>Publicar contenido</Button>

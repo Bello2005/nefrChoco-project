@@ -3,11 +3,11 @@ import { DecisionSupportNotice, RecommendationList } from '@/components/clinical
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
-import { AppointmentTypeBadge } from '@/components/status-badge';
+import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { formatDateTime, formatRelative, initialsFrom } from '@/lib/format';
+import { formatDateTime, formatRelative, formatTime, initialsFrom } from '@/lib/format';
 import { type BreadcrumbItem, type ClinicalRecommendation } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { Activity, CalendarCheck, CalendarDays, ListChecks, MonitorSmartphone, TriangleAlert, UserPlus, Users, Video } from 'lucide-react';
@@ -22,6 +22,16 @@ interface UpcomingAppointment {
     status: string;
     type: string;
     patient: { id: number; full_name: string; municipality: string } | null;
+}
+
+interface TodayTeleconsultation {
+    id: number;
+    scheduledAt: string;
+    status: string;
+    patientName: string | null;
+    municipality: string | null;
+    /** Null cuando la sala está abierta; si no, por qué no se puede entrar todavía. */
+    blockedReason: string | null;
 }
 
 interface Alert {
@@ -47,6 +57,7 @@ interface Props {
     stats: { patients: number; appointmentsToday: number; appointmentsWeek: number; pendingTeleconsultations: number };
     priorityPatients: PriorityPatient[];
     upcomingAppointments: UpcomingAppointment[];
+    todayTeleconsultations: TodayTeleconsultation[];
     ecntDistribution: { label: string; value: number }[];
     appointmentsTrend: { label: string; value: number }[];
     alerts: Alert[];
@@ -57,6 +68,7 @@ export default function MedicoDashboard({
     stats,
     priorityPatients,
     upcomingAppointments,
+    todayTeleconsultations,
     ecntDistribution,
     appointmentsTrend,
     alerts,
@@ -96,6 +108,57 @@ export default function MedicoDashboard({
                     <StatCard label="Citas esta semana" value={stats.appointmentsWeek} icon={CalendarDays} tone="success" />
                     <StatCard label="Teleconsultas pendientes" value={stats.pendingTeleconsultations} icon={MonitorSmartphone} tone="brand" />
                 </div>
+
+                <Card>
+                    <CardHeader className="flex-row items-center justify-between space-y-0">
+                        <div className="flex items-center gap-2.5">
+                            <span className="bg-primary-soft text-accent-foreground flex size-9 items-center justify-center rounded-lg">
+                                <Video className="size-4.5" aria-hidden="true" />
+                            </span>
+                            <div>
+                                <CardTitle>Teleconsultas de hoy</CardTitle>
+                                <p className="text-muted-foreground mt-1 text-sm">La sala se abre en la ventana previa a cada cita</p>
+                            </div>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={route('medico.citas.index')}>Ver agenda</Link>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        {todayTeleconsultations.length === 0 ? (
+                            <EmptyState
+                                icon={Video}
+                                title="Sin teleconsultas hoy"
+                                description="Las citas de teleconsulta del día aparecerán aquí con el acceso a su sala."
+                            />
+                        ) : (
+                            <ul className="divide-border/70 divide-y">
+                                {todayTeleconsultations.map((teleconsultation) => (
+                                    <li key={teleconsultation.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
+                                        <span className="tabular w-24 shrink-0 text-sm font-bold whitespace-nowrap">
+                                            {formatTime(teleconsultation.scheduledAt)}
+                                        </span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-sm font-semibold">{teleconsultation.patientName}</p>
+                                            <p className="text-muted-foreground text-xs">{teleconsultation.municipality}</p>
+                                        </div>
+                                        <AppointmentStatusBadge status={teleconsultation.status} />
+                                        {teleconsultation.blockedReason === null ? (
+                                            <Button size="sm" asChild>
+                                                <Link href={route('medico.citas.teleconsulta', teleconsultation.id)}>
+                                                    <Video />
+                                                    Entrar
+                                                </Link>
+                                            </Button>
+                                        ) : (
+                                            <span className="text-muted-foreground text-xs">{teleconsultation.blockedReason}</span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {priorityPatients.length > 0 && (
                     <Card className="border-warning/30">

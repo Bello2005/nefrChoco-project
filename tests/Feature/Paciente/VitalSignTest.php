@@ -65,3 +65,29 @@ test('una medición con fecha futura es rechazada', function () {
     $response->assertSessionHasErrors('recorded_at');
     expect(VitalSign::count())->toBe(0);
 });
+
+/**
+ * La guía se descarta contra la base y no contra el navegador: en el territorio
+ * es común compartir teléfono o reinstalar la aplicación, y con almacenamiento
+ * local reaparecería cada vez a quien ya la leyó.
+ */
+test('la guía de signos vitales aparece la primera vez y se puede cerrar', function () {
+    $user = User::factory()->create();
+    $user->assignRole('paciente');
+    Patient::factory()->create(['user_id' => $user->id]);
+
+    $this->actingAs($user)
+        ->get(route('paciente.signos-vitales.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('showGuide', true));
+
+    $this->actingAs($user)
+        ->post(route('paciente.signos-vitales.guia.descartar'))
+        ->assertRedirect();
+
+    expect($user->refresh()->vital_signs_guide_dismissed_at)->not->toBeNull();
+
+    $this->actingAs($user)
+        ->get(route('paciente.signos-vitales.index'))
+        ->assertInertia(fn ($page) => $page->where('showGuide', false));
+});

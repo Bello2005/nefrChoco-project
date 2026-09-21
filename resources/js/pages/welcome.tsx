@@ -55,17 +55,12 @@ export default function Welcome() {
                                     <Link href={route('dashboard')}>Ir a la plataforma</Link>
                                 </Button>
                             ) : (
-                                <>
-                                    <Button variant="ghost" size="sm" asChild>
-                                        <Link href={route('login')}>
-                                            <span className="sm:hidden">Entrar</span>
-                                            <span className="hidden sm:inline">Iniciar sesión</span>
-                                        </Link>
-                                    </Button>
-                                    <Button size="sm" asChild>
-                                        <Link href={route('register')}>Crear cuenta</Link>
-                                    </Button>
-                                </>
+                                <Button size="sm" asChild>
+                                    <Link href={route('login')}>
+                                        <span className="sm:hidden">Entrar</span>
+                                        <span className="hidden sm:inline">Iniciar sesión</span>
+                                    </Link>
+                                </Button>
                             )}
                         </nav>
                     </div>

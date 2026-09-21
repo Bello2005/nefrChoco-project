@@ -29,6 +29,7 @@ class EducationalContentController extends Controller
     {
         return Inertia::render('admin/educativo/create', [
             'categories' => EcntCategory::options(),
+            'maxBodyCharacters' => config('nefrochoco.educational_content.max_body_characters'),
         ]);
     }
 
@@ -44,6 +45,7 @@ class EducationalContentController extends Controller
         return Inertia::render('admin/educativo/edit', [
             'content' => $educativo,
             'categories' => EcntCategory::options(),
+            'maxBodyCharacters' => config('nefrochoco.educational_content.max_body_characters'),
         ]);
     }
 

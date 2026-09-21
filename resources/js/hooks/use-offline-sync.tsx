@@ -1,5 +1,6 @@
 import { flush, listPending } from '@/lib/offline-queue';
-import { router } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { router, usePage } from '@inertiajs/react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 interface OfflineSyncValue {
@@ -13,19 +14,23 @@ interface OfflineSyncValue {
 const OfflineSyncContext = createContext<OfflineSyncValue | null>(null);
 
 export function OfflineSyncProvider({ children }: { children: ReactNode }) {
+    // Cada cuenta ve y sincroniza solo su propia cola: lo de otra cuenta en el
+    // mismo teléfono se queda intacto hasta que su dueño vuelva a entrar.
+    const ownerId = usePage<SharedData>().props.auth.user.id;
+
     const [isOnline, setIsOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
     const [pendingCount, setPendingCount] = useState(0);
     const [isSyncing, setIsSyncing] = useState(false);
 
     const refreshPending = useCallback(async () => {
-        setPendingCount((await listPending()).length);
-    }, []);
+        setPendingCount((await listPending(ownerId)).length);
+    }, [ownerId]);
 
     const syncNow = useCallback(async () => {
         setIsSyncing(true);
 
         try {
-            const synced = await flush();
+            const synced = await flush(ownerId);
             await refreshPending();
 
             // Solo se recarga si algo llegó al servidor: así el paciente ve sus
@@ -36,7 +41,7 @@ export function OfflineSyncProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsSyncing(false);
         }
-    }, [refreshPending]);
+    }, [ownerId, refreshPending]);
 
     useEffect(() => {
         void refreshPending();

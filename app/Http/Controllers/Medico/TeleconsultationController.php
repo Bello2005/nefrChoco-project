@@ -25,6 +25,10 @@ class TeleconsultationController extends Controller
             return to_route('medico.citas.index')->with('error', 'Esta cita no es una teleconsulta.');
         }
 
+        if ($reason = $this->teleconsultationService->doctorJoinBlockedReason($appointment)) {
+            return to_route('medico.citas.index')->with('error', $reason);
+        }
+
         $teleconsultation = $this->teleconsultationService->findOrCreateForAppointment($appointment);
 
         return Inertia::render('medico/teleconsulta/show', [

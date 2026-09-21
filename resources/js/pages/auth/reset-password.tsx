@@ -32,7 +32,7 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
         <AuthLayout title="Nueva contraseña" description="Define la contraseña con la que ingresarás de ahora en adelante.">
             <Head title="Nueva contraseña" />
 
-            <form onSubmit={submit}>
+            <form onSubmit={submit} noValidate>
                 <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="email" className="text-sm font-semibold">

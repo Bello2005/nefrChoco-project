@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -60,6 +61,7 @@ class User extends Authenticatable
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',
+            'vital_signs_guide_dismissed_at' => 'datetime',
         ];
     }
 
@@ -74,6 +76,11 @@ class User extends Authenticatable
     {
         return $this->two_factor_secret !== null
             && $this->two_factor_confirmed_at !== null;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->hasRole(Role::staff());
     }
 
     public function patient(): HasOne

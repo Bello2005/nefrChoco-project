@@ -19,7 +19,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
+export default function Profile({ mustVerifyEmail, canChangeEmail, status }: { mustVerifyEmail: boolean; canChangeEmail: boolean; status?: string }) {
     const { auth } = usePage<SharedData>().props;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
@@ -68,13 +68,21 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                             <Input
                                 id="email"
                                 type="email"
-                                className="mt-1 block w-full"
+                                className="read-only:bg-muted read-only:text-muted-foreground mt-1 block w-full"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
+                                readOnly={!canChangeEmail}
+                                aria-describedby={canChangeEmail ? undefined : 'email-hint'}
                                 required
                                 autoComplete="username"
                                 placeholder="correo@ejemplo.com"
                             />
+
+                            {!canChangeEmail && (
+                                <p id="email-hint" className="text-muted-foreground text-sm">
+                                    Es tu correo institucional. Si necesitas cambiarlo, pídeselo a un administrador.
+                                </p>
+                            )}
 
                             <InputError className="mt-2" message={errors.email} />
                         </div>

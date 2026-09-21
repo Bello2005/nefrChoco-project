@@ -28,7 +28,7 @@ export default function ForgotPassword({ status }: { status?: string }) {
             {status && <div className="text-success mb-4 text-center text-sm font-medium">{status}</div>}
 
             <div className="space-y-6">
-                <form onSubmit={submit}>
+                <form onSubmit={submit} noValidate>
                     <div className="grid gap-2">
                         <Label htmlFor="email" className="text-sm font-semibold">
                             Correo electrónico

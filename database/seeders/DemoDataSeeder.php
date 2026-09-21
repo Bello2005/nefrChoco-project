@@ -2,13 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Enums\EcntCategory;
 use App\Enums\Role;
 use App\Enums\VitalSignType;
 use App\Models\Appointment;
 use App\Models\ClinicalForm;
 use App\Models\ClinicalHistory;
-use App\Models\EducationalContent;
 use App\Models\Patient;
 use App\Models\User;
 use App\Models\VitalSign;
@@ -28,19 +26,19 @@ class DemoDataSeeder extends Seeder
     public function run(ClinicalFormService $clinicalFormService, TeleconsultationService $teleconsultationService): void
     {
         $doctor = User::firstOrCreate(
-            ['email' => 'ana.mosquera@nefrochoco.test'],
+            ['email' => 'ana.mosquera@nefrochoco.co'],
             ['name' => 'Dra. Ana Mosquera', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
         $doctor->assignRole(Role::Medico->value);
 
         $secondDoctor = User::firstOrCreate(
-            ['email' => 'carlos.rentería@nefrochoco.test'],
+            ['email' => 'carlos.renteria@nefrochoco.co'],
             ['name' => 'Dr. Carlos Rentería', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
         $secondDoctor->assignRole(Role::Medico->value);
 
         $patientUser = User::firstOrCreate(
-            ['email' => 'juan.perea@nefrochoco.test'],
+            ['email' => 'juan.perea@gmail.com'],
             ['name' => 'Juan Perea', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
         $patientUser->assignRole(Role::Paciente->value);
@@ -98,7 +96,6 @@ class DemoDataSeeder extends Seeder
         $this->seedAppointments($patients, $doctor, $secondDoctor, $teleconsultationService);
         $this->seedVitalSigns($patients, $doctor);
         $this->seedClinicalForms($patients, $doctor, $clinicalFormService);
-        $this->seedEducationalContent();
     }
 
     private function seedAppointments($patients, User $doctor, User $secondDoctor, TeleconsultationService $teleconsultationService): void
@@ -226,31 +223,5 @@ class DemoDataSeeder extends Seeder
             'antecedente_familiar' => 'no',
             'observaciones' => null,
         ]);
-    }
-
-    private function seedEducationalContent(): void
-    {
-        if (EducationalContent::exists()) {
-            return;
-        }
-
-        $contents = [
-            ['¿Qué es la hipertensión arterial?', 'Explicación sencilla sobre qué significa tener la presión alta y por qué es importante controlarla.', EducationalContent::TYPE_ARTICLE, EcntCategory::Hypertension],
-            ['Cómo tomar tu presión en casa', 'Guía paso a paso para medir correctamente la presión arterial con un tensiómetro.', EducationalContent::TYPE_VIDEO, EcntCategory::Hypertension],
-            ['Alimentación para personas con diabetes', 'Recomendaciones prácticas con alimentos disponibles en el Chocó.', EducationalContent::TYPE_PDF, EcntCategory::Diabetes],
-            ['Cuidado de los pies en diabetes', 'Rutina diaria de revisión y cuidado para prevenir complicaciones.', EducationalContent::TYPE_VIDEO, EcntCategory::Diabetes],
-            ['Tu riñón y el control de líquidos', 'Qué vigilar cuando vives con enfermedad renal crónica.', EducationalContent::TYPE_ARTICLE, EcntCategory::ChronicKidneyDisease],
-            ['Actividad física sin gimnasio', 'Rutinas que puedes hacer en casa o en el campo, sin equipos.', EducationalContent::TYPE_VIDEO, EcntCategory::GeneralPrevention],
-        ];
-
-        foreach ($contents as [$title, $description, $type, $category]) {
-            EducationalContent::create([
-                'title' => $title,
-                'description' => $description,
-                'type' => $type,
-                'url_or_path' => 'https://www.minsalud.gov.co/salud/publica/PENT/Paginas/enfermedades-no-transmisibles.aspx',
-                'ecnt_category' => $category->value,
-            ]);
-        }
     }
 }
