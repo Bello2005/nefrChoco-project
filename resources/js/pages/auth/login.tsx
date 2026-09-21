@@ -39,7 +39,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </div>
             )}
 
-            <form className="space-y-5" onSubmit={submit}>
+            {/* noValidate: el aviso nativo de type="email" + required se dispara antes
+                de enviar y tapa el error que devuelve el servidor. La validación real
+                vive en el backend y se muestra bajo cada campo. */}
+            <form className="space-y-5" onSubmit={submit} noValidate>
                 <Field label="Correo electrónico" htmlFor="email" error={errors.email}>
                     <Input
                         id="email"
