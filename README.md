@@ -37,6 +37,8 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | La atención no siempre puede ser presencial | Teleconsulta por videollamada, con sala privada por cita, a la que entran tanto el profesional como el paciente |
 | El médico necesita saber a quién mirar primero | Apoyo a decisiones por reglas explicables: cruza señales ya registradas y dice **por qué** sugiere revisar a alguien |
 | Hay que tamizar riesgo, no solo registrar datos | Formularios clínicos con motor de puntuación (FINDRISC, Morisky-Green) e interpretación automática |
+| La enfermedad renal avanza sin síntomas | Cada control calcula la TFGe con CKD-EPI 2021 y la clasifica en KDIGO, y una regla avisa cuando la función cae entre controles |
+| El material educativo no sirve si exige señal | Los artículos se escriben dentro de la plataforma y se descargan al teléfono: se leen después sin conexión |
 | Los datos de salud están protegidos por ley | Cifrado en reposo, consentimiento versionado, segundo factor opcional y auditoría de cada acceso y cada cambio |
 
 ## Stack técnico
@@ -53,7 +55,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 ## Roles del sistema
 
-- **`admin`** — usuarios, custodia del padrón, contenido educativo, auditoría
+- **`admin`** — usuarios, custodia del padrón, contenido educativo, auditoría, reporte de usabilidad
 - **`medico`** — pacientes, historia clínica, agenda, teleconsulta, formularios, telemonitoreo, apoyo a decisiones
 - **`paciente`** — sus citas, su historia, autorreporte de signos vitales, material educativo, su sala de teleconsulta
 
@@ -69,13 +71,17 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Consentimiento informado de teleconsulta (Res. 2654) | ✅ |
 | Formularios clínicos con motor de puntuación | ✅ |
 | Telemonitoreo de signos vitales con alertas | ✅ |
+| Función renal: TFGe (CKD-EPI 2021) y clasificación KDIGO | ✅ |
 | Apoyo a decisiones clínicas por reglas explicables | ✅ |
 | Modo sin conexión (PWA + cola idempotente) | ✅ |
+| Material educativo propio, legible sin conexión | ✅ |
+| Cuestionario de usabilidad (SUS) y su reporte | ✅ |
 | Notificaciones en plataforma | ✅ |
 | Cifrado en reposo y consentimiento de datos (Ley 1581) | ✅ |
 | Auditoría de accesos y de cambios | ✅ |
 | Cabeceras de seguridad y límite de peticiones | ✅ |
-| Pagos, IA predictiva, Jitsi autoalojado | ❌ Fuera de alcance |
+| Jitsi autoalojado en el VPS | ⏳ Pendiente para producción |
+| Pagos, IA predictiva | ❌ Fuera de alcance |
 
 ## Decisiones de diseño que importan
 
@@ -139,7 +145,7 @@ El paciente de demostración arranca con una teleconsulta en curso, para poder e
 php artisan test
 ```
 
-**180 pruebas con Pest** (694 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+**310 pruebas con Pest** (1.171 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, el puntaje SUS contra sets de respuestas calculados a mano, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
 
 ## Pendiente para producción
 

@@ -9,6 +9,7 @@ Documento técnico de la plataforma de telemedicina para el seguimiento de enfer
 - [Autorización](#autorización)
 - [Cifrado en reposo y auditoría](#cifrado-en-reposo-y-auditoría)
 - [Modo sin conexión](#modo-sin-conexión)
+- [Función renal: TFGe y KDIGO](#función-renal-tfge-y-kdigo)
 - [Apoyo a decisiones clínicas](#apoyo-a-decisiones-clínicas)
 - [Decisiones de diseño y sus motivos](#decisiones-de-diseño-y-sus-motivos)
 
@@ -36,7 +37,7 @@ Monolito Laravel con frontend React servido por Inertia. **No hay API REST separ
 flowchart TD
     Login["/login"] --> Dash{"Redirección<br/>por rol"}
 
-    Dash -->|admin| Admin["/admin<br/>usuarios · padrón · contenido · auditoría"]
+    Dash -->|admin| Admin["/admin<br/>usuarios · padrón · contenido<br/>auditoría · usabilidad"]
     Dash -->|medico| Medico["/medico<br/>pacientes · agenda · teleconsulta<br/>formularios · telemonitoreo"]
     Dash -->|paciente| Pac["/paciente<br/>mis citas · historia · signos vitales<br/>educación · sala de teleconsulta"]
 
@@ -86,6 +87,7 @@ erDiagram
     PATIENTS ||--o{ CLINICAL_FORMS : "se le aplican"
     PATIENTS ||--o{ VITAL_SIGNS : "registra"
     APPOINTMENTS ||--o| TELECONSULTATIONS : "genera sala"
+    USERS ||--o| SUS_RESPONSES : "evalúa la usabilidad"
 
     USERS {
         id bigint PK
@@ -95,6 +97,7 @@ erDiagram
         two_factor_secret text "cifrado"
         two_factor_recovery_codes text "cifrado"
         two_factor_confirmed_at timestamp
+        vital_signs_guide_dismissed_at timestamp "guía ya leída"
     }
 
     PATIENTS {
@@ -104,6 +107,7 @@ erDiagram
         document_number string UK "sin cifrar: índice único"
         municipality string "sin cifrar: se agrupa"
         birth_date date
+        biological_sex string "femenino|masculino: entra en la fórmula de TFGe"
         phone text "cifrado"
         emergency_contact_name text "cifrado"
         emergency_contact_phone text "cifrado"
@@ -147,6 +151,28 @@ erDiagram
         answers jsonb
         score smallint "resultado congelado"
         risk_level string
+        egfr smallint "TFGe congelada del control"
+        kdigo_g string "categoría G"
+        kdigo_a string "categoría A"
+    }
+
+    EDUCATIONAL_CONTENTS {
+        id bigint PK
+        title string
+        type string "articulo|video|pdf"
+        body text "contenido propio en Markdown"
+        available_offline boolean "se precarga al teléfono"
+        url_or_path string "solo si el material vive fuera"
+        ecnt_category string
+    }
+
+    SUS_RESPONSES {
+        id bigint PK
+        user_id bigint FK "único: una respuesta por persona"
+        role string "rol al momento de responder"
+        answers jsonb "diez ítems de 1 a 5"
+        score decimal "0 a 100"
+        comments text
     }
 
     VITAL_SIGNS {
@@ -227,6 +253,30 @@ sequenceDiagram
 
 La clave de idempotencia la genera el dispositivo. Si el servidor guardó pero la respuesta se perdió antes de llegar, el reintento no duplica la medición **ni vuelve a alertar** al médico por algo que ya revisó. Un 422 se descarta en vez de reintentarse por siempre.
 
+**El material educativo va en la dirección contraria**: no es algo que el paciente envía, sino algo que necesita tener encima antes de quedarse sin señal. Por eso el contenido se escribe dentro de la plataforma en vez de enlazarse a otro sitio —el service worker solo intercepta el mismo origen, así que un enlace externo nunca se podría guardar— y la pantalla de Educación le pide al service worker que descargue el material marcado como disponible sin conexión en cuanto se abre, aprovechando que en ese momento sí hay red.
+
+Ese material vive en una caché aparte de la del resto de páginas, pero **se borra igual al cerrar sesión**. No porque el contenido sea sensible, sino porque cada página de Inertia lleva las props compartidas y entre ellas el nombre de quien la vio: mientras el material viaje dentro de una página completa, conservarlo dejaría ese nombre accesible en un teléfono compartido. Desacoplarlo —servir el cuerpo del artículo por un endpoint sin datos personales— es lo que permitiría que sobreviviera al cierre de sesión.
+
+## Función renal: TFGe y KDIGO
+
+El programa gira alrededor de la enfermedad renal crónica, que avanza sin síntomas: por eso cada control renal deja una cifra comparable en vez de una impresión clínica.
+
+`EgfrCalculator` es un servicio puro —no conoce Eloquent ni la base de datos— que recibe creatinina sérica, edad y sexo biológico y devuelve la **tasa de filtración glomerular estimada** con la ecuación **CKD-EPI 2021 de creatinina, sin coeficiente de raza**:
+
+```
+TFGe = 142 × min(Scr/κ, 1)^α × max(Scr/κ, 1)^−1.200 × 0.9938^edad × 1.012 [si es mujer]
+κ = 0.7 (femenino) / 0.9 (masculino), creatinina en mg/dL
+α = −0.241 (femenino) / −0.302 (masculino)
+```
+
+La fuente primaria es Inker LA et al., *New Creatinine- and Cystatin C–Based Equations to Estimate GFR without Race*, N Engl J Med 2021; los coeficientes se contrastaron además contra la calculadora de la National Kidney Foundation y la del NIDDK.
+
+**Por qué la ficha pide sexo biológico.** La ecuación usa κ y α distintos según el sexo, así que sin ese dato no hay TFGe. Es un campo de sexo biológico y no de identidad de género: admite solo los dos valores que la fórmula contempla, y no se infiere de ningún otro dato de la ficha. Las fichas anteriores a que el campo existiera lo tienen vacío y el control renal no se puede calcular hasta completarlo.
+
+**El resultado se redondea a entero** porque así lo reportan la calculadora oficial y los laboratorios. Mostrar 89,7 y clasificar G2 mientras el laboratorio informa 90 le daría al profesional una contradicción sin explicación.
+
+Con la TFGe y la relación albúmina/creatinina se asignan las categorías **G** y **A** de KDIGO, y las tres cifras quedan **congeladas en el formulario** (`clinical_forms.egfr`, `kdigo_g`, `kdigo_a`). Congelarlas es lo que permite comparar controles: recalcular con la fórmula de hoy reescribiría la historia de ayer.
+
 ## Apoyo a decisiones clínicas
 
 No es analítica predictiva ni aprendizaje automático: es un motor de reglas escritas y explicables.
@@ -236,17 +286,22 @@ flowchart LR
     S1["risk_level del instrumento<br/>(FINDRISC, Morisky-Green)"] --> PS["PatientSignals"]
     S2["evaluate() del enum<br/>de signos vitales"] --> PS
     S3["diagnóstico ECNT<br/>de la historia"] --> PS
+    S4["TFGe y categorías KDIGO<br/>congeladas en el control"] --> PS
 
     PS --> R1["Signo vital sostenido<br/>fuera de rango"]
     PS --> R2["Riesgo de diabetes<br/>con señal de respaldo"]
     PS --> R3["No adherencia sobre<br/>ECNT diagnosticada"]
+    PS --> R4["Deterioro de la<br/>función renal"]
 
     R1 --> REC["Recommendation<br/>prioridad · título · MOTIVO · acción"]
     R2 --> REC
     R3 --> REC
+    R4 --> REC
 
     REC --> UI["Franja del dashboard<br/>y panel de la ficha"]
 ```
+
+**La regla renal tiene dos ramas distintas.** Una mira dónde está el paciente hoy: una categoría G4/G5 o una albuminuria A3 ameritan valoración especializada sin esperar a ver una tendencia. La otra mira hacia dónde va: una caída sostenida de la TFGe entre controles importa aunque las cifras todavía no sean alarmantes. Ninguna de las dos recalcula la TFGe, usan la que quedó congelada con cada formulario.
 
 Ninguna regla recalcula riesgo: leen señales que el sistema ya calculó. Los umbrales clínicos salen de los instrumentos validados del catálogo y de los rangos del enum; `config/clinical_support.php` solo define umbrales operativos (cuántas lecturas seguidas cuentan como sostenido) y está marcado como pendiente de validación clínica.
 
@@ -263,4 +318,6 @@ Cada recomendación **debe** decir qué regla se disparó y con qué dato. Sin e
 | Instrumentos clínicos en código, no en BD | Son instrumentos validados que cambian con evidencia, no configuración de cliente; versionarlos en git deja trazabilidad de qué se aplicó y cuándo |
 | TOTP en vez de SMS para el segundo factor | La aplicación genera el código sin red; un SMS depende de la misma cobertura que falla |
 | Consentimiento de teleconsulta al entrar a la sala | Es una autorización sobre la modalidad de atención: tiene sentido pedirla cuando se va a usar, con la cita a la vista |
-| Sin Content-Security-Policy todavía | La teleconsulta carga un script externo y la tipografía viene de un CDN; una CSP mal ajustada rompe la videollamada en silencio. Queda para cuando Jitsi esté autoalojado |
+| Sin Content-Security-Policy todavía | La teleconsulta carga hoy un script de `meet.jit.si` y la tipografía viene de un CDN; una CSP mal ajustada rompe la videollamada en silencio. Se define junto con el autoalojamiento de Jitsi, que sí es parte del proyecto: con el video en origen propio la política deja de tener que permitir un tercero |
+| Cuerpo del material educativo en Markdown, no en HTML | El contenido lo escribe el personal desde el panel y lo lee todo paciente. Se convierte con el HTML crudo descartado, así que el panel no puede inyectar `<script>` en la pantalla de nadie; Markdown alcanza para títulos, negritas y listas |
+| Una sola respuesta de usabilidad por persona | El promedio SUS debe reflejar a cuánta gente se le preguntó, no cuántas veces respondió cada quien. El reporte agrega por rol y nunca muestra nombres: quien dice que la plataforma le resultó incómoda no debería quedar señalado ante quien la administra |
