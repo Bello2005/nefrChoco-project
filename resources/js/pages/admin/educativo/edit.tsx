@@ -19,16 +19,28 @@ interface Content {
     title: string;
     description: string | null;
     type: string;
-    url_or_path: string;
+    body: string | null;
+    available_offline: boolean;
+    url_or_path: string | null;
     ecnt_category: string;
 }
 
-export default function EducativoEdit({ content, categories }: { content: Content; categories: { value: string; label: string }[] }) {
+export default function EducativoEdit({
+    content,
+    categories,
+    maxBodyCharacters,
+}: {
+    content: Content;
+    categories: { value: string; label: string }[];
+    maxBodyCharacters: number;
+}) {
     const { data, setData, put, processing, errors } = useForm({
         title: content.title,
         description: content.description ?? '',
         type: content.type,
-        url_or_path: content.url_or_path,
+        body: content.body ?? '',
+        available_offline: content.available_offline,
+        url_or_path: content.url_or_path ?? '',
         ecnt_category: content.ecnt_category,
     });
 
@@ -46,7 +58,13 @@ export default function EducativoEdit({ content, categories }: { content: Conten
 
                 <form onSubmit={submit}>
                     <FormCard>
-                        <EducationalContentFields data={data} errors={errors} setData={setData} categories={categories} />
+                        <EducationalContentFields
+                            data={data}
+                            errors={errors}
+                            setData={setData}
+                            categories={categories}
+                            maxBodyCharacters={maxBodyCharacters}
+                        />
 
                         <div className="flex items-center gap-3 pt-1">
                             <Button disabled={processing}>Guardar cambios</Button>

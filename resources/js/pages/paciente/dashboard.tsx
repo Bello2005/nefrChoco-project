@@ -27,7 +27,8 @@ interface Content {
     title: string;
     description: string | null;
     type: string;
-    url_or_path: string;
+    url_or_path: string | null;
+    hasOwnBody: boolean;
     ecnt_category: string;
 }
 
@@ -197,21 +198,37 @@ export default function PacienteDashboard({
                             <EmptyState icon={BookOpen} title="Sin material disponible" />
                         ) : (
                             <div className="grid gap-3 sm:grid-cols-3">
-                                {suggestedContents.map((content) => (
-                                    <a
-                                        key={content.id}
-                                        href={content.url_or_path}
-                                        target="_blank"
-                                        rel="noreferrer noopener"
-                                        className="border-border/70 hover:border-ring/40 hover:bg-muted/40 rounded-lg border p-4 transition-colors"
-                                    >
-                                        <span className="bg-brand-soft text-brand-strong flex size-9 items-center justify-center rounded-lg">
-                                            <BookOpen className="size-4" />
-                                        </span>
-                                        <p className="mt-3 text-sm font-semibold">{content.title}</p>
-                                        <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{content.description}</p>
-                                    </a>
-                                ))}
+                                {suggestedContents.map((content) => {
+                                    // El material propio se lee dentro de la app; el enlazado
+                                    // se abre fuera y solo funciona con señal.
+                                    const cardClass =
+                                        'border-border/70 hover:border-ring/40 hover:bg-muted/40 rounded-lg border p-4 transition-colors';
+                                    const inner = (
+                                        <>
+                                            <span className="bg-brand-soft text-brand-strong flex size-9 items-center justify-center rounded-lg">
+                                                <BookOpen className="size-4" />
+                                            </span>
+                                            <p className="mt-3 text-sm font-semibold">{content.title}</p>
+                                            <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{content.description}</p>
+                                        </>
+                                    );
+
+                                    return content.hasOwnBody ? (
+                                        <Link key={content.id} href={route('paciente.educativo.show', content.id)} className={cardClass}>
+                                            {inner}
+                                        </Link>
+                                    ) : (
+                                        <a
+                                            key={content.id}
+                                            href={content.url_or_path ?? '#'}
+                                            target="_blank"
+                                            rel="noreferrer noopener"
+                                            className={cardClass}
+                                        >
+                                            {inner}
+                                        </a>
+                                    );
+                                })}
                             </div>
                         )}
                     </CardContent>
