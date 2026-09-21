@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EducationalContentController;
 use App\Http\Controllers\Admin\PatientController;
+use App\Http\Controllers\Admin\SusReportController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,4 +31,6 @@ Route::middleware(['auth', 'role:admin', 'throttle:zona-clinica'])->prefix('admi
     Route::delete('educativo/{educativo}', [EducationalContentController::class, 'destroy'])->name('educativo.destroy');
 
     Route::get('auditoria', [AuditController::class, 'index'])->name('auditoria.index');
+
+    Route::get('usabilidad', [SusReportController::class, 'index'])->name('usabilidad.index');
 });
