@@ -50,8 +50,8 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 - **Auditoría:** [spatie/laravel-activitylog](https://spatie.be/docs/laravel-activitylog) + trait propio para el rastro de cambios
 - **Segundo factor:** TOTP con [pragmarx/google2fa](https://github.com/antonioribeiro/google2fa) y [bacon/bacon-qr-code](https://github.com/Bacon/BaconQrCode)
 - **Videollamada:** Jitsi Meet External API
-- **Sin conexión:** service worker propio + cola en IndexedDB
-- **Tests:** [Pest](https://pestphp.com/)
+- **Sin conexión:** service worker propio + cola en IndexedDB, aislada por cuenta
+- **Tests:** [Pest](https://pestphp.com/) para el backend, [Vitest](https://vitest.dev/) para la lógica de la cola sin conexión
 
 ## Roles del sistema
 
@@ -101,7 +101,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 **Ley 1581 de 2012** — cifrado en reposo, consentimiento versionado del titular, y auditoría de lecturas *y* de cambios sobre datos clínicos. La lectura se registra en las cuatro pantallas que exponen contenido clínico: ficha del paciente, historia clínica, formulario clínico y telemonitoreo. El control de acceso se refuerza con policies donde el rol no basta.
 
-**Resolución 2654 de 2019** — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse y que puede pedirse atención presencial. La Etapa 3 de la norma respalda además el segundo factor.
+**Resolución 2654 de 2019** — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse, que la videollamada **no se graba** y que puede pedirse atención presencial. La Etapa 3 de la norma respalda además el segundo factor.
 
 ## Instalación
 
@@ -143,9 +143,12 @@ El paciente de demostración arranca con una teleconsulta en curso, para poder e
 
 ```bash
 php artisan test
+npm run test
 ```
 
-**310 pruebas con Pest** (1.171 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, el puntaje SUS contra sets de respuestas calculados a mano, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+**320 pruebas con Pest** (1.221 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el cifrado de las respuestas de los formularios clínicos, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, el puntaje SUS contra sets de respuestas calculados a mano, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+
+**5 pruebas con Vitest** sobre `resources/js/lib/offline-queue.ts`: que la cola aísla lo pendiente por cuenta, que un 401/403/419 se conserva en vez de descartarse, y que las entradas guardadas antes de este aislamiento se migran sin perderse ni sincronizarse con la cuenta equivocada.
 
 ## Pendiente para producción
 
@@ -154,3 +157,7 @@ php artisan test
 - Definir una Content-Security-Policy una vez que el video sea de origen propio
 - Validar los umbrales de `config/clinical_support.php` con la médica de la IPS
 - Respaldar la `APP_KEY` aparte de la base de datos: sin ella los datos cifrados son irrecuperables
+- `APP_DEBUG=false` y `APP_ENV=production`
+- Configurar un `MAIL_MAILER` real: hoy es `log`, así que "olvidé mi contraseña" no envía ningún correo, solo lo escribe en el log
+- Definir `ADMIN_INITIAL_PASSWORD`: sin ella, `AdminUserSeeder` falla en vez de crear el admin con la contraseña de la demo
+- Revisar con la médica el contenido de `EducationalContentSeeder` **antes** del primer `--seed` en producción: ese seeder corre en todos los entornos, no solo en `local`
