@@ -16,6 +16,7 @@ class DashboardService
     public function __construct(
         private readonly VitalSignService $vitalSignService,
         private readonly ClinicalDecisionSupport $clinicalDecisionSupport,
+        private readonly TeleconsultationService $teleconsultationService,
     ) {}
 
     /** @return array<string, mixed> */
@@ -45,6 +46,23 @@ class DashboardService
                 ->orderBy('scheduled_at')
                 ->limit(5)
                 ->get(['id', 'patient_id', 'scheduled_at', 'status', 'type']),
+            // La agenda del día vista desde la sala: incluye las ya cerradas y las
+            // canceladas, porque el profesional necesita ver qué pasó hoy, no solo
+            // lo que le queda por atender.
+            'todayTeleconsultations' => (clone $doctorAppointments)
+                ->with('patient:id,full_name,municipality')
+                ->where('type', Appointment::TYPE_TELECONSULTATION)
+                ->whereBetween('scheduled_at', [$today->startOfDay(), $today->endOfDay()])
+                ->orderBy('scheduled_at')
+                ->get(['id', 'patient_id', 'scheduled_at', 'status', 'type'])
+                ->map(fn (Appointment $appointment) => [
+                    'id' => $appointment->id,
+                    'scheduledAt' => $appointment->scheduled_at->toIso8601String(),
+                    'status' => $appointment->status,
+                    'patientName' => $appointment->patient?->full_name,
+                    'municipality' => $appointment->patient?->municipality,
+                    'blockedReason' => $this->teleconsultationService->doctorJoinBlockedReason($appointment),
+                ]),
             // Apoyo a decisiones: a quién conviene revisar primero y por qué.
             'priorityPatients' => $this->clinicalDecisionSupport->priorityPatients($doctor),
             'ecntDistribution' => $this->ecntDistribution(),

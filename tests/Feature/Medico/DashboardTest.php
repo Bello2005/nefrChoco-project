@@ -72,6 +72,91 @@ test('el dashboard del médico lista las mediciones fuera de rango como alertas'
         ->assertInertia(fn ($page) => $page->has('alerts', 1)->where('alerts.0.status', 'bajo'));
 });
 
+/**
+ * La teleconsulta solo se alcanzaba entrando a "Citas", así que el profesional
+ * no tenía dónde ver de un vistazo las salas que le tocan hoy.
+ */
+test('el dashboard del médico lista las teleconsultas de hoy y no las de otros días', function () {
+    // Sin congelar la hora, una cita "de hoy" cerca de medianoche cae en el día
+    // siguiente y la prueba fallaría solo a ciertas horas.
+    $this->travelTo(today()->setTime(9, 0));
+
+    $medico = User::factory()->create();
+    $medico->assignRole('medico');
+
+    $patient = Patient::factory()->create();
+
+    $deHoy = Appointment::factory()->create([
+        'doctor_id' => $medico->id,
+        'patient_id' => $patient->id,
+        'type' => Appointment::TYPE_TELECONSULTATION,
+        'status' => Appointment::STATUS_SCHEDULED,
+        'scheduled_at' => now()->setTime(10, 0),
+    ]);
+
+    Appointment::factory()->create([
+        'doctor_id' => $medico->id,
+        'patient_id' => $patient->id,
+        'type' => Appointment::TYPE_TELECONSULTATION,
+        'status' => Appointment::STATUS_SCHEDULED,
+        'scheduled_at' => now()->addDay()->setTime(10, 0),
+    ]);
+
+    // Una presencial de hoy no tiene sala, así que tampoco entra en la tarjeta.
+    Appointment::factory()->create([
+        'doctor_id' => $medico->id,
+        'patient_id' => $patient->id,
+        'type' => Appointment::TYPE_IN_PERSON,
+        'status' => Appointment::STATUS_SCHEDULED,
+        'scheduled_at' => now()->setTime(11, 0),
+    ]);
+
+    $this->actingAs($medico)
+        ->get(route('medico.dashboard'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->has('todayTeleconsultations', 1)
+            ->where('todayTeleconsultations.0.id', $deHoy->id)
+        );
+});
+
+test('la tarjeta solo deja entrar a la sala dentro de la ventana de la cita', function () {
+    $this->travelTo(today()->setTime(9, 0));
+
+    $medico = User::factory()->create();
+    $medico->assignRole('medico');
+
+    $patient = Patient::factory()->create();
+
+    $minutosAntes = (int) config('teleconsultation.join_window.minutes_before');
+
+    $abierta = Appointment::factory()->create([
+        'doctor_id' => $medico->id,
+        'patient_id' => $patient->id,
+        'type' => Appointment::TYPE_TELECONSULTATION,
+        'status' => Appointment::STATUS_SCHEDULED,
+        'scheduled_at' => now()->addMinutes($minutosAntes - 1),
+    ]);
+
+    // Misma jornada, pero muy lejos de su ventana.
+    $lejana = Appointment::factory()->create([
+        'doctor_id' => $medico->id,
+        'patient_id' => $patient->id,
+        'type' => Appointment::TYPE_TELECONSULTATION,
+        'status' => Appointment::STATUS_SCHEDULED,
+        'scheduled_at' => today()->setTime(16, 0),
+    ]);
+
+    $this->actingAs($medico)
+        ->get(route('medico.dashboard'))
+        ->assertInertia(function ($page) use ($abierta, $lejana) {
+            $porCita = collect($page->toArray()['props']['todayTeleconsultations'])->keyBy('id');
+
+            expect($porCita[$abierta->id]['blockedReason'])->toBeNull();
+            expect($porCita[$lejana->id]['blockedReason'])->not->toBeNull();
+        });
+});
+
 test('el panel administrativo agrupa los usuarios por rol', function () {
     $admin = User::factory()->create();
     $admin->assignRole('admin');
