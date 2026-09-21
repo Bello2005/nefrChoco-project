@@ -35,7 +35,12 @@ return [
         ],
     ],
 
-    // TODO: apuntar a Jitsi autoalojado en el VPS cuando esté listo
+    /*
+     * Dominio del servidor de videollamada. El valor por defecto queda en el
+     * Jitsi público solo como último recurso: ahí un profesional no puede
+     * iniciar la sala sin autenticarse, así que en cualquier entorno real esta
+     * variable debe apuntar al servidor propio.
+     */
     'jitsi' => [
         'domain' => env('JITSI_DOMAIN', 'meet.jit.si'),
     ],
