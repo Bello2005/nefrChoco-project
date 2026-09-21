@@ -20,15 +20,30 @@ interface UserData {
     name: string;
     email: string;
     role: string | null;
+    patientId: number | null;
 }
 
-export default function UsuariosEdit({ user, roles }: { user: UserData; roles: { value: string; label: string }[] }) {
+interface LinkablePatient {
+    id: number;
+    label: string;
+}
+
+export default function UsuariosEdit({
+    user,
+    roles,
+    patients,
+}: {
+    user: UserData;
+    roles: { value: string; label: string }[];
+    patients: LinkablePatient[];
+}) {
     const { data, setData, put, processing, errors } = useForm({
         name: user.name,
         email: user.email,
         password: '',
         password_confirmation: '',
         role: user.role ?? roles[0]?.value ?? '',
+        patient_id: user.patientId ? String(user.patientId) : '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -62,6 +77,28 @@ export default function UsuariosEdit({ user, roles }: { user: UserData; roles: {
                                 ))}
                             </NativeSelect>
                         </Field>
+
+                        {data.role === 'paciente' && (
+                            <Field
+                                label="Ficha del paciente"
+                                htmlFor="patient_id"
+                                error={errors.patient_id}
+                                hint={
+                                    patients.length > 0
+                                        ? 'Vincula la cuenta con su historia clínica. Solo aparecen las fichas que todavía no tienen cuenta.'
+                                        : 'No hay fichas sin cuenta. Registra primero al paciente en Pacientes.'
+                                }
+                            >
+                                <NativeSelect id="patient_id" value={data.patient_id} onChange={(e) => setData('patient_id', e.target.value)}>
+                                    <option value="">Sin vincular por ahora</option>
+                                    {patients.map((patient) => (
+                                        <option key={patient.id} value={patient.id}>
+                                            {patient.label}
+                                        </option>
+                                    ))}
+                                </NativeSelect>
+                            </Field>
+                        )}
 
                         <div className="grid gap-5 sm:grid-cols-2">
                             <Field label="Nueva contraseña" htmlFor="password" error={errors.password} hint="Déjala vacía para conservar la actual.">

@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
+use App\Models\Patient;
 use App\Models\User;
 use App\Services\UserManagementService;
 use Inertia\Inertia;
@@ -38,6 +39,7 @@ class UserController extends Controller
     {
         return Inertia::render('admin/usuarios/create', [
             'roles' => array_map(fn (Role $role) => ['value' => $role->value, 'label' => $role->label()], Role::cases()),
+            'patients' => $this->linkablePatients(),
         ]);
     }
 
@@ -56,8 +58,10 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->roles->first()?->name,
+                'patientId' => $user->patient?->id,
             ],
             'roles' => array_map(fn (Role $role) => ['value' => $role->value, 'label' => $role->label()], Role::cases()),
+            'patients' => $this->linkablePatients($user),
         ]);
     }
 
@@ -73,5 +77,30 @@ class UserController extends Controller
         $this->userManagementService->delete($user);
 
         return to_route('admin.usuarios.index')->with('success', 'Usuario eliminado correctamente.');
+    }
+
+    /**
+     * Fichas que se pueden vincular a una cuenta: las que no tienen ninguna, más
+     * la del usuario que se edita, que si no desaparecería de su propio selector.
+     *
+     * @return array<int, array{id: int, label: string}>
+     */
+    private function linkablePatients(?User $user = null): array
+    {
+        return Patient::query()
+            ->where(function ($query) use ($user) {
+                $query->whereNull('user_id');
+
+                if ($user !== null) {
+                    $query->orWhere('user_id', $user->id);
+                }
+            })
+            ->orderBy('full_name')
+            ->get(['id', 'full_name', 'document_type', 'document_number'])
+            ->map(fn (Patient $patient) => [
+                'id' => $patient->id,
+                'label' => $patient->full_name.' · '.$patient->document_type.' '.$patient->document_number,
+            ])
+            ->all();
     }
 }

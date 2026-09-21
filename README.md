@@ -125,9 +125,11 @@ El seeder de demostración solo corre en entorno `local`. Todos con contraseña 
 
 | Correo | Rol |
 |---|---|
-| `admin@nefrochoco.test` | Administrador |
-| `ana.mosquera@nefrochoco.test` | Médica |
-| `juan.perea@nefrochoco.test` | Paciente (recorre ambos consentimientos) |
+| `admin@nefrochoco.co` | Administrador |
+| `ana.mosquera@nefrochoco.co` | Médica |
+| `juan.perea@gmail.com` | Paciente (recorre ambos consentimientos) |
+
+El personal usa el dominio institucional porque la validación se lo exige; el paciente usa correo personal, que es justo lo que la regla deja libre.
 
 El paciente de demostración arranca con una teleconsulta en curso, para poder entrar a la sala sin esperar.
 
