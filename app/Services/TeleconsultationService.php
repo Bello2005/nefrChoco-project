@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Teleconsultation;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Str;
 
 class TeleconsultationService
@@ -61,20 +62,65 @@ class TeleconsultationService
             };
         }
 
-        $minutesBefore = (int) config('teleconsultation.join_window.minutes_before');
-        $minutesAfter = (int) config('teleconsultation.join_window.minutes_after');
+        [$opensAt, $closesAt] = $this->joinWindow($appointment);
 
-        // copy() porque Carbon es mutable y restarle minutos al atributo
-        // corrompería la fecha de la cita en memoria.
-        if (now()->lt($appointment->scheduled_at->copy()->subMinutes($minutesBefore))) {
+        if (now()->lt($opensAt)) {
+            $minutesBefore = (int) config('teleconsultation.join_window.minutes_before');
+
             return "La sala se abre {$minutesBefore} minutos antes de la hora de tu cita.";
         }
 
-        if (now()->gt($appointment->scheduled_at->copy()->addMinutes($minutesAfter))) {
+        if (now()->gt($closesAt)) {
             return 'La sala de esta teleconsulta ya se cerró. Comunícate con la IPS para reagendar.';
         }
 
         return null;
+    }
+
+    /**
+     * Lo mismo, dicho para el profesional: sin instrucciones de reagendar y sin
+     * tratarlo como si la cita fuera suya.
+     */
+    public function doctorJoinBlockedReason(Appointment $appointment): ?string
+    {
+        if ($appointment->status !== Appointment::STATUS_SCHEDULED) {
+            return match ($appointment->status) {
+                Appointment::STATUS_COMPLETED => 'Teleconsulta ya cerrada.',
+                Appointment::STATUS_CANCELLED => 'Cita cancelada.',
+                default => 'La cita ya no está activa.',
+            };
+        }
+
+        [$opensAt, $closesAt] = $this->joinWindow($appointment);
+
+        if (now()->lt($opensAt)) {
+            $minutesBefore = (int) config('teleconsultation.join_window.minutes_before');
+
+            return "La sala abre {$minutesBefore} minutos antes.";
+        }
+
+        if (now()->gt($closesAt)) {
+            return 'La sala ya se cerró.';
+        }
+
+        return null;
+    }
+
+    /**
+     * Franja en la que la sala está abierta. Es la misma para el paciente y para
+     * el profesional: entrar antes solo mostraría una sala vacía.
+     *
+     * copy() porque Carbon es mutable y restarle minutos al atributo corrompería
+     * la fecha de la cita en memoria.
+     *
+     * @return array{0: CarbonInterface, 1: CarbonInterface}
+     */
+    public function joinWindow(Appointment $appointment): array
+    {
+        return [
+            $appointment->scheduled_at->copy()->subMinutes((int) config('teleconsultation.join_window.minutes_before')),
+            $appointment->scheduled_at->copy()->addMinutes((int) config('teleconsultation.join_window.minutes_after')),
+        ];
     }
 
     public function patientCanJoin(Appointment $appointment): bool
