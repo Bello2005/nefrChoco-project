@@ -5,7 +5,8 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { Textarea } from '@/components/ui/textarea';
 import { useOfflineSync } from '@/hooks/use-offline-sync';
 import { enqueue } from '@/lib/offline-queue';
-import { useForm } from '@inertiajs/react';
+import { type SharedData } from '@/types';
+import { useForm, usePage } from '@inertiajs/react';
 import { CloudOff } from 'lucide-react';
 import { FormEventHandler, useMemo, useState } from 'react';
 
@@ -49,9 +50,7 @@ function AvisoFueraDeRango({ estado, etiqueta }: { estado: 'alto' | 'bajo'; etiq
     return (
         <p
             className={`rounded-lg border px-3 py-2 text-xs font-medium ${
-                estado === 'alto'
-                    ? 'border-destructive/30 bg-destructive-soft text-destructive'
-                    : 'border-warning/30 bg-warning-soft text-warning'
+                estado === 'alto' ? 'border-destructive/30 bg-destructive-soft text-destructive' : 'border-warning/30 bg-warning-soft text-warning'
             }`}
         >
             {etiqueta} está por {estado === 'alto' ? 'encima' : 'debajo'} del rango de referencia. Verifica la medición antes de guardar.
@@ -61,6 +60,7 @@ function AvisoFueraDeRango({ estado, etiqueta }: { estado: 'alto' | 'bajo'; etiq
 
 export function VitalSignForm({ action, types }: { action: string; types: VitalSignTypeOption[] }) {
     const { isOnline, refreshPending } = useOfflineSync();
+    const ownerId = usePage<SharedData>().props.auth.user.id;
     const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -77,10 +77,7 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
     // Aviso inmediato si la cifra queda fuera del rango de referencia, para que
     // quien digita pueda confirmar la medición antes de guardarla.
     const outOfRange = useMemo(() => evaluarRango(data.value, selectedType), [selectedType, data.value]);
-    const diastolicOutOfRange = useMemo(
-        () => (companion ? evaluarRango(data.value_diastolic, companion) : null),
-        [companion, data.value_diastolic],
-    );
+    const diastolicOutOfRange = useMemo(() => (companion ? evaluarRango(data.value_diastolic, companion) : null), [companion, data.value_diastolic]);
 
     // Sin conexión el servidor no valida hasta la sincronización, así que un par
     // invertido se encolaría para ser rechazado horas después. Se corta acá.
@@ -113,6 +110,7 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                 url: action,
                 label: selectedType?.label ?? 'Medición',
                 payload: { ...data, client_uuid: crypto.randomUUID() },
+                ownerId,
             });
 
             await refreshPending();
