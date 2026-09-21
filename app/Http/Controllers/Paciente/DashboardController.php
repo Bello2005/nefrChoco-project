@@ -40,7 +40,17 @@ class DashboardController extends Controller
                 ->count() ?? 0,
             'series' => $patient ? $this->vitalSignService->seriesFor($patient, 8) : [],
             'clinicalHistoryId' => $patient?->latestClinicalHistory?->id,
-            'suggestedContents' => EducationalContent::latest()->limit(3)->get(['id', 'title', 'description', 'type', 'url_or_path', 'ecnt_category']),
+            'suggestedContents' => EducationalContent::latest()
+                ->limit(3)
+                ->get(['id', 'title', 'description', 'type', 'body', 'url_or_path', 'ecnt_category'])
+                ->map(fn (EducationalContent $content) => [
+                    'id' => $content->id,
+                    'title' => $content->title,
+                    'description' => $content->description,
+                    'type' => $content->type,
+                    'url_or_path' => $content->url_or_path,
+                    'hasOwnBody' => $content->hasOwnBody(),
+                ]),
         ]);
     }
 }

@@ -4,8 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
-import { BookOpen, FileText, Film, Play } from 'lucide-react';
+import { Head, Link, router } from '@inertiajs/react';
+import { BookOpen, FileText, Film, Play, Wifi, WifiOff } from 'lucide-react';
+import { useEffect } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Educación', href: '/paciente/educativo' }];
 
@@ -20,8 +21,10 @@ interface Content {
     title: string;
     description: string | null;
     type: string;
-    url_or_path: string;
+    url_or_path: string | null;
     ecnt_category: string;
+    hasOwnBody: boolean;
+    availableOffline: boolean;
 }
 
 interface Props {
@@ -31,6 +34,19 @@ interface Props {
 }
 
 export default function EducativoIndex({ contents, categories, filters }: Props) {
+    // El material marcado para sin conexión se descarga al abrir la sección, que
+    // es cuando sabemos que hay señal. Esperar a que el paciente toque cada
+    // tarjeta sería descargarlo justo cuando ya no puede.
+    useEffect(() => {
+        const urls = contents.filter((content) => content.availableOffline).map((content) => `/paciente/educativo/${content.id}`);
+
+        if (urls.length === 0 || !navigator.serviceWorker?.controller) {
+            return;
+        }
+
+        navigator.serviceWorker.controller.postMessage({ type: 'PRECACHE_MATERIAL', urls });
+    }, [contents]);
+
     const applyFilter = (categoria: string) => {
         router.get(route('paciente.educativo.index'), categoria ? { categoria } : {}, { preserveState: true, replace: true });
     };
@@ -91,16 +107,38 @@ export default function EducativoIndex({ contents, categories, filters }: Props)
                                     <h3 className="font-display mt-4 text-base font-bold">{content.title}</h3>
                                     <p className="text-muted-foreground mt-1.5 flex-1 text-sm">{content.description}</p>
 
-                                    <Badge variant="accent" className="mt-4 self-start">
-                                        {categoryLabel(content.ecnt_category)}
-                                    </Badge>
+                                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                                        <Badge variant="accent">{categoryLabel(content.ecnt_category)}</Badge>
+                                        {content.availableOffline ? (
+                                            <Badge variant="success">
+                                                <WifiOff />
+                                                Sin conexión
+                                            </Badge>
+                                        ) : (
+                                            // Sin cuerpo propio el material vive en otro sitio: decirlo
+                                            // evita que el paciente lo toque sin señal y encuentre un error.
+                                            <Badge variant="outline">
+                                                <Wifi />
+                                                Requiere conexión
+                                            </Badge>
+                                        )}
+                                    </div>
 
-                                    <Button className="mt-4 w-full" variant="outline" asChild>
-                                        <a href={content.url_or_path} target="_blank" rel="noreferrer noopener">
-                                            <Play />
-                                            {config.action}
-                                        </a>
-                                    </Button>
+                                    {content.hasOwnBody ? (
+                                        <Button className="mt-4 w-full" variant="outline" asChild>
+                                            <Link href={route('paciente.educativo.show', content.id)}>
+                                                <BookOpen />
+                                                Leer aquí
+                                            </Link>
+                                        </Button>
+                                    ) : (
+                                        <Button className="mt-4 w-full" variant="outline" asChild>
+                                            <a href={content.url_or_path ?? '#'} target="_blank" rel="noreferrer noopener">
+                                                <Play />
+                                                {config.action}
+                                            </a>
+                                        </Button>
+                                    )}
                                 </article>
                             );
                         })}

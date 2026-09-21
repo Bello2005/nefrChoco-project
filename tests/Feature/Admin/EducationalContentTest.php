@@ -56,3 +56,85 @@ test('un médico no puede administrar el contenido educativo', function () {
 
     $this->actingAs($medico)->get(route('admin.educativo.index'))->assertForbidden();
 });
+
+/**
+ * El compromiso del anteproyecto es material "accesible sin conexión continua".
+ * Un enlace externo no lo cumple: el service worker solo intercepta el mismo
+ * origen, así que el contenido propio es lo único que viaja con la aplicación.
+ */
+test('el contenido propio se lee dentro de la aplicación', function () {
+    $content = EducationalContent::factory()->create([
+        'body' => "## Cuida tus riñones\n\nToma los medicamentos **todos los días**.",
+        'available_offline' => true,
+        'url_or_path' => null,
+    ]);
+
+    $paciente = User::factory()->create();
+    $paciente->assignRole('paciente');
+    Patient::factory()->create(['user_id' => $paciente->id]);
+
+    $this->actingAs($paciente)
+        ->get(route('paciente.educativo.show', $content))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('paciente/educativo/show')
+            ->where('content.availableOffline', true)
+            ->where('content.bodyHtml', fn (string $html) => str_contains($html, '<h2>Cuida tus riñones</h2>')
+                && str_contains($html, '<strong>todos los días</strong>'))
+        );
+});
+
+test('un contenido que solo es enlace externo no tiene pantalla de lectura', function () {
+    $content = EducationalContent::factory()->create([
+        'body' => null,
+        'url_or_path' => 'https://www.minsalud.gov.co/',
+    ]);
+
+    $paciente = User::factory()->create();
+    $paciente->assignRole('paciente');
+    Patient::factory()->create(['user_id' => $paciente->id]);
+
+    $this->actingAs($paciente)
+        ->get(route('paciente.educativo.show', $content))
+        ->assertNotFound();
+});
+
+test('el HTML escrito a mano en el contenido se descarta', function () {
+    $content = EducationalContent::factory()->create([
+        'body' => "<script>alert(1)</script>\n\nTexto legítimo\n\n<img src=x onerror=alert(1)>",
+    ]);
+
+    // CommonMark trata el bloque HTML como una unidad y, con `html_input: strip`,
+    // lo descarta entero. El texto en Markdown sobrevive; el código no.
+    expect($content->body_html)
+        ->not->toContain('script')
+        ->not->toContain('onerror')
+        ->toContain('Texto legítimo');
+});
+
+test('un contenido sin cuerpo propio no puede marcarse como disponible sin conexión', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)->post(route('admin.educativo.store'), [
+        'title' => 'Video de presión arterial',
+        'description' => 'Material alojado fuera de la plataforma.',
+        'type' => EducationalContent::TYPE_VIDEO,
+        'url_or_path' => 'https://www.minsalud.gov.co/',
+        'available_offline' => true,
+    ] + ['ecnt_category' => 'hipertension'])->assertSessionHasNoErrors();
+
+    expect(EducationalContent::where('title', 'Video de presión arterial')->sole()->available_offline)->toBeFalse();
+});
+
+test('un contenido necesita cuerpo propio o enlace', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+
+    $this->actingAs($admin)->post(route('admin.educativo.store'), [
+        'title' => 'Contenido vacío',
+        'description' => 'Sin cuerpo y sin enlace.',
+        'type' => EducationalContent::TYPE_ARTICLE,
+        'ecnt_category' => 'hipertension',
+    ])->assertSessionHasErrors(['body', 'url_or_path']);
+});

@@ -23,4 +23,28 @@ return [
 
     'email_domain' => env('ALLOWED_EMAIL_DOMAIN', 'nefrochoco.co'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Presupuesto del material educativo
+    |--------------------------------------------------------------------------
+    |
+    | Tope de caracteres del cuerpo de un contenido propio. No es un límite de
+    | base de datos sino de conexión: el material marcado como disponible sin
+    | conexión se descarga entero cuando el paciente abre la sección, y esa
+    | descarga ocurre sobre el plan de datos de alguien que puede estar en zona
+    | rural con señal intermitente.
+    |
+    | 20.000 caracteres son unas ocho páginas de texto, más de lo que dura la
+    | atención de nadie leyendo en un teléfono.
+    |
+    | [CONFIRMAR] La cifra sale de estimar qué aguanta una conexión 3G mala, no
+    | de una medición en el territorio. Si hay datos reales de Quibdó o Istmina,
+    | ajustar EDUCATIONAL_MAX_BODY_CHARACTERS.
+    |
+    */
+
+    'educational_content' => [
+        'max_body_characters' => (int) env('EDUCATIONAL_MAX_BODY_CHARACTERS', 20000),
+    ],
+
 ];

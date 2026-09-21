@@ -24,7 +24,12 @@ class StoreEducationalContentRequest extends FormRequest
                 EducationalContent::TYPE_PDF,
                 EducationalContent::TYPE_ARTICLE,
             ])],
-            'url_or_path' => ['required', 'url', 'max:2048'],
+            // Cuerpo propio o enlace: uno de los dos, nunca ninguno. Es la
+            // decisión que separa un material que viaja con la aplicación de uno
+            // que solo existe mientras haya señal.
+            'body' => ['nullable', 'string', 'max:'.config('nefrochoco.educational_content.max_body_characters'), 'required_without:url_or_path'],
+            'url_or_path' => ['nullable', 'url', 'max:2048', 'required_without:body'],
+            'available_offline' => ['boolean'],
             'ecnt_category' => ['required', Rule::enum(EcntCategory::class)],
         ];
     }
@@ -35,7 +40,9 @@ class StoreEducationalContentRequest extends FormRequest
             'title' => 'título',
             'description' => 'descripción',
             'type' => 'tipo de contenido',
+            'body' => 'contenido',
             'url_or_path' => 'enlace',
+            'available_offline' => 'disponible sin conexión',
             'ecnt_category' => 'categoría',
         ];
     }

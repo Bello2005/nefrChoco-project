@@ -34,5 +34,6 @@ Route::middleware(['auth', 'role:paciente', 'throttle:zona-clinica'])->prefix('p
         Route::post('signos-vitales/guia', [VitalSignController::class, 'dismissGuide'])->name('signos-vitales.guia.descartar');
 
         Route::get('educativo', [EducationalContentController::class, 'index'])->name('educativo.index');
+        Route::get('educativo/{educativo}', [EducationalContentController::class, 'show'])->name('educativo.show');
     });
 });
