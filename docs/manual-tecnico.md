@@ -169,12 +169,13 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 | Un paciente no ve citas ni historia | Su cuenta no está vinculada a una ficha. Se vincula desde `/admin/usuarios` |
 | El material educativo no queda disponible sin conexión | Solo se precarga el que tiene cuerpo propio y la marca de disponible sin conexión, y se descarga al abrir la pantalla de Educación con señal |
 | Los errores de formulario salen como `validation.algo` | Falta la línea en `lang/es/validation.php`, o `APP_LOCALE` no es `es` |
+| Un recurso externo nuevo no carga (fuente, script, iframe) | La Content-Security-Policy de `SecurityHeaders::contentSecurityPolicy()` solo deja pasar los orígenes ya listados ahí; hay que agregar el nuevo. En local no pasa: la CSP se salta a propósito porque bloquearía el servidor de Vite |
 
 ## Pendiente para producción
 
 - **Desplegar en el VPS** (Ubuntu, Nginx + PHP-FPM + PostgreSQL).
-- **Autoalojar Jitsi** y apuntar `JITSI_DOMAIN` al servidor propio. Es parte del alcance del proyecto, no algo descartado. Hoy las salas viven en `meet.jit.si`, que es público: el nombre de sala es un UUID no adivinable, pero la conversación pasa por infraestructura de terceros. Además, el Jitsi autoalojado debe quedar con **autenticación JWT**: sin ella, cualquiera que averigüe el nombre de la sala puede entrar, autoalojado o no. Producción no debe salir con `JITSI_DOMAIN=meet.jit.si`.
-- **Definir una Content-Security-Policy** una vez que el video sea de origen propio. No se puso antes porque una CSP mal ajustada rompe la videollamada sin mostrar ningún error.
+- **Apuntar `JITSI_DOMAIN` en Render** al Jitsi ya autoalojado (`jitsi.bello.works`, versión `stable-11248`). Hoy producción sigue en `meet.jit.si`, que es público y de terceros.
+- **Sumar autenticación JWT a la sala autoalojada.** Hoy lo único que impide entrar a quien no sea médico o paciente es que el nombre de sala es un UUID no adivinable; con JWT, solo el médico y el paciente de la cita podrían hacerlo de verdad.
 - **Validar el contenido clínico** con la médica de la IPS. Está marcado en el código con `TODO: validar con la médica de la IPS`: los umbrales de `config/clinical_support.php`, los rangos de `config/vital_signs.php` y los textos de `EducationalContentSeeder` y de la guía de signos vitales.
 - **Respaldo de la `APP_KEY`** separado del respaldo de la base de datos.
 - `APP_DEBUG=false` y `APP_ENV=production`.

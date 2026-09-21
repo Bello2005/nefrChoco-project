@@ -81,6 +81,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Auditoría de accesos y de cambios | ✅ |
 | Cabeceras de seguridad y límite de peticiones | ✅ |
 | Jitsi autoalojado en el VPS (jitsi.bello.works, stable-11248) | ✅ |
+| Autenticación JWT en la sala de Jitsi | ⏳ Pendiente para producción |
 | Pagos, IA predictiva | ❌ Fuera de alcance |
 
 ## Decisiones de diseño que importan
@@ -153,7 +154,8 @@ npm run test
 ## Pendiente para producción
 
 - Desplegar en el VPS (Ubuntu, Nginx + PHP-FPM + PostgreSQL)
-- Apuntar `JITSI_DOMAIN` en Render al Jitsi ya autoalojado (`jitsi.bello.works`) y sumarle autenticación JWT a la sala
+- Apuntar `JITSI_DOMAIN` en Render al Jitsi ya autoalojado (`jitsi.bello.works`)
+- Sumar autenticación JWT a la sala autoalojada: sin ella, el nombre de sala no adivinable es lo único que impide entrar — con JWT, solo el médico y el paciente de la cita podrían hacerlo
 - Definir una Content-Security-Policy una vez que el video sea de origen propio
 - Validar los umbrales de `config/clinical_support.php` con la médica de la IPS
 - Respaldar la `APP_KEY` aparte de la base de datos: sin ella los datos cifrados son irrecuperables
