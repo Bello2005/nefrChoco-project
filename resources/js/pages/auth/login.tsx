@@ -98,12 +98,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
                 </Button>
             </form>
 
-            <p className="text-muted-foreground mt-6 text-center text-sm">
-                ¿No tienes cuenta?{' '}
-                <TextLink href={route('register')} tabIndex={5}>
-                    Regístrate
-                </TextLink>
-            </p>
+            <p className="text-muted-foreground mt-6 text-center text-sm">¿No tienes cuenta? La crea el administrador de la IPS.</p>
         </AuthLayout>
     );
 }
