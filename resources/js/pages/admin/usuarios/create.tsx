@@ -15,13 +15,19 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Nuevo', href: '/admin/usuarios/crear' },
 ];
 
-export default function UsuariosCreate({ roles }: { roles: { value: string; label: string }[] }) {
+interface LinkablePatient {
+    id: number;
+    label: string;
+}
+
+export default function UsuariosCreate({ roles, patients }: { roles: { value: string; label: string }[]; patients: LinkablePatient[] }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
         role: roles[0]?.value ?? '',
+        patient_id: '',
     });
 
     const submit: FormEventHandler = (e) => {
@@ -55,6 +61,28 @@ export default function UsuariosCreate({ roles }: { roles: { value: string; labe
                                 ))}
                             </NativeSelect>
                         </Field>
+
+                        {data.role === 'paciente' && (
+                            <Field
+                                label="Ficha del paciente"
+                                htmlFor="patient_id"
+                                error={errors.patient_id}
+                                hint={
+                                    patients.length > 0
+                                        ? 'Vincula la cuenta con su historia clínica. Solo aparecen las fichas que todavía no tienen cuenta.'
+                                        : 'No hay fichas sin cuenta. Registra primero al paciente en Pacientes.'
+                                }
+                            >
+                                <NativeSelect id="patient_id" value={data.patient_id} onChange={(e) => setData('patient_id', e.target.value)}>
+                                    <option value="">Sin vincular por ahora</option>
+                                    {patients.map((patient) => (
+                                        <option key={patient.id} value={patient.id}>
+                                            {patient.label}
+                                        </option>
+                                    ))}
+                                </NativeSelect>
+                            </Field>
+                        )}
 
                         <div className="grid gap-5 sm:grid-cols-2">
                             <Field label="Contraseña" htmlFor="password" error={errors.password}>

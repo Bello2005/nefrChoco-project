@@ -28,19 +28,19 @@ class DemoDataSeeder extends Seeder
     public function run(ClinicalFormService $clinicalFormService, TeleconsultationService $teleconsultationService): void
     {
         $doctor = User::firstOrCreate(
-            ['email' => 'ana.mosquera@nefrochoco.test'],
+            ['email' => 'ana.mosquera@nefrochoco.co'],
             ['name' => 'Dra. Ana Mosquera', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
         $doctor->assignRole(Role::Medico->value);
 
         $secondDoctor = User::firstOrCreate(
-            ['email' => 'carlos.rentería@nefrochoco.test'],
+            ['email' => 'carlos.renteria@nefrochoco.co'],
             ['name' => 'Dr. Carlos Rentería', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
         $secondDoctor->assignRole(Role::Medico->value);
 
         $patientUser = User::firstOrCreate(
-            ['email' => 'juan.perea@nefrochoco.test'],
+            ['email' => 'juan.perea@gmail.com'],
             ['name' => 'Juan Perea', 'password' => Hash::make('password'), 'email_verified_at' => now()],
         );
         $patientUser->assignRole(Role::Paciente->value);
