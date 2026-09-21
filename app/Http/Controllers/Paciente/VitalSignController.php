@@ -20,13 +20,23 @@ class VitalSignController extends Controller
 
     public function index(): Response
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient;
 
         return Inertia::render('paciente/signos-vitales/index', [
             'series' => $patient ? $this->vitalSignService->seriesFor($patient) : [],
             'types' => VitalSignType::options(),
             'hasProfile' => $patient !== null,
+            'showGuide' => $user->vital_signs_guide_dismissed_at === null,
         ]);
+    }
+
+    /** El paciente ya leyó la guía: no se la volvemos a mostrar. */
+    public function dismissGuide(): RedirectResponse
+    {
+        Auth::user()->forceFill(['vital_signs_guide_dismissed_at' => now()])->save();
+
+        return back();
     }
 
     public function store(StoreVitalSignRequest $request): RedirectResponse|JsonResponse
