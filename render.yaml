@@ -58,3 +58,29 @@ services:
         sync: false
       - key: DB_PASSWORD
         sync: false
+
+      # Jitsi autoalojado (jitsi.bello.works, version fijada a stable-11248,
+      # sin marca de terceros): no es secreto ni depende de la instancia, asi
+      # que va fijo. Sigue sin autenticacion JWT (ver docs/manual-tecnico.md,
+      # Pendiente para produccion): el nombre de sala no adivinable es hoy lo
+      # unico que impide entrar a quien no sea el medico o el paciente de la
+      # cita.
+      - key: JITSI_DOMAIN
+        value: jitsi.bello.works
+
+      # AdminUserSeeder exige esta variable fuera de local/testing (ver
+      # database/seeders/AdminUserSeeder.php): sin ella, sembrar la base
+      # falla en vez de crear el admin con la contrasena de la demo. No
+      # corre sola en cada arranque (el CMD del Dockerfile solo hace
+      # `migrate --force`), pero hay que definirla antes de correr
+      # `php artisan db:seed` a mano contra este servicio.
+      - key: ADMIN_INITIAL_PASSWORD
+        sync: false
+
+      # Sin esto, "olvide mi contrasena" no envia ningun correo: MAIL_MAILER
+      # cae en 'log' y el enlace de recuperacion queda escrito en el log del
+      # contenedor, invisible para quien lo pidio. Completar con un mailer
+      # real (Postmark, Resend, SES) y sus credenciales antes de que alguien
+      # dependa de recuperar su contrasena en esta demo.
+      - key: MAIL_MAILER
+        sync: false
