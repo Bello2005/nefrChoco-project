@@ -80,7 +80,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Cifrado en reposo y consentimiento de datos (Ley 1581) | ✅ |
 | Auditoría de accesos y de cambios | ✅ |
 | Cabeceras de seguridad y límite de peticiones | ✅ |
-| Jitsi autoalojado en el VPS | ⏳ Pendiente para producción |
+| Jitsi autoalojado en el VPS (jitsi.bello.works, stable-11248) | ✅ |
 | Pagos, IA predictiva | ❌ Fuera de alcance |
 
 ## Decisiones de diseño que importan
@@ -153,7 +153,7 @@ npm run test
 ## Pendiente para producción
 
 - Desplegar en el VPS (Ubuntu, Nginx + PHP-FPM + PostgreSQL)
-- Autoalojar Jitsi y apuntar `JITSI_DOMAIN` al servidor propio
+- Apuntar `JITSI_DOMAIN` en Render al Jitsi ya autoalojado (`jitsi.bello.works`) y sumarle autenticación JWT a la sala
 - Definir una Content-Security-Policy una vez que el video sea de origen propio
 - Validar los umbrales de `config/clinical_support.php` con la médica de la IPS
 - Respaldar la `APP_KEY` aparte de la base de datos: sin ella los datos cifrados son irrecuperables

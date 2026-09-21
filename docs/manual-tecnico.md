@@ -55,7 +55,7 @@ Además de las estándar de Laravel:
 | Variable | Para qué sirve |
 |---|---|
 | `DB_CONNECTION=pgsql` | Único motor soportado |
-| `JITSI_DOMAIN` | Dominio de la videollamada. Hoy `meet.jit.si`; al autoalojar, cambiar aquí y la política de permisos del navegador se ajusta sola |
+| `JITSI_DOMAIN` | Dominio de la videollamada. El servidor autoalojado ya existe (`jitsi.bello.works`, versión `stable-11248`), pero producción (Render) todavía apunta a `meet.jit.si` por defecto; al cambiar esta variable la política de permisos del navegador se ajusta sola |
 | `PRIVACY_CONSENT_VERSION` | Versión del consentimiento de datos (Ley 1581) |
 | `PRIVACY_TELECONSULTATION_CONSENT_VERSION` | Versión del consentimiento de teleconsulta (Res. 2654) |
 | `PRIVACY_CONTACT_EMAIL` | Correo de habeas data que se muestra al titular |
