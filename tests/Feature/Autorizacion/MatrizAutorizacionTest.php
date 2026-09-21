@@ -94,7 +94,7 @@ test('un médico no puede firmar notas clínicas en la teleconsulta de otro', fu
 });
 
 test('el médico que atiende la cita sí puede gestionarla y cerrarla', function () {
-    $cita = citaDe($this->medicoA, $this->patient);
+    $cita = citaDe($this->medicoA, $this->patient, ['scheduled_at' => now()]);
 
     $this->actingAs($this->medicoA)->get(route('medico.citas.edit', $cita))->assertOk();
     $this->actingAs($this->medicoA)->get(route('medico.citas.teleconsulta', $cita))->assertOk();

@@ -67,6 +67,7 @@ test('un médico puede entrar a la sala de teleconsulta de una cita', function (
         'doctor_id' => $this->medico->id,
         'patient_id' => $patient->id,
         'type' => Appointment::TYPE_TELECONSULTATION,
+        'scheduled_at' => now(),
     ]);
 
     $response = $this->actingAs($this->medico)->get(route('medico.citas.teleconsulta', $appointment));
