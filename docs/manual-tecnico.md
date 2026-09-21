@@ -156,6 +156,8 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 | `Unable to locate file in Vite manifest` | Falta compilar. `npm run build` |
 | El QR del segundo factor no aparece | Falta la extensión `xmlwriter` de PHP |
 | La videollamada carga en negro | Jitsi tarda; si falla del todo, el componente muestra un aviso con opción de reintentar |
+| La sala dice "no moderators have yet arrived" y no entra | `meet.jit.si` exige que un usuario **autenticado** inicie la reunión, y el profesional entra como anónimo. No se puede evitar desde el iframe: es política del servidor. Apuntar `JITSI_DOMAIN` a una instancia que permita creación anónima, o autoalojar |
+| Tras un `git pull` la interfaz se comporta como antes | `public/build` está en `.gitignore`: el pull trae el código pero no los assets compilados. `npm run build` y recargar forzando caché |
 | La sala dice que ya se cerró | La cita quedó fuera de la ventana. Ajustable con `TELECONSULTATION_JOIN_MINUTES_*` |
 | Historias clínicas ilegibles | Se cambió la `APP_KEY`. Restaurar la original |
 | Un médico recibe 403 sobre una cita | Correcto: solo gestiona las suyas. El padrón sí es compartido |
