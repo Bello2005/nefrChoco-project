@@ -10,8 +10,6 @@ namespace App\Enums;
  * campo de identidad de género, y por eso solo admite los dos valores que la
  * fórmula contempla, sin inferirlo de ningún otro dato de la ficha.
  */
-// TODO doc: el ERD de arquitectura.md no incluye patients.biological_sex,
-// y guia-usuario.md no explica por qué se pide el dato al registrar.
 enum BiologicalSex: string
 {
     case Female = 'femenino';
