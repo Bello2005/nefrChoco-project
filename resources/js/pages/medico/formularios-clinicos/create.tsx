@@ -199,12 +199,15 @@ export default function FormulariosCreate({ templates, selectedTemplate, patient
                                         {field.type === 'number' && (
                                             <Input
                                                 id={field.key}
-                                                type="number"
+                                                type="text"
                                                 inputMode="decimal"
-                                                min={field.min}
-                                                max={field.max}
                                                 value={value}
-                                                onChange={(e) => update(e.target.value)}
+                                                // input type="number" nativo rechaza la coma decimal: en
+                                                // teclado en español, "1,2" queda como "12" y dispara el
+                                                // error de máximo del navegador sin que el usuario note
+                                                // por qué. Aquí se acepta coma o punto y se normaliza a
+                                                // punto, que es lo que espera la validación numérica.
+                                                onChange={(e) => update(e.target.value.replace(',', '.'))}
                                                 required={!field.optional}
                                             />
                                         )}

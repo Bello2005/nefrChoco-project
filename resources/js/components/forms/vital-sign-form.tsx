@@ -150,11 +150,15 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                     >
                         <Input
                             id="value"
-                            type="number"
-                            step="0.1"
+                            type="text"
                             inputMode="decimal"
                             value={data.value}
-                            onChange={(e) => setData('value', e.target.value)}
+                            // input type="number" nativo rechaza la coma decimal: en
+                            // teclado en español, "1,2" queda como "12" y dispara el
+                            // error de máximo del navegador sin que el usuario note
+                            // por qué. Aquí se acepta coma o punto y se normaliza a
+                            // punto, que es lo que espera la validación numérica.
+                            onChange={(e) => setData('value', e.target.value.replace(',', '.'))}
                             required
                         />
                     </Field>
@@ -167,11 +171,10 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                     >
                         <Input
                             id="value_diastolic"
-                            type="number"
-                            step="0.1"
+                            type="text"
                             inputMode="decimal"
                             value={data.value_diastolic}
-                            onChange={(e) => setData('value_diastolic', e.target.value)}
+                            onChange={(e) => setData('value_diastolic', e.target.value.replace(',', '.'))}
                             required
                         />
                     </Field>
@@ -185,11 +188,10 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                 >
                     <Input
                         id="value"
-                        type="number"
-                        step="0.1"
+                        type="text"
                         inputMode="decimal"
                         value={data.value}
-                        onChange={(e) => setData('value', e.target.value)}
+                        onChange={(e) => setData('value', e.target.value.replace(',', '.'))}
                         required
                     />
                 </Field>
