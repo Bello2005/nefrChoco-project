@@ -10,7 +10,9 @@
             /* Documento destinado a papel: siempre claro, sin importar el tema del dispositivo. */
             :root { color-scheme: light; }
 
-            * { box-sizing: border-box; }
+            /* Sin esto, los navegadores omiten los fondos de color al imprimir
+               o guardar como PDF, y el cuadro teal del logo desaparece. */
+            * { box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 
             body {
                 margin: 0;
@@ -93,7 +95,7 @@
             <header>
                 <div class="brand">
                     <span class="mark">
-                        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M16 3.2c4.9 4.6 8.4 8.7 8.4 13.1A8.4 8.4 0 0 1 16 24.7a8.4 8.4 0 0 1-8.4-8.4c0-4.4 3.5-8.5 8.4-13.1Z"/>
                             <path d="M10.6 16.8h2.6l1.5-3.4 2.1 6 1.6-2.6h2.9"/>
                         </svg>
