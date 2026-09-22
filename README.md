@@ -13,6 +13,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | [docs/arquitectura.md](docs/arquitectura.md) | Diagramas, modelo de datos y el porqué de cada decisión |
 | [docs/manual-tecnico.md](docs/manual-tecnico.md) | Instalar, operar y mantener |
 | [docs/guia-usuario.md](docs/guia-usuario.md) | Cómo se usa, por rol |
+| [docs/despliegue.md](docs/despliegue.md) | Desplegar en el VPS de dirsoft.cloud (nginx + PHP-FPM + PostgreSQL, junto al Jitsi autoalojado) |
 
 ## Tabla de contenidos
 
@@ -149,7 +150,7 @@ php artisan test
 
 ## Pendiente para producción
 
-- Desplegar en el VPS (Ubuntu, Nginx + PHP-FPM + PostgreSQL)
+- Desplegar en el VPS (Ubuntu, Nginx + PHP-FPM + PostgreSQL) — scripts listos en [`deploy/`](deploy/), ver [docs/despliegue.md](docs/despliegue.md)
 - Autoalojar Jitsi y apuntar `JITSI_DOMAIN` al servidor propio
 - Definir una Content-Security-Policy una vez que el video sea de origen propio
 - Validar los umbrales de `config/clinical_support.php` con la médica de la IPS
