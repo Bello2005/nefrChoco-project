@@ -36,6 +36,11 @@ export default function TeleconsultaShow({ appointment, teleconsultation, jitsiD
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
+
+        if (!isFinished && !confirm('¿Estás seguro de que quieres cerrar esta teleconsulta?')) {
+            return;
+        }
+
         post(route('medico.citas.teleconsulta.complete', appointment.id));
     };
 

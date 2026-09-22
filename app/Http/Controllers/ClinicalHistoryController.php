@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClinicalHistory;
+use App\Models\Teleconsultation;
 use App\Services\ClinicalAccessAuditor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -24,8 +25,24 @@ class ClinicalHistoryController extends Controller
 
         $this->auditor->recordHistoryAccess($clinicalHistory, $request);
 
+        // Las notas quedan en la teleconsulta, no en esta tabla: se anexan aquí
+        // en lectura para que la historia sea el único lugar donde revisarlas.
+        $teleconsultationNotes = Teleconsultation::query()
+            ->whereNotNull('notes')
+            ->whereHas('appointment', fn ($query) => $query->where('patient_id', $clinicalHistory->patient_id))
+            ->with(['appointment' => fn ($query) => $query->select('id', 'doctor_id', 'scheduled_at')->with('doctor:id,name')])
+            ->latest('updated_at')
+            ->get(['id', 'appointment_id', 'notes', 'updated_at'])
+            ->map(fn (Teleconsultation $teleconsultation) => [
+                'id' => $teleconsultation->id,
+                'notes' => $teleconsultation->notes,
+                'scheduledAt' => $teleconsultation->appointment->scheduled_at,
+                'doctorName' => $teleconsultation->appointment->doctor?->name,
+            ]);
+
         return Inertia::render('historias-clinicas/show', [
             'clinicalHistory' => $clinicalHistory,
+            'teleconsultationNotes' => $teleconsultationNotes,
         ]);
     }
 

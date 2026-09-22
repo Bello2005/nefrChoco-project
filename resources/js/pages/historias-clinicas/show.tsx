@@ -3,10 +3,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatDateTime } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { FileHeart, Printer, ShieldCheck } from 'lucide-react';
+import { FileHeart, Printer, ShieldCheck, Video } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Historia clínica', href: '#' }];
 
@@ -26,7 +26,20 @@ interface ClinicalHistoryData {
     };
 }
 
-export default function HistoriaClinicaShow({ clinicalHistory }: { clinicalHistory: ClinicalHistoryData }) {
+interface TeleconsultationNote {
+    id: number;
+    notes: string;
+    scheduledAt: string;
+    doctorName: string | null;
+}
+
+export default function HistoriaClinicaShow({
+    clinicalHistory,
+    teleconsultationNotes,
+}: {
+    clinicalHistory: ClinicalHistoryData;
+    teleconsultationNotes: TeleconsultationNote[];
+}) {
     const sections = [
         { label: 'Antecedentes', value: clinicalHistory.medical_history },
         { label: 'Alergias', value: clinicalHistory.allergies },
@@ -73,6 +86,30 @@ export default function HistoriaClinicaShow({ clinicalHistory }: { clinicalHisto
                         </dl>
                     </CardContent>
                 </Card>
+
+                {teleconsultationNotes.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 text-base">
+                                <Video className="size-4.5" aria-hidden="true" />
+                                Notas de teleconsultas
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ul className="divide-border/70 divide-y">
+                                {teleconsultationNotes.map((note) => (
+                                    <li key={note.id} className="space-y-1.5 py-4 first:pt-0 last:pb-0">
+                                        <p className="text-muted-foreground text-xs">
+                                            {formatDateTime(note.scheduledAt)}
+                                            {note.doctorName ? ` · ${note.doctorName}` : ''}
+                                        </p>
+                                        <p className="text-sm whitespace-pre-line">{note.notes}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="text-muted-foreground flex items-start gap-2.5 rounded-xl border border-dashed p-4 text-xs">
                     <ShieldCheck className="mt-0.5 size-4 shrink-0" />
