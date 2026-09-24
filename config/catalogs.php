@@ -22,9 +22,10 @@
 | inactivo: queda para mostrar registros viejos, pero no se puede elegir.
 | Si el archivo no trae la columna, todos los códigos quedan activos.
 |
-| CIE-10 y CUPS: columnas cotejadas el 24-sep-2026 contra las tablas de
-| referencia de SISPRO (TablaReferencia_CIE10 y TablaReferencia_CUPS,
+| CIE-10, CUPS y EAPB: columnas cotejadas el 24-sep-2026 contra las tablas de
+| referencia de SISPRO (TablaReferencia_CIE10, _CUPS y _CodigoEAPByNit,
 | exportadas de web.sispro.gov.co): Codigo, Nombre y Habilitado (SI/NO).
+| DIVIPOLA: cotejado con DIVIPOLA_Municipios.xlsx del DANE (junio de 2026).
 |
 | Se puede importar cualquier otro sistema (por ejemplo, los CodeSystem y
 | ValueSet del paquete FHIR del IHCE) con una clave en minúsculas.
@@ -37,8 +38,11 @@ return [
         'cie10' => ['name' => 'CIE-10', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
         'cie11' => ['name' => 'CIE-11', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
         'cups' => ['name' => 'CUPS', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
-        'divipola' => ['name' => 'DIVIPOLA (municipios)', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
-        'eapb' => ['name' => 'EAPB', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
+        // El Excel del DANE trae título y encabezado en dos filas: se pasa a una
+        // tabla plana codigo,nombre,codigo_departamento,departamento,tipo
+        // (docs/manual-tecnico.md, "Catálogos oficiales").
+        'divipola' => ['name' => 'DIVIPOLA (municipios)', 'csv_columns' => ['code' => 'codigo', 'display' => 'nombre']],
+        'eapb' => ['name' => 'EAPB', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
         'tipo_documento' => ['name' => 'Tipos de documento', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
     ],
 

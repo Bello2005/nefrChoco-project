@@ -210,14 +210,16 @@ Tablas `code_systems` (un catálogo, con versión, fuente, SHA-256 del archivo, 
 | `cie10` | CIE-10 | [Tabla de referencia CIE10 de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CIE10) (se exporta a Excel) | Cuando MinSalud publique una actualización [CONFIRMAR periodicidad con la fuente] |
 | `cie11` | CIE-11 (Res. 1442 de 2024; transición y codificación dual según la Res. 1657 de 2025) | Tablas de referencia de SISPRO (MinSalud) | Ídem |
 | `cups` | CUPS | [Tabla de referencia CUPS de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CUPS) (se exporta a Excel) | Ídem (la clasificación se actualiza por resolución) |
-| `divipola` | Municipios (DIVIPOLA) | DANE | Cuando el DANE publique cambios |
-| `eapb` | EAPB | Tablas de referencia de SISPRO (MinSalud) | Ídem |
+| `divipola` | Municipios (DIVIPOLA) | [Excel de municipios del DANE](https://geoportal.dane.gov.co/descargas/divipola/DIVIPOLA_Municipios.xlsx) (hay que aplanarlo, ver abajo) | Cuando el DANE publique cambios |
+| `eapb` | EAPB | [Tabla de referencia CodigoEAPByNit de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CodigoEAPByNit) (se exporta a Excel) | Ídem |
 | `tipo_documento` | Tipos de documento | Tablas de referencia de SISPRO o CodeSystem del paquete FHIR del IHCE | Con cada versión de la guía |
 | (otras) | CodeSystem y ValueSet del RDA | Paquete FHIR `package.tgz` de la guía de implementación del IHCE | Con cada versión de la guía |
 
-Las URLs de CIE-10 y CUPS se cotejaron con los archivos descargados el 24-sep-2026. Las demás quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anota siempre la fuente en `--fuente` al importar, para que quede registrada.
+Las URLs de CIE-10, CUPS, EAPB y DIVIPOLA se cotejaron con los archivos descargados el 24-sep-2026. Las demás quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anota siempre la fuente en `--fuente` al importar, para que quede registrada.
 
-**Formato de las tablas de SISPRO** (cotejado con CIE-10 y CUPS): columnas `Tabla`, `Codigo`, `Nombre`, `Descripcion`, `Habilitado` (SI/NO) y varias `Extra_*`. `config/catalogs.php` fija `Codigo` y `Nombre` como código y nombre, y `Habilitado` como la columna que dice si el código se puede usar. Un código con `Habilitado=NO` se guarda **inactivo**: se sigue viendo en los registros viejos, pero no se puede elegir. Las demás columnas quedan en `extra`.
+**Formato de las tablas de SISPRO** (cotejado con CIE-10, CUPS y EAPB): columnas `Tabla`, `Codigo`, `Nombre`, `Descripcion`, `Habilitado` (SI/NO) y varias `Extra_*`. `config/catalogs.php` fija `Codigo` y `Nombre` como código y nombre, y `Habilitado` como la columna que dice si el código se puede usar. Un código con `Habilitado=NO` se guarda **inactivo**: se sigue viendo en los registros viejos, pero no se puede elegir. Las demás columnas quedan en `extra`. La tabla de EAPB trae correos de contacto de funcionarios (`Extra_VI:Email`): no se necesitan, así que se quita esa columna antes de importar.
+
+**DIVIPOLA del DANE:** el Excel trae un título, el encabezado en dos filas y notas al final. Se deja una tabla plana con las columnas `codigo,nombre,codigo_departamento,departamento,tipo` (código del municipio de 5 dígitos, con el cero inicial). Revisa que ningún código haya quedado como número: en la versión de junio de 2026, `27493` (Nuevo Belén de Bajirá) venía así. `pacientes:revisar-identidad` usa la columna del departamento para preferir el municipio del Chocó cuando dos se llaman igual. Los nombres quedan como los publica el DANE, en mayúsculas (por ejemplo, `QUIBDÓ`).
 
 Los recursos del paquete FHIR del IHCE se publican bajo licencia CC BY-NC-SA 4.0 y exigen esta atribución: *"Este es un bien público digital producido por HL7 Colombia, para el Ministerio de Salud y Protección Social"*.
 
