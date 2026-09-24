@@ -90,4 +90,4 @@ NefroChocó no factura. De esta norma solo usa las tablas de referencia, para qu
 - **Tania:** razón social, NIT, código REPS, código de sede y municipio de la sede.
 - **Médica de la IPS:** umbrales clínicos, plazos de seguimiento por riesgo, protocolo de escalamiento, sexo biológico indeterminado o desconocido, y los textos del consentimiento.
 - **Área jurídica:** textos del consentimiento y de "Mis consentimientos", y la consulta de historias de otros prestadores.
-- **Bello:** descargar e importar los catálogos oficiales, subir los archivos del IHCE y de la Res. 948 a la rama `fuentes-oficiales`, y generar la llave `age` de los respaldos junto con la IPS.
+- **Bello:** importar en el servidor los catálogos oficiales (ya descargados y cotejados), conseguir los perfiles FHIR del RDA para el prompt 10, y generar la llave `age` de los respaldos junto con la IPS.
