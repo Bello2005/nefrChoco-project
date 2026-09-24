@@ -16,7 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TeleconsultationClarification extends Model
 {
-    // TODO doc: arquitectura — tabla teleconsultation_clarifications y la regla "una nota cerrada no cambia".
     use HasFactory, LogsChangedFields;
 
     protected $fillable = [

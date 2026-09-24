@@ -24,7 +24,6 @@ use Illuminate\Support\Facades\Schema;
  */
 return new class extends Migration
 {
-    // TODO doc: manual técnico — las llaves clínicas son restrict: la base rechaza borrados con historia colgando.
     /**
      * [tabla, columna, tabla referenciada, comportamiento anterior]
      *

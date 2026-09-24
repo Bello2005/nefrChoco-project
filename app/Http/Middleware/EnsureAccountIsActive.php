@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class EnsureAccountIsActive
 {
-    // TODO doc: arquitectura — users.deactivated_at, este middleware en el grupo web y el rechazo en LoginRequest.
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();

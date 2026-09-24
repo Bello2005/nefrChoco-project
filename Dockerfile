@@ -7,9 +7,6 @@
 # deploy. Hoy no se sube ningun archivo de usuario, pero va a importar cuando
 # llegue el modulo educativo con archivos subidos, y va a haber que resolverlo
 # con almacenamiento externo (S3 u otro).
-#
-# TODO doc: documentar esta limitacion en manual-tecnico.md junto al resto de
-# lo pendiente para produccion, cuando llegue esa pasada de documentacion.
 
 # --- Etapa 1: assets ---------------------------------------------------
 # Misma version de Node que usa el CI (.github/workflows/tests.yml).

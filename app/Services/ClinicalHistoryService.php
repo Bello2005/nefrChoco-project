@@ -19,7 +19,6 @@ class ClinicalHistoryService
      */
     public function create(Patient $patient, User $author, array $data): ClinicalHistory
     {
-        // TODO doc: manual técnico — clinical_histories.author_id y el relleno desde activity_log.
         $diagnoses = $data['diagnoses'] ?? [];
         unset($data['diagnoses']);
 

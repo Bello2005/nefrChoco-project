@@ -11,7 +11,7 @@ El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativo
 | Script | Qué hace |
 |---|---|
 | [`deploy/firewall.sh`](../deploy/firewall.sh) | Activa `ufw` (estaba inactivo) dejando pasar solo 22 (SSH), 80/443 (todos los sitios) y 10000/udp (medios de Jitsi). Se corre aparte porque un firewall mal armado puede dejarte afuera del servidor. |
-| [`deploy/deploy.sh`](../deploy/deploy.sh) | Instala dependencias del sistema, clona/actualiza el código, corre `composer`/`npm`, arma el `.env` de producción, migra la base de datos, cachea configuración y deja el `server {}` de nginx + certificado Let's Encrypt para `nefrochoco.bello.works`. Es idempotente: se puede volver a correr para desplegar una actualización y no toca un `.env` que ya exista. También configura la Hora Legal (INM) e instala el timer de respaldos. |
+| [`deploy/deploy.sh`](../deploy/deploy.sh) | Instala dependencias del sistema, clona/actualiza el código, corre `composer`/`npm`, arma el `.env` de producción, migra la base de datos, cachea configuración y deja el `server {}` de nginx + certificado Let's Encrypt para `nefrochoco.bello.works`. Es idempotente: se puede volver a correr para desplegar una actualización y no toca un `.env` que ya exista. También configura la Hora Legal (INM) e instala los timers de respaldos (`nefrochoco-backup.timer`) y de tareas programadas (`nefrochoco-scheduler.timer`, que corre `schedule:run` cada minuto). |
 | [`deploy/backup.sh`](../deploy/backup.sh) | Respaldo diario de la base, cifrado con la llave pública de la IPS. Lo corre el timer `nefrochoco-backup.timer`; ver "Respaldos cifrados". |
 
 ## Pasos, en orden

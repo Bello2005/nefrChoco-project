@@ -358,3 +358,11 @@ El RDA exige que el paciente coincida con el registro nacional en tipo y número
 
 La atención (la cita, presencial o teleconsulta) guarda diagnósticos CIE-10 (con CIE-11 en paralelo durante la transición), procedimientos CUPS, medicamentos, alergias y motivo, finalidad y causa externa. Se escribe una sola vez, al cierre, dentro de la misma transacción que cierra la cita, y después es **append-only**: las correcciones llegan como filas nuevas desde una aclaración (`replaces_id`) y el original se conserva. Es la misma regla que ya tenían las notas cerradas.
 
+## Cuentas desactivadas
+
+Una cuenta no se borra: `users.deactivated_at` la desactiva. El login la rechaza solo después de comprobar la contraseña (`LoginRequest`), para no revelar qué correos existen, y el middleware `EnsureAccountIsActive`, en el grupo `web`, cierra en la siguiente petición la sesión abierta o el "recordarme" de una cuenta recién desactivada. Todo lo que la persona registró sigue apuntando a ella.
+
+## Notas cerradas y aclaraciones
+
+Una nota de teleconsulta cerrada no cambia: `TeleconsultationService::complete` relee la fila con bloqueo y rechaza un segundo cierre, porque la auditoría guarda qué campo cambió y no su valor, así que reescribirla borraría la versión anterior sin rastro. Las correcciones van en `teleconsultation_clarifications` (texto cifrado, autor, fecha, llaves restrict), sin rutas para editar ni borrar. Solo el médico de la cita aclara, y solo con la teleconsulta finalizada.
+

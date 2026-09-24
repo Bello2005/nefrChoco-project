@@ -13,7 +13,10 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | [docs/arquitectura.md](docs/arquitectura.md) | Diagramas, modelo de datos y el porqué de cada decisión |
 | [docs/manual-tecnico.md](docs/manual-tecnico.md) | Instalar, operar y mantener |
 | [docs/guia-usuario.md](docs/guia-usuario.md) | Cómo se usa, por rol |
-| [docs/despliegue.md](docs/despliegue.md) | Desplegar en el VPS de dirsoft.cloud (nginx + PHP-FPM + PostgreSQL, junto al Jitsi autoalojado) |
+| [docs/despliegue.md](docs/despliegue.md) | Desplegar en el VPS de dirsoft.cloud (nginx + PHP-FPM + PostgreSQL, junto al Jitsi autoalojado), respaldos cifrados y Hora Legal |
+| [docs/cumplimiento-normativo.md](docs/cumplimiento-normativo.md) | Matriz norma → requisito → dónde se cumple → prueba → estado → responsable |
+| [docs/protocolo-baja-conectividad.md](docs/protocolo-baja-conectividad.md) | Plantilla de contingencia por mala señal y tabla de pruebas reales (por validar con la IPS) |
+| [docs/protocolo-escalamiento.md](docs/protocolo-escalamiento.md) | Plantilla de escalamiento del telemonitoreo (por validar con la médica) |
 
 ## Tabla de contenidos
 
@@ -82,6 +85,19 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Auditoría de accesos y de cambios | ✅ |
 | Cabeceras de seguridad y límite de peticiones | ✅ |
 | Jitsi autoalojado en el VPS (jitsi.bello.works, stable-11248) | ✅ |
+| Cuentas que se desactivan en vez de borrarse; citas atendidas y notas cerradas inmutables, con aclaraciones | ✅ |
+| Custodia: la base rechaza borrados en cascada de datos clínicos | ✅ |
+| Respaldos diarios cifrados (age) y sincronización con la Hora Legal (INM) | 🟡 Falta la llave pública de la IPS |
+| Consentimiento de teleconsulta de la Res. 1644 y su revocación | 🟡 Textos por validar con la médica y jurídica |
+| "Probar mi conexión" antes de la teleconsulta | 🟡 Umbrales en [CONFIRMAR] |
+| Frecuencia de seguimiento por nivel de riesgo | 🟡 Apagada hasta que la médica defina los plazos |
+| Catálogos oficiales versionados (CIE-10, CIE-11, CUPS, DIVIPOLA, EAPB, FHIR) | 🟡 Mecanismo listo; falta importar los archivos oficiales |
+| Identidad del paciente (Res. 866) y fichas por revisar | ✅ |
+| Perfil profesional (RETHUS) y datos de la institución (REPS) | 🟡 Datos pendientes de la IPS |
+| Registro estructurado de la atención (CIE-10/CIE-11, CUPS) | ✅ |
+| Tablero de preparación para interoperar | ✅ |
+| Generación y envío del RDA (FHIR) | ⏳ Esperando el paquete de la guía del IHCE |
+| Exportación de datos de atenciones para facturación (RIPS) | ⏳ Esperando el anexo de la Res. 948 |
 | Autenticación JWT en la sala de Jitsi | ⏳ Pendiente para producción |
 | Pagos, IA predictiva | ❌ Fuera de alcance |
 
@@ -103,7 +119,13 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 **Ley 1581 de 2012** — cifrado en reposo, consentimiento versionado del titular, y auditoría de lecturas *y* de cambios sobre datos clínicos. La lectura se registra en las cuatro pantallas que exponen contenido clínico: ficha del paciente, historia clínica, formulario clínico y telemonitoreo. El control de acceso se refuerza con policies donde el rol no basta.
 
-**Resolución 1644 de 2026** (derogó la Res. 2654 de 2019) — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse, que la videollamada **no se graba**, que puede pedirse atención presencial, y además beneficios, responsabilidades, contacto, prescripción, emergencias, fallas tecnológicas y riesgos para la confidencialidad (art. 7). El paciente puede retirarlo desde "Mis consentimientos". El segundo factor se había justificado con la Etapa 3 de la Res. 2654, hoy derogada: [CONFIRMAR] qué artículo de la 1644 lo respalda.
+La matriz completa, con artículo, dónde se cumple, qué prueba lo cubre, estado y responsable, está en [docs/cumplimiento-normativo.md](docs/cumplimiento-normativo.md). En resumen:
+
+**Resolución 1644 de 2026** (derogó la Res. 2654 de 2019) — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse, que la videollamada **no se graba**, que puede pedirse atención presencial, y además beneficios, responsabilidades, contacto, prescripción, emergencias, fallas tecnológicas y riesgos para la confidencialidad (art. 7). El paciente puede retirarlo desde "Mis consentimientos". El segundo factor se había justificado con la Etapa 3 de la Res. 2654, hoy derogada: [CONFIRMAR] qué artículo de la 1644 lo respalda. La 1644 también está detrás de los respaldos cifrados (art. 14), la frecuencia de seguimiento por riesgo (art. 19), la Hora Legal (art. 22), la prueba de conexión (art. 24.8) y el protocolo de baja conectividad (art. 33).
+
+**Resolución 839 de 2017** — nada clínico se borra físicamente: llaves `restrict`, borrado lógico, cuentas desactivadas, notas y registros inmutables con aclaraciones, y el autor de cada entrada.
+
+**Resolución 866 de 2021, Resolución 1888 de 2025 y Ley 2015 de 2020** — identidad del paciente coincidente con el registro nacional, catálogos oficiales, registro estructurado de la atención y perfil RETHUS/REPS, como base del RDA. El tablero **Preparación para interoperar** dice qué falta.
 
 ## Instalación
 
@@ -148,9 +170,9 @@ php artisan test
 npm run test
 ```
 
-**320 pruebas con Pest** (1.221 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el cifrado de las respuestas de los formularios clínicos, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, el puntaje SUS contra sets de respuestas calculados a mano, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+**429 pruebas con Pest** (1.995 aserciones), que pasan tanto en SQLite como en PostgreSQL. Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el cifrado de todo el contenido clínico nuevo, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los consentimientos y su revocación, la custodia (la base rechaza borrados en cascada), las notas y registros inmutables con aclaraciones, los catálogos oficiales con códigos de prueba falsos, la identidad del paciente y su migración sin adivinar, el perfil RETHUS, el registro estructurado de la atención y el tablero de preparación para interoperar.
 
-**5 pruebas con Vitest** sobre `resources/js/lib/offline-queue.ts`: que la cola aísla lo pendiente por cuenta, que un 401/403/419 se conserva en vez de descartarse, y que las entradas guardadas antes de este aislamiento se migran sin perderse ni sincronizarse con la cuenta equivocada.
+**15 pruebas con Vitest**: la cola sin conexión (`offline-queue.ts`) y la clasificación de "Probar mi conexión" (`connection-check.ts`).
 
 ## Pendiente para producción
 
@@ -164,3 +186,7 @@ npm run test
 - Configurar un `MAIL_MAILER` real: hoy es `log`, así que "olvidé mi contraseña" no envía ningún correo, solo lo escribe en el log
 - Definir `ADMIN_INITIAL_PASSWORD`: sin ella, `AdminUserSeeder` falla en vez de crear el admin con la contraseña de la demo
 - Revisar con la médica el contenido de `EducationalContentSeeder` **antes** del primer `--seed` en producción: ese seeder corre en todos los entornos, no solo en `local`
+- Generar la llave `age` de los respaldos con la IPS y dejar la pública en `/etc/nefrochoco/backup-recipients.txt`
+- Importar los catálogos oficiales (CIE-10, CUPS, DIVIPOLA, EAPB, tipos de documento) y correr `php artisan pacientes:revisar-identidad`. **Sin la CIE-10 importada, el diagnóstico principal no se exige al cerrar una atención**
+- Cambiar `PRIVACY_TELECONSULTATION_CONSENT_VERSION` a `2026-09` en el `.env` del servidor y cargar los `INSTITUTION_*` cuando la IPS los entregue
+- Validar con la médica y el área jurídica los textos y valores marcados `TODO` y `[CONFIRMAR]` (ver [docs/cumplimiento-normativo.md](docs/cumplimiento-normativo.md))

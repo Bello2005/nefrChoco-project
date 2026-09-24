@@ -23,7 +23,6 @@ interface ClinicalHistoryData {
     current_medication: string | null;
     created_at: string;
     // null en entradas viejas cuyo autor no se pudo recuperar de la auditoría.
-    // TODO doc: guía de usuario — "Registrada por" en la historia, la ficha y la versión imprimible.
     author: { id: number; name: string } | null;
     patient: {
         id: number;
@@ -95,7 +94,6 @@ function DiagnosisList({ diagnoses }: { diagnoses: CodedDiagnosis[] }) {
  * valor: reescribirla borraría la versión anterior sin rastro.
  */
 function ClarificationForm({ appointmentId, diagnoses, hasCie10 }: { appointmentId: number; diagnoses: CodedDiagnosis[]; hasCie10: boolean }) {
-    // TODO doc: guía de usuario — cómo corregir una nota cerrada con una aclaración.
     const { data, setData, post, processing, errors, reset, transform } = useForm({ body: '', replaces_id: '', cie10_code: '' });
     const fieldId = `aclaracion-${appointmentId}`;
     const current = diagnoses.filter((diagnosis) => diagnosis.isCurrent);

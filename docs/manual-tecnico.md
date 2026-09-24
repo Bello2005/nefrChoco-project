@@ -183,10 +183,12 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 - **Apuntar `JITSI_DOMAIN` en Render** al Jitsi ya autoalojado (`jitsi.bello.works`, versión `stable-11248`). Hoy producción sigue en `meet.jit.si`, que es público y de terceros.
 - **Sumar autenticación JWT a la sala autoalojada.** Hoy lo único que impide entrar a quien no sea médico o paciente es que el nombre de sala es un UUID no adivinable; con JWT, solo el médico y el paciente de la cita podrían hacerlo de verdad.
 - **Validar el contenido clínico** con la médica de la IPS. Está marcado en el código con `TODO: validar con la médica de la IPS`: los umbrales de `config/clinical_support.php`, los rangos de `config/vital_signs.php` y los textos de `EducationalContentSeeder` y de la guía de signos vitales.
-- **Respaldo de la `APP_KEY`** separado del respaldo de la base de datos.
+- **Respaldo de la `APP_KEY`** separado del respaldo de la base de datos (ver `docs/despliegue.md`, "Respaldos cifrados").
+- **Llave `age` de los respaldos**, importación de los **catálogos oficiales**, `PRIVACY_TELECONSULTATION_CONSENT_VERSION=2026-09` e `INSTITUTION_*` en el `.env`. La lista completa de lo que depende de la IPS está en `docs/cumplimiento-normativo.md`.
 - `APP_DEBUG=false` y `APP_ENV=production`.
 - **Configurar un `MAIL_MAILER` real.** Hoy es `log`: "olvidé mi contraseña" genera el enlace pero no envía ningún correo, solo lo escribe en `storage/logs/laravel.log`.
 - **Definir `ADMIN_INITIAL_PASSWORD`.** Sin ella, `AdminUserSeeder` falla en vez de crear el admin con la contraseña de la demo — ver [Variables de entorno](#variables-de-entorno).
+- **Render no tiene disco persistente** (plan gratis): lo que la app guarde en `storage/app` desaparece en cada reinicio o despliegue. Hoy no se suben archivos de usuario, pero los catálogos oficiales (`storage/app/catalogos`) no pueden vivir allí: en Render hay que importarlos después de cada despliegue, o usar almacenamiento externo. En el VPS no pasa.
 - **Revisar con la médica el contenido de `EducationalContentSeeder` antes del primer `--seed` en producción.** A diferencia de `DemoDataSeeder`, este corre en **todos** los entornos: lo que tenga cargado el día del primer `--seed` es lo que verán los pacientes.
 
 ## Frecuencia de seguimiento por riesgo (Res. 1644 de 2026, art. 19 par. 1)
@@ -263,3 +265,12 @@ sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie1
 ## Preparación para interoperar
 
 `App\Services\InteroperabilityReadiness` tiene una regla por requisito: `missingForPatient`, `missingForPractitioner`, `missingForInstitution`, `missingForAppointment`, y `missingForDocument(Appointment)`, que las junta por dónde se completa. Es la que usarán la generación del RDA y la de RIPS para explicar por qué no pueden generar un documento. `summary()` alimenta Admin → Preparación para interoperar. Recorre en PHP porque varios datos van cifrados y no se pueden filtrar en SQL. Nunca devuelve contenido clínico.
+
+## Custodia de la historia: sin borrados en cascada
+
+Las llaves foráneas de los datos clínicos son `restrict` (migración `restrict_deletes_on_clinical_foreign_keys`): `appointments.doctor_id` y `patient_id`, `teleconsultations.appointment_id`, `vital_signs.patient_id` y `recorded_by`, `clinical_histories.patient_id` y `clinical_forms.patient_id` y `recorded_by`, y todas las tablas nuevas del registro de la atención. **La base rechaza un borrado mientras haya historia colgando**, aunque venga de la consola o de código nuevo. Por eso la aplicación no ofrece esos borrados: las cuentas se desactivan, las citas se cancelan y las fichas solo se borran de forma lógica. `patients.user_id` y `sus_responses.user_id` quedaron como estaban.
+
+## Autor de cada entrada de historia
+
+`clinical_histories.author_id` (nullable solo por las entradas viejas, restrict, con índice) lo asocia `ClinicalHistoryService::create` con el usuario autenticado; queda fuera de `$fillable` para que nadie firme por otro. La migración `backfill_author_id_on_clinical_histories` recuperó el autor de las entradas viejas desde el evento `created` de `activity_log`, saltando los autores que ya no existen (el `EXISTS` evita que la llave nueva haga fallar el despliegue). Su `down()` no deshace nada, porque el autor recuperado es un dato verdadero.
+

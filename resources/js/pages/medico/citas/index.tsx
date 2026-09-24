@@ -24,7 +24,6 @@ interface AppointmentRow {
     patient: { id: number; full_name: string } | null;
     // Lo decide el servidor con la misma política que protege la ruta: una
     // cita atendida ya es parte del registro y no se edita.
-    // TODO doc: guía de usuario — las citas ya no se eliminan (se cancelan) y las atendidas no se editan.
     can_edit: boolean;
     connection_check: ConnectionCheck | null;
 }

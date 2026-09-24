@@ -33,7 +33,6 @@ interface UserRow {
 export default function UsuariosIndex({ users }: { users: UserRow[] }) {
     // Las cuentas no se borran: borrar a un médico arrastraba sus citas y sus
     // notas. Desactivar solo le quita el acceso.
-    // TODO doc: guía de usuario — Desactivar/Reactivar en Admin → Usuarios; ya no hay "Eliminar cuenta" en Ajustes.
     const handleDeactivate = (user: UserRow) => {
         if (confirm(`¿Desactivar a ${user.name}? No podrá entrar, pero todo lo que registró se conserva.`)) {
             router.patch(route('admin.usuarios.desactivar', user.id));

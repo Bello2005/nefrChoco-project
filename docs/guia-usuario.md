@@ -120,6 +120,8 @@ El padrón es de la IPS: puedes consultar y editar la ficha de cualquier persona
 
 Desde la ficha registras entradas de historia clínica, aplicas formularios, ves el telemonitoreo y consultas el apoyo a la decisión de esa persona.
 
+Cada entrada de historia dice **Registrada por** y el nombre de quien la escribió, en la historia, en la ficha y en la versión imprimible, donde el nombre va además sobre la línea de firma. Las entradas antiguas cuyo autor no se pudo recuperar dicen *Autor no registrado (entrada anterior a este cambio)*.
+
 **Nombres y apellidos por separado.** La ficha pide primer nombre, segundo nombre, primer apellido y segundo apellido, tal como aparecen en el documento: la historia clínica interoperable los compara con el registro nacional.
 
 **Datos con buscador.** Cuando la IPS ya importó los catálogos oficiales, el tipo de documento, el municipio y el asegurador (EAPB) se eligen con un buscador: escribe parte del nombre y toca el que corresponde. Si todavía no están importados, se escriben como antes.
@@ -139,6 +141,10 @@ Eliminar una ficha no está a tu alcance: arrastra toda la historia clínica y q
 En **Citas** agendas y ves tu agenda en calendario. **Solo puedes modificar o cancelar tus propias citas**: las de otro profesional aparecen protegidas, para no romper su agenda ni la trazabilidad de quién decidió qué.
 
 Al entrar a una teleconsulta se abre la sala de video con el paciente. Al terminar, **cierras la consulta escribiendo tus notas**, que quedan en la historia clínica y marcan la cita como completada. Esa acción es exclusivamente tuya.
+
+**Las citas no se eliminan.** Si una cita ya no va, ábrela con **Editar** y cámbiale el estado a *Cancelada*. Una cita **atendida** (completada, o con la teleconsulta ya cerrada) queda fija: no aparece el botón *Editar*, porque cambiarle el paciente o la fecha movería sus notas a la historia de otra persona. Las canceladas y las de *No asistió* sí se pueden corregir.
+
+**Una nota cerrada no se reescribe.** Si después de cerrar necesitas corregir o completar algo, en la historia clínica del paciente, bajo la nota, escribe una **aclaración** y toca **Agregar aclaración**. Queda con tu nombre y la fecha, y la nota original se conserva. Solo el médico de la cita puede aclarar sus notas.
 
 ### Registrar la atención
 
@@ -181,6 +187,8 @@ En **Usuarios** creas las cuentas del personal y de los pacientes que van a usar
 **Vincular la cuenta con su ficha.** La ficha clínica y la cuenta son cosas distintas: muchas fichas corresponden a personas sin acceso a la plataforma. Cuando eliges el rol *Paciente* aparece el selector **Ficha del paciente**, que ofrece las fichas que todavía no tienen cuenta. Sin vincular, esa persona entra pero no ve citas, ni historia, ni sala de teleconsulta.
 
 Si más adelante cambias esa cuenta a otro rol, la ficha se suelta sola y vuelve a quedar disponible.
+
+**Las cuentas no se borran: se desactivan.** Borrar a un médico se llevaba sus citas y sus notas. Con **Desactivar** la persona ya no puede entrar (se le cierra la sesión que tuviera abierta), pero todo lo que registró se conserva con su nombre. **Reactivar** le devuelve el acceso. No puedes desactivar tu propia cuenta. Desactivar y reactivar quedan en la auditoría. Tampoco hay "Eliminar cuenta" en Ajustes para nadie: el paciente que quiera que corrijan o eliminen sus datos escribe al correo que aparece en su pantalla.
 
 **Datos profesionales y RETHUS (solo médicos).** Al editar la cuenta de un médico aparece **Datos profesionales**: tipo y número de documento, profesión, registro profesional y especialidad. Debajo está **Verificación en RETHUS**: busca al médico en la consulta pública de ReTHUS con su documento; si aparece activo, anota lo que viste y toca **Marcar como verificado en RETHUS**. Queda quién lo verificó y cuándo. Si después cambias el documento o el registro, la verificación se borra y hay que repetirla. Mientras el perfil esté incompleto, el médico ve un aviso, pero puede seguir atendiendo.
 
