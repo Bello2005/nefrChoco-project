@@ -1,4 +1,4 @@
-import { CodeSelect } from '@/components/forms/code-select';
+import { CodeSelect, type CodeOption } from '@/components/forms/code-select';
 import { Field } from '@/components/forms/field';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -24,6 +24,8 @@ export interface AttentionCatalogs {
     diagnosisType: string | null;
     purpose: string | null;
     externalCause: string | null;
+    /** Catálogos pequeños completos, para mostrarlos como lista. */
+    options?: Partial<Record<'diagnosisType' | 'purpose' | 'externalCause', CodeOption[]>>;
 }
 
 export type DiagnosisRow = {
@@ -78,9 +80,21 @@ interface Props {
     catalogs: AttentionCatalogs;
 }
 
-function CodedOrText({ id, system, value, onChange }: { id: string; system: string | null; value: string; onChange: (value: string) => void }) {
+function CodedOrText({
+    id,
+    system,
+    options,
+    value,
+    onChange,
+}: {
+    id: string;
+    system: string | null;
+    options?: CodeOption[];
+    value: string;
+    onChange: (value: string) => void;
+}) {
     return system ? (
-        <CodeSelect id={id} system={system} value={value} onChange={(code) => onChange(code)} />
+        <CodeSelect id={id} system={system} options={options} value={value} onChange={(code) => onChange(code)} />
     ) : (
         <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} />
     );
@@ -119,12 +133,19 @@ export function AttentionRecordFields({ data, setData, errors, catalogs }: Props
 
             <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Finalidad" htmlFor="purpose" error={errors.purpose}>
-                    <CodedOrText id="purpose" system={catalogs.purpose} value={data.purpose} onChange={(value) => setData('purpose', value)} />
+                    <CodedOrText
+                        id="purpose"
+                        system={catalogs.purpose}
+                        options={catalogs.options?.purpose}
+                        value={data.purpose}
+                        onChange={(value) => setData('purpose', value)}
+                    />
                 </Field>
                 <Field label="Causa externa" htmlFor="external_cause" error={errors.external_cause}>
                     <CodedOrText
                         id="external_cause"
                         system={catalogs.externalCause}
+                        options={catalogs.options?.externalCause}
                         value={data.external_cause}
                         onChange={(value) => setData('external_cause', value)}
                     />
@@ -204,6 +225,7 @@ export function AttentionRecordFields({ data, setData, errors, catalogs }: Props
                                     <CodedOrText
                                         id={`dxtype-${index}`}
                                         system={catalogs.diagnosisType}
+                                        options={catalogs.options?.diagnosisType}
                                         value={row.diagnosis_type}
                                         onChange={(value) => updateRow('diagnoses', index, { diagnosis_type: value })}
                                     />

@@ -92,6 +92,40 @@ class CodeCatalog
             ->map(fn (Code $code) => ['code' => $code->code, 'display' => $code->display]);
     }
 
+    /**
+     * Todos los códigos activos de un catálogo pequeño, en el orden del archivo
+     * oficial, para mostrarlos en una lista desplegable. Null si el catálogo es
+     * grande (se usa el buscador) o no está importado.
+     *
+     * Con dos o cinco opciones (zona de residencia, identidad de género) un
+     * buscador obliga a adivinar qué escribir; la lista se entiende sin
+     * capacitación y llega con la página, sin consultas extra con mala señal.
+     *
+     * @return list<array{code: string, display: string}>|null
+     */
+    public function options(string $system): ?array
+    {
+        $systemId = CodeSystem::where('key', $system)->value('id');
+
+        if ($systemId === null) {
+            return null;
+        }
+
+        $max = (int) config('catalogs.select_max', 40);
+        $codes = Code::query()
+            ->where('code_system_id', $systemId)
+            ->where('active', true)
+            ->orderBy('id')
+            ->limit($max + 1)
+            ->get(['code', 'display']);
+
+        if ($codes->isEmpty() || $codes->count() > $max) {
+            return null;
+        }
+
+        return $codes->map(fn (Code $code) => ['code' => $code->code, 'display' => $code->display])->all();
+    }
+
     /** 'pg_trgm', 'ilike' o 'like': cómo está buscando el servidor. */
     public function searchMode(): string
     {

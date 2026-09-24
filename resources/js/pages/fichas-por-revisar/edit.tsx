@@ -3,6 +3,7 @@ import {
     PatientFields,
     patientFormFrom,
     type BiologicalSexOption,
+    type PatientCatalogOptions,
     type PatientCatalogs,
     type PatientCodeLabels,
     type PatientFormData,
@@ -31,10 +32,11 @@ interface Props {
     patient: PatientData;
     biologicalSexOptions: BiologicalSexOption[];
     catalogs: PatientCatalogs;
+    catalogOptions: PatientCatalogOptions;
     codeLabels: PatientCodeLabels;
 }
 
-export default function CompletarFicha({ patient, biologicalSexOptions, catalogs, codeLabels }: Props) {
+export default function CompletarFicha({ patient, biologicalSexOptions, catalogs, catalogOptions, codeLabels }: Props) {
     const { data, setData, put, processing, errors } = useForm(patientFormFrom(patient));
 
     const submit: FormEventHandler = (e) => {
@@ -76,6 +78,7 @@ export default function CompletarFicha({ patient, biologicalSexOptions, catalogs
                             setData={setData}
                             biologicalSexOptions={biologicalSexOptions}
                             catalogs={catalogs}
+                            catalogOptions={catalogOptions}
                             codeLabels={codeLabels}
                         />
 

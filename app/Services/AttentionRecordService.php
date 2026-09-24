@@ -50,6 +50,11 @@ class AttentionRecordService
             'diagnosisType' => $this->catalogFor('diagnosis_type'),
             'purpose' => $this->catalogFor('purpose'),
             'externalCause' => $this->catalogFor('external_cause'),
+            'options' => array_filter([
+                'diagnosisType' => $this->optionsFor('diagnosis_type'),
+                'purpose' => $this->optionsFor('purpose'),
+                'externalCause' => $this->optionsFor('external_cause'),
+            ]),
         ];
     }
 
@@ -245,6 +250,14 @@ class AttentionRecordService
         $system = config("catalogs.attention_fields.{$field}");
 
         return $system !== null && $this->catalog->has($system) ? $system : null;
+    }
+
+    /** @return list<array{code: string, display: string}>|null */
+    private function optionsFor(string $field): ?array
+    {
+        $system = $this->catalogFor($field);
+
+        return $system !== null ? $this->catalog->options($system) : null;
     }
 
     /** @return list<mixed> */

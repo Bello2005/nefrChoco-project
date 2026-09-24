@@ -73,6 +73,10 @@ class CatalogImporter
             throw new CatalogFileException('El archivo no trae ningún código.');
         }
 
+        if (! empty($configured['leaves_only'])) {
+            $codes = $this->onlyLeavesSelectable($codes);
+        }
+
         return DB::transaction(function () use ($systemKey, $name, $version, $source, $path, $importedBy, $codes) {
             $system = CodeSystem::updateOrCreate(['key' => $systemKey], [
                 'name' => $name ?? $systemKey,
@@ -131,5 +135,23 @@ class CatalogImporter
 
             return ['system' => $system, 'total' => $active, 'deactivated' => $deactivated];
         });
+    }
+
+    /**
+     * Deja inactivos los códigos que agrupan a otros. En el CodeSystem de tipos
+     * de documento del IHCE, "RNEC" o "CANCILLERIA" son la entidad que expide
+     * y no un tipo de documento: nadie debe poder elegirlos en la ficha. Se
+     * guardan igual, para que el catálogo quede completo.
+     *
+     * @param  list<ParsedCode>  $codes
+     * @return list<ParsedCode>
+     */
+    private function onlyLeavesSelectable(array $codes): array
+    {
+        $parents = array_flip(array_filter(array_map(fn (ParsedCode $code) => $code->parentCode, $codes)));
+
+        return array_map(fn (ParsedCode $code) => isset($parents[$code->code])
+            ? new ParsedCode($code->code, $code->display, $code->parentCode, $code->extra, active: false)
+            : $code, $codes);
     }
 }

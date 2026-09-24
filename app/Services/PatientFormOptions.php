@@ -9,7 +9,8 @@ use App\Services\Catalogs\CodeCatalog;
 /**
  * Lo que el formulario de la ficha necesita saber: opciones de sexo
  * biológico, qué campos ya tienen catálogo importado (y se eligen con
- * buscador) y el nombre de los códigos que la ficha ya tiene.
+ * buscador, o con lista si el catálogo es pequeño) y el nombre de los códigos
+ * que la ficha ya tiene.
  */
 class PatientFormOptions
 {
@@ -32,6 +33,7 @@ class PatientFormOptions
         return [
             'biologicalSexOptions' => BiologicalSex::options(),
             'catalogs' => $catalogs->all(),
+            'catalogOptions' => $catalogs->filter()->map(fn (string $system) => $this->catalog->options($system))->filter()->all(),
             'codeLabels' => $labels,
         ];
     }

@@ -3,6 +3,7 @@ import {
     PatientFields,
     patientFormFrom,
     type BiologicalSexOption,
+    type PatientCatalogOptions,
     type PatientCatalogs,
     type PatientCodeLabels,
     type PatientFormData,
@@ -27,11 +28,13 @@ export default function PacientesEdit({
     patient,
     biologicalSexOptions,
     catalogs,
+    catalogOptions,
     codeLabels,
 }: {
     patient: PatientData;
     biologicalSexOptions: BiologicalSexOption[];
     catalogs: PatientCatalogs;
+    catalogOptions: PatientCatalogOptions;
     codeLabels: PatientCodeLabels;
 }) {
     const { data, setData, put, processing, errors } = useForm(patientFormFrom(patient));
@@ -56,6 +59,7 @@ export default function PacientesEdit({
                             setData={setData}
                             biologicalSexOptions={biologicalSexOptions}
                             catalogs={catalogs}
+                            catalogOptions={catalogOptions}
                             codeLabels={codeLabels}
                         />
 

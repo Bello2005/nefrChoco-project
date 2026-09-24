@@ -43,7 +43,22 @@ return [
         // (docs/manual-tecnico.md, "Catálogos oficiales").
         'divipola' => ['name' => 'DIVIPOLA (municipios)', 'csv_columns' => ['code' => 'codigo', 'display' => 'nombre']],
         'eapb' => ['name' => 'EAPB', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
-        'tipo_documento' => ['name' => 'Tipos de documento', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
+        // Del CodeSystem ColombianPersonIdentifier de la guía RDA 1.0.0. Sus
+        // códigos de primer nivel (RNEC, CANCILLERIA, DIAN, OTROS) agrupan por
+        // entidad y no son tipos de documento: leaves_only los deja inactivos.
+        'tipo_documento' => ['name' => 'Tipos de documento', 'csv_columns' => ['code' => null, 'display' => null], 'leaves_only' => true],
+
+        // CodeSystem de la guía de implementación RDA 1.0.0 del IHCE
+        // (https://fhir.minsalud.gov.co/rda/CodeSystem/...), copiados por Bello
+        // de vulcano.ihcecol.gov.co el 24-sep-2026. Se importan como JSON.
+        'identidad_genero' => ['name' => 'Identidad de género'],
+        'etnia' => ['name' => 'Pertenencia étnica'],
+        'discapacidad' => ['name' => 'Discapacidad'],
+        'zona_residencia' => ['name' => 'Zona de residencia'],
+        'ocupacion' => ['name' => 'Ocupación (CIUO-88 A.C.)'],
+        'finalidad_consulta' => ['name' => 'Finalidad de la consulta'],
+        'causa_externa' => ['name' => 'Causa externa'],
+        'tipo_diagnostico' => ['name' => 'Tipo de diagnóstico principal'],
     ],
 
     /*
@@ -68,35 +83,40 @@ return [
     |
     | Clave del catálogo importado con catalogos:importar. Mientras el
     | catálogo no esté importado, o la clave sea null, el campo se guarda como
-    | texto libre. [CONFIRMAR] las claves de los CodeSystem del paquete FHIR
-    | del IHCE que correspondan: no se escribieron de memoria.
+    | texto libre. Las claves salen de los CodeSystem de la guía RDA 1.0.0.
     */
     'patient_fields' => [
         'document_type' => 'tipo_documento',
         'municipality_code' => 'divipola',
         'eapb_code' => 'eapb',
-        'gender_identity' => null, // TODO: catálogo del IHCE [CONFIRMAR]
-        'ethnicity' => null, // TODO: catálogo del IHCE [CONFIRMAR]
-        'disability' => null, // TODO: catálogo del IHCE [CONFIRMAR]
-        'occupation' => null, // TODO: catálogo de ocupaciones [CONFIRMAR]
-        'residence_zone' => null, // TODO: catálogo del IHCE [CONFIRMAR]
-        'affiliation_type' => null, // TODO: régimen / tipo de usuario [CONFIRMAR]
+        'gender_identity' => 'identidad_genero',
+        'ethnicity' => 'etnia',
+        'disability' => 'discapacidad',
+        'occupation' => 'ocupacion',
+        'residence_zone' => 'zona_residencia',
+        // La guía RDA 1.0.0 no trae un CodeSystem de régimen o tipo de afiliación.
+        'affiliation_type' => null, // TODO: catálogo oficial [CONFIRMAR]
     ],
 
     /*
-    | Catálogos del registro de la atención (RIPS, Res. 948 de 2026).
-    | [CONFIRMAR] las claves contra el anexo técnico de la Res. 948: no se
-    | escribieron de memoria. Mientras sean null, el campo se guarda como texto.
+    | Catálogos del registro de la atención (RDA y RIPS). Son los CodeSystem
+    | RIPS*Version2 que usa la guía RDA 1.0.0. [CONFIRMAR] contra el anexo
+    | técnico de la Res. 948 de 2026 que siguen vigentes para los RIPS.
+    | Mientras el catálogo no esté importado, el campo se guarda como texto.
     */
     'attention_fields' => [
-        'diagnosis_type' => null, // [CONFIRMAR] tipo de diagnóstico principal
-        'purpose' => null, // [CONFIRMAR] finalidad de la consulta
-        'external_cause' => null, // [CONFIRMAR] causa externa
+        'diagnosis_type' => 'tipo_diagnostico',
+        'purpose' => 'finalidad_consulta',
+        'external_cause' => 'causa_externa',
     ],
 
     'storage_path' => 'catalogos',
 
     // Resultados del buscador: pocos, porque viajan a un teléfono con mala señal.
     'search_limit' => 20,
+
+    // Hasta cuántos códigos un catálogo se muestra como lista desplegable en
+    // vez de buscador (CodeCatalog::options).
+    'select_max' => 40,
 
 ];

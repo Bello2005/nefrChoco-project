@@ -1,9 +1,10 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NativeSelect } from '@/components/ui/native-select';
 import { Loader2, Search, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-interface Option {
+export interface CodeOption {
     code: string;
     display: string;
 }
@@ -18,6 +19,8 @@ interface Props {
     onChange: (code: string, display: string) => void;
     placeholder?: string;
     invalid?: boolean;
+    /** Catálogo pequeño completo: se muestra como lista en vez de buscador. */
+    options?: CodeOption[] | null;
 }
 
 /**
@@ -28,9 +31,42 @@ interface Props {
  * persona deje de escribir antes de consultar, para no gastar datos con cada
  * tecla en una conexión lenta.
  */
-export function CodeSelect({ id, system, value, label, onChange, placeholder = 'Escribe para buscar…', invalid }: Props) {
+export function CodeSelect(props: Props) {
+    if (props.options) {
+        return <CodeList {...props} options={props.options} />;
+    }
+
+    return <CodeSearch {...props} />;
+}
+
+/**
+ * Catálogo pequeño (zona, etnia, finalidad…): lista desplegable. Con dos o
+ * cinco opciones nadie debería tener que adivinar qué escribir.
+ */
+function CodeList({ id, value, onChange, invalid, options }: Props & { options: CodeOption[] }) {
+    return (
+        <NativeSelect
+            id={id}
+            value={value}
+            aria-invalid={invalid || undefined}
+            onChange={(e) => {
+                const option = options.find((item) => item.code === e.target.value);
+                onChange(option?.code ?? '', option?.display ?? '');
+            }}
+        >
+            <option value="">Selecciona una opción</option>
+            {options.map((option) => (
+                <option key={option.code} value={option.code}>
+                    {option.display}
+                </option>
+            ))}
+        </NativeSelect>
+    );
+}
+
+function CodeSearch({ id, system, value, label, onChange, placeholder = 'Escribe para buscar…', invalid }: Props) {
     const [query, setQuery] = useState('');
-    const [results, setResults] = useState<Option[]>([]);
+    const [results, setResults] = useState<CodeOption[]>([]);
     const [loading, setLoading] = useState(false);
     const [failed, setFailed] = useState(false);
     const [selectedLabel, setSelectedLabel] = useState<string | null>(label ?? null);
@@ -51,7 +87,7 @@ export function CodeSelect({ id, system, value, label, onChange, placeholder = '
                     headers: { Accept: 'application/json' },
                     credentials: 'same-origin',
                 });
-                const body = (await response.json()) as { data: Option[] };
+                const body = (await response.json()) as { data: CodeOption[] };
                 if (request === latest.current) setResults(body.data ?? []);
             } catch {
                 if (request === latest.current) setFailed(true);

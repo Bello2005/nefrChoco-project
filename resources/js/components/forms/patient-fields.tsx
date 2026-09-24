@@ -1,4 +1,4 @@
-import { CodeSelect } from '@/components/forms/code-select';
+import { CodeSelect, type CodeOption } from '@/components/forms/code-select';
 import { Field } from '@/components/forms/field';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -44,6 +44,9 @@ export type PatientCatalogs = Partial<Record<keyof PatientFormData, string | nul
 
 export type PatientCodeLabels = Partial<Record<keyof PatientFormData, string>>;
 
+/** Campo → catálogo pequeño completo, para mostrarlo como lista. */
+export type PatientCatalogOptions = Partial<Record<keyof PatientFormData, CodeOption[]>>;
+
 type PatientSource = Partial<Record<keyof PatientFormData, string | null>> & { birth_date?: string | null };
 
 export function patientFormFrom(patient?: PatientSource): PatientFormData {
@@ -82,10 +85,11 @@ interface Props {
     setData: (key: keyof PatientFormData, value: string) => void;
     biologicalSexOptions: BiologicalSexOption[];
     catalogs: PatientCatalogs;
+    catalogOptions?: PatientCatalogOptions;
     codeLabels?: PatientCodeLabels;
 }
 
-/** Un dato codificado: buscador si hay catálogo, texto si no. */
+/** Un dato codificado: lista o buscador si hay catálogo, texto si no. */
 function CodedField({ field, label, hint, props }: { field: keyof PatientFormData; label: string; hint?: string; props: Props }) {
     const system = props.catalogs[field];
 
@@ -97,6 +101,7 @@ function CodedField({ field, label, hint, props }: { field: keyof PatientFormDat
                     system={system}
                     value={props.data[field]}
                     label={props.codeLabels?.[field]}
+                    options={props.catalogOptions?.[field]}
                     onChange={(code) => props.setData(field, code)}
                     invalid={Boolean(props.errors[field])}
                 />

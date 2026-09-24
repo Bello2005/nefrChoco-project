@@ -3,6 +3,7 @@ import {
     PatientFields,
     patientFormFrom,
     type BiologicalSexOption,
+    type PatientCatalogOptions,
     type PatientCatalogs,
     type PatientCodeLabels,
 } from '@/components/forms/patient-fields';
@@ -23,10 +24,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 interface Props {
     biologicalSexOptions: BiologicalSexOption[];
     catalogs: PatientCatalogs;
+    catalogOptions: PatientCatalogOptions;
     codeLabels: PatientCodeLabels;
 }
 
-export default function PacientesCreate({ biologicalSexOptions, catalogs, codeLabels }: Props) {
+export default function PacientesCreate({ biologicalSexOptions, catalogs, catalogOptions, codeLabels }: Props) {
     const { data, setData, post, processing, errors } = useForm(patientFormFrom());
 
     const submit: FormEventHandler = (e) => {
@@ -53,6 +55,7 @@ export default function PacientesCreate({ biologicalSexOptions, catalogs, codeLa
                             setData={setData}
                             biologicalSexOptions={biologicalSexOptions}
                             catalogs={catalogs}
+                            catalogOptions={catalogOptions}
                             codeLabels={codeLabels}
                         />
 

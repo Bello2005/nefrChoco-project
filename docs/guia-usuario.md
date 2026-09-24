@@ -124,7 +124,7 @@ Cada entrada de historia dice **Registrada por** y el nombre de quien la escribi
 
 **Nombres y apellidos por separado.** La ficha pide primer nombre, segundo nombre, primer apellido y segundo apellido, tal como aparecen en el documento: la historia clínica interoperable los compara con el registro nacional.
 
-**Datos con buscador.** Cuando la IPS ya importó los catálogos oficiales, el tipo de documento, el municipio y el asegurador (EAPB) se eligen con un buscador: escribe parte del nombre y toca el que corresponde. Si todavía no están importados, se escriben como antes.
+**Datos con lista o buscador.** Cuando la IPS ya importó los catálogos oficiales, los datos cortos (tipo de documento, zona, etnia, identidad de género, discapacidad) se eligen de una lista. Los largos (municipio, asegurador u ocupación) tienen un buscador: escribe parte del nombre, con o sin tildes, y toca el que corresponde. Si todavía no están importados, se escriben como antes.
 
 **Datos del asegurador y sociodemográficos.** Al final de la ficha están EAPB, tipo de afiliación, zona de residencia, ocupación, pertenencia étnica, discapacidad e identidad de género. Si no los sabes todavía, puedes dejarlos vacíos y completarlos después.
 

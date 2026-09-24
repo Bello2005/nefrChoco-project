@@ -1,0 +1,15 @@
+{
+  "resourceType": "CodeSystem",
+  "url": "https://ejemplo.invalid/CodeSystem/jerarquia-prueba",
+  "version": "prueba",
+  "title": "CodeSystem de prueba con agrupadores (FALSO)",
+  "concept": [
+    {"code": "TESTGRUPO1", "display": "Entidad que agrupa, no es un documento (FALSO)", "concept": [
+      {"code": "TESTDOC1", "display": "Documento de prueba uno (FALSO)"},
+      {"code": "TESTDOC2", "display": "Documento de prueba dos (FALSO)"}
+    ]},
+    {"code": "TESTGRUPO2", "display": "Otra entidad que agrupa (FALSO)", "concept": [
+      {"code": "TESTDOC3", "display": "Documento de prueba tres (FALSO)"}
+    ]}
+  ]
+}

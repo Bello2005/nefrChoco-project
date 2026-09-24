@@ -212,10 +212,22 @@ Tablas `code_systems` (un catálogo, con versión, fuente, SHA-256 del archivo, 
 | `cups` | CUPS | [Tabla de referencia CUPS de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CUPS) (se exporta a Excel) | Ídem (la clasificación se actualiza por resolución) |
 | `divipola` | Municipios (DIVIPOLA) | [Excel de municipios del DANE](https://geoportal.dane.gov.co/descargas/divipola/DIVIPOLA_Municipios.xlsx) (hay que aplanarlo, ver abajo) | Cuando el DANE publique cambios |
 | `eapb` | EAPB | [Tabla de referencia CodigoEAPByNit de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CodigoEAPByNit) (se exporta a Excel) | Ídem |
-| `tipo_documento` | Tipos de documento | Tablas de referencia de SISPRO o CodeSystem del paquete FHIR del IHCE | Con cada versión de la guía |
-| (otras) | CodeSystem y ValueSet del RDA | Paquete FHIR `package.tgz` de la guía de implementación del IHCE | Con cada versión de la guía |
+| `tipo_documento` | Tipos de documento | [ColombianPersonIdentifier](https://vulcano.ihcecol.gov.co/CodeSystem-ColombianPersonIdentifier.json), guía RDA 1.0.0 | Con cada versión de la guía |
+| `identidad_genero` | Identidad de género | [ColombianGenderIdentity](https://vulcano.ihcecol.gov.co/CodeSystem-ColombianGenderIdentity.json) | Ídem |
+| `etnia` | Pertenencia étnica | [ColombianEthnicGroup](https://vulcano.ihcecol.gov.co/CodeSystem-ColombianEthnicGroup.json) | Ídem |
+| `discapacidad` | Discapacidad | [ColombianDisabilityClassification](https://vulcano.ihcecol.gov.co/CodeSystem-ColombianDisabilityClassification.json) | Ídem |
+| `zona_residencia` | Zona de residencia | [ColombianResidenceZone](https://vulcano.ihcecol.gov.co/CodeSystem-ColombianResidenceZone.json) | Ídem |
+| `ocupacion` | Ocupación (CIUO-88 A.C.) | [CIUO88AC](https://vulcano.ihcecol.gov.co/CodeSystem-CIUO88AC.json) | Ídem |
+| `finalidad_consulta` | Finalidad de la consulta | [RIPSFinalidadConsultaVersion2](https://vulcano.ihcecol.gov.co/CodeSystem-RIPSFinalidadConsultaVersion2.json) | Ídem; [CONFIRMAR] vigencia para RIPS con la Res. 948 |
+| `causa_externa` | Causa externa | [RIPSCausaExternaVersion2](https://vulcano.ihcecol.gov.co/CodeSystem-RIPSCausaExternaVersion2.json) | Ídem |
+| `tipo_diagnostico` | Tipo de diagnóstico principal | [RIPSTipoDiagnosticoPrincipalVersion2](https://vulcano.ihcecol.gov.co/CodeSystem-RIPSTipoDiagnosticoPrincipalVersion2.json) | Ídem |
+| (otras) | CodeSystem y ValueSet del RDA | Página *Terminologías* de la guía (`vulcano.ihcecol.gov.co/terminologias.html`); cada uno se descarga como `CodeSystem-<id>.json` | Ídem |
 
-Las URLs de CIE-10, CUPS, EAPB y DIVIPOLA se cotejaron con los archivos descargados el 24-sep-2026. Las demás quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anota siempre la fuente en `--fuente` al importar, para que quede registrada.
+Las URLs de CIE-10, CUPS, EAPB, DIVIPOLA y de los CodeSystem de la guía RDA se cotejaron con los archivos descargados el 24-sep-2026. Los CodeSystem del IHCE se importan como JSON, tal cual: `php artisan catalogos:importar etnia storage/app/catalogos/CodeSystem-ColombianEthnicGroup.json`. Antes de importarlos, compara el campo `count` con los códigos que trae el archivo: si no coinciden, la descarga quedó incompleta. Los publica la guía con el canonical `https://fhir.minsalud.gov.co/rda/CodeSystem/...` (queda en `extra.system` de cada código). Las demás quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anota siempre la fuente en `--fuente` al importar, para que quede registrada.
+
+**Códigos que agrupan:** en tipos de documento, `RNEC`, `CANCILLERIA`, `DIAN` y `OTROS` son la entidad que expide y no un tipo de documento. `leaves_only` en `config/catalogs.php` los deja inactivos: se guardan, pero no se pueden elegir. Ocupación (CIUO-88) también es jerárquica y hoy deja elegir cualquier nivel [CONFIRMAR con el perfil de paciente del RDA si exige el de 4 dígitos].
+
+**Lista o buscador:** un catálogo con hasta `select_max` códigos activos (40) se envía completo con la página y se muestra como lista desplegable (`CodeCatalog::options()`): zona, etnia, identidad de género, discapacidad, tipo de documento, finalidad, causa externa y tipo de diagnóstico. Los grandes (CIE-10, CUPS, DIVIPOLA, EAPB, ocupación) usan el buscador.
 
 **Formato de las tablas de SISPRO** (cotejado con CIE-10, CUPS y EAPB): columnas `Tabla`, `Codigo`, `Nombre`, `Descripcion`, `Habilitado` (SI/NO) y varias `Extra_*`. `config/catalogs.php` fija `Codigo` y `Nombre` como código y nombre, y `Habilitado` como la columna que dice si el código se puede usar. Un código con `Habilitado=NO` se guarda **inactivo**: se sigue viendo en los registros viejos, pero no se puede elegir. Las demás columnas quedan en `extra`. La tabla de EAPB trae correos de contacto de funcionarios (`Extra_VI:Email`): no se necesitan, así que se quita esa columna antes de importar.
 
@@ -246,7 +258,7 @@ sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie1
 
 - Campos nuevos en `patients`: `first_name`, `middle_name`, `first_surname`, `second_surname` y `municipality_code` (sin cifrar); `gender_identity`, `ethnicity`, `disability`, `occupation`, `residence_zone`, `eapb_code` y `affiliation_type` (cifrados, con `LogsChangedFields`); `identity_review_pending` e `identity_review_reasons`.
 - `full_name` lo calcula `PatientService` a partir de los nombres. `municipality` se toma del catálogo DIVIPOLA cuando se elige un código.
-- Validación: `config/catalogs.php` → `patient_fields` dice contra qué catálogo se valida cada campo. Si el catálogo no está importado, o la clave es `null` (hoy: identidad de género, etnia, discapacidad, ocupación, zona y tipo de afiliación, pendientes de confirmar contra el paquete FHIR del IHCE), el campo se acepta como texto.
+- Validación: `config/catalogs.php` → `patient_fields` dice contra qué catálogo se valida cada campo. Si el catálogo no está importado, o la clave es `null` (hoy solo el tipo de afiliación: la guía RDA 1.0.0 no trae ese CodeSystem), el campo se acepta como texto.
 - Después de importar `tipo_documento` o `divipola`, corre `php artisan pacientes:revisar-identidad` para mapear las fichas viejas. Nunca pisa lo que ya completó una persona, y el marcador de nombres solo se quita guardando la ficha.
 - Sexo biológico → FHIR: `config/catalogs.php` → `biological_sex_fhir`, tomado del ValueSet `IHCE-SexoBiologico-VS` del paquete oficial.
 
