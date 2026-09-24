@@ -3,7 +3,7 @@
 Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en qué estado está y quién tiene el siguiente paso.
 
 **Estados:** ✅ implementado y probado · 🟡 implementado, pero con valores o textos pendientes de validar (`TODO` o `[CONFIRMAR]`) · ❌ pendiente.
-**Responsables:** **Bello** (desarrollo y servidor) · **IPS** (médica, área jurídica, dirección) · **Tania** (datos institucionales y facturación).
+**Responsables:** **Bello** (desarrollo y servidor) · **IPS** (médica, área jurídica, dirección) · **Tania** (datos institucionales).
 
 > Los números de artículo son los que se citan en los encargos. Donde no hay uno confirmado, la fila dice "—". Esta matriz no reemplaza la revisión del área jurídica de la IPS.
 
@@ -66,10 +66,12 @@ Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en 
 
 ## Resolución 948 de 2026 — RIPS (reemplazó a la 2275 de 2023)
 
+NefroChocó no factura. De esta norma solo usa las tablas de referencia, para que los datos de la atención queden codificados igual que en el RIPS y el RDA.
+
 | Requisito | Dónde se cumple | Prueba Pest | Estado | Responsable |
 |---|---|---|---|---|
 | Datos de la atención codificados (diagnóstico, procedimiento, finalidad, causa externa) | Registro estructurado de la atención, con los catálogos RIPS*Version2 de la guía RDA | `Atencion/RegistroAtencionTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 tablas confirmadas en el Documento técnico 1 (v001, 4-jun-2026); falta filtrar los códigos válidos para consultas con las tablas de SISPRO | Bello |
-| Exportar los datos de las atenciones para facturación (camino b) | — | — | ❌ prompt 13: el anexo ya está; falta la confirmación de Tania | Tania / Bello |
+| Generar o exportar RIPS para facturación | — | — | ➖ No aplica: la plataforma es de teleconsulta y seguimiento, no factura. Los RIPS los arma el sistema de facturación de la IPS | — |
 
 ## Resolución 1442 de 2024 y Resolución 1657 de 2025 — CIE-11
 
@@ -85,7 +87,7 @@ Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en 
 
 ## Pendientes que dependen de terceros
 
-- **Tania:** razón social, NIT, código REPS, código de sede y municipio de la sede. Confirmar quién factura (hoy: camino b, exportación).
+- **Tania:** razón social, NIT, código REPS, código de sede y municipio de la sede.
 - **Médica de la IPS:** umbrales clínicos, plazos de seguimiento por riesgo, protocolo de escalamiento, sexo biológico indeterminado o desconocido, y los textos del consentimiento.
 - **Área jurídica:** textos del consentimiento y de "Mis consentimientos", y la consulta de historias de otros prestadores.
 - **Bello:** descargar e importar los catálogos oficiales, subir los archivos del IHCE y de la Res. 948 a la rama `fuentes-oficiales`, y generar la llave `age` de los respaldos junto con la IPS.
