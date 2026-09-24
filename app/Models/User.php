@@ -62,6 +62,7 @@ class User extends Authenticatable
             'two_factor_recovery_codes' => 'encrypted:array',
             'two_factor_confirmed_at' => 'datetime',
             'vital_signs_guide_dismissed_at' => 'datetime',
+            'deactivated_at' => 'datetime',
         ];
     }
 
@@ -76,6 +77,17 @@ class User extends Authenticatable
     {
         return $this->two_factor_secret !== null
             && $this->two_factor_confirmed_at !== null;
+    }
+
+    /**
+     * La cuenta existe para todo lo que registró, pero ya no puede entrar.
+     *
+     * deactivated_at queda fuera de $fillable: se cambia solo desde
+     * UserManagementService, que deja el rastro en la auditoría.
+     */
+    public function isDeactivated(): bool
+    {
+        return $this->deactivated_at !== null;
     }
 
     public function isStaff(): bool

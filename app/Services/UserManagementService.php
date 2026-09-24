@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Patient;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class UserManagementService
 {
@@ -44,9 +45,54 @@ class UserManagementService
         return $user;
     }
 
-    public function delete(User $user): void
+    /**
+     * Quita el acceso sin borrar la cuenta.
+     *
+     * Borrarla arrastraría en la base sus citas, sus notas y las mediciones
+     * que registró. Se invalida el remember_token para que el "recordarme" de
+     * cualquier dispositivo deje de servir; las sesiones abiertas las cierra
+     * EnsureAccountIsActive en la siguiente petición.
+     *
+     * @throws \DomainException si el administrador intenta desactivarse a sí mismo
+     */
+    public function deactivate(User $user, User $admin): void
     {
-        $user->delete();
+        if ($user->is($admin)) {
+            throw new \DomainException('No puedes desactivar tu propia cuenta.');
+        }
+
+        if ($user->isDeactivated()) {
+            return;
+        }
+
+        $user->forceFill([
+            'deactivated_at' => now(),
+            'remember_token' => Str::random(60),
+        ])->save();
+
+        $this->logAccountChange($user, 'deactivated', 'Desactivó una cuenta');
+    }
+
+    public function reactivate(User $user): void
+    {
+        if (! $user->isDeactivated()) {
+            return;
+        }
+
+        $user->forceFill(['deactivated_at' => null])->save();
+
+        $this->logAccountChange($user, 'reactivated', 'Reactivó una cuenta');
+    }
+
+    /**
+     * Quién, a quién y cuándo; sin valores, como el resto del rastro.
+     */
+    private function logAccountChange(User $user, string $event, string $description): void
+    {
+        activity('usuarios')
+            ->performedOn($user)
+            ->event($event)
+            ->log($description);
     }
 
     /**

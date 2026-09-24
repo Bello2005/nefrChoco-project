@@ -9,6 +9,8 @@ use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Patient;
 use App\Models\User;
 use App\Services\UserManagementService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +20,7 @@ class UserController extends Controller
         private readonly UserManagementService $userManagementService,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $users = User::with('roles')
             ->orderBy('name')
@@ -28,6 +30,10 @@ class UserController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->roles->first()?->name,
+                'deactivated' => $user->isDeactivated(),
+                // Sin botón para uno mismo: un admin que se desactiva por error
+                // podría dejar a la IPS sin nadie que administre.
+                'isSelf' => $user->is($request->user()),
             ]);
 
         return Inertia::render('admin/usuarios/index', [
@@ -72,11 +78,22 @@ class UserController extends Controller
         return to_route('admin.usuarios.index')->with('success', 'Usuario actualizado correctamente.');
     }
 
-    public function destroy(User $user)
+    public function deactivate(Request $request, User $user): RedirectResponse
     {
-        $this->userManagementService->delete($user);
+        try {
+            $this->userManagementService->deactivate($user, $request->user());
+        } catch (\DomainException $exception) {
+            return to_route('admin.usuarios.index')->with('error', $exception->getMessage());
+        }
 
-        return to_route('admin.usuarios.index')->with('success', 'Usuario eliminado correctamente.');
+        return to_route('admin.usuarios.index')->with('success', "{$user->name} quedó desactivada. Lo que registró se conserva.");
+    }
+
+    public function reactivate(User $user): RedirectResponse
+    {
+        $this->userManagementService->reactivate($user);
+
+        return to_route('admin.usuarios.index')->with('success', "{$user->name} puede volver a entrar.");
     }
 
     /**

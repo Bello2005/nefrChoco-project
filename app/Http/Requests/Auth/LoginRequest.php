@@ -50,6 +50,17 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Se revisa después de comprobar la contraseña, no antes: así el
+        // mensaje de cuenta desactivada no sirve para averiguar qué correos
+        // existen en la plataforma.
+        if (Auth::user()->isDeactivated()) {
+            Auth::guard('web')->logout();
+
+            throw ValidationException::withMessages([
+                'email' => __('auth.deactivated'),
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

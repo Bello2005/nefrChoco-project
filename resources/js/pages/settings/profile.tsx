@@ -3,7 +3,6 @@ import { Transition } from '@headlessui/react';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
-import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -19,7 +18,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function Profile({ mustVerifyEmail, canChangeEmail, status }: { mustVerifyEmail: boolean; canChangeEmail: boolean; status?: string }) {
+export default function Profile({
+    mustVerifyEmail,
+    canChangeEmail,
+    status,
+    dataRequestEmail,
+}: {
+    mustVerifyEmail: boolean;
+    canChangeEmail: boolean;
+    status?: string;
+    // Solo llega para el rol paciente; el personal no tiene este canal aquí.
+    dataRequestEmail: string | null;
+}) {
     const { auth } = usePage<SharedData>().props;
 
     const { data, setData, patch, errors, processing, recentlySuccessful } = useForm({
@@ -125,7 +135,20 @@ export default function Profile({ mustVerifyEmail, canChangeEmail, status }: { m
                     </form>
                 </div>
 
-                <DeleteUser />
+                {/* Reemplaza a "Eliminar cuenta": borrarla arrastraba lo que la persona
+                    registró. TODO: validar con el área jurídica de la IPS */}
+                {dataRequestEmail && (
+                    <div className="space-y-2">
+                        <HeadingSmall title="Tus datos personales" />
+                        <p className="text-muted-foreground text-sm">
+                            Si quieres que la IPS corrija o elimine tus datos personales, escribe a{' '}
+                            <a href={`mailto:${dataRequestEmail}`} className="text-foreground font-semibold underline underline-offset-4">
+                                {dataRequestEmail}
+                            </a>
+                            .
+                        </p>
+                    </div>
+                )}
             </SettingsLayout>
         </AppLayout>
     );

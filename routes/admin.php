@@ -16,7 +16,10 @@ Route::middleware(['auth', 'role:admin', 'throttle:zona-clinica'])->prefix('admi
     Route::post('usuarios', [UserController::class, 'store'])->name('usuarios.store');
     Route::get('usuarios/{user}/editar', [UserController::class, 'edit'])->name('usuarios.edit');
     Route::put('usuarios/{user}', [UserController::class, 'update'])->name('usuarios.update');
-    Route::delete('usuarios/{user}', [UserController::class, 'destroy'])->name('usuarios.destroy');
+    // Sin destroy: borrar una cuenta arrastraba lo que la persona registró. Se
+    // desactiva, y la cuenta sigue existiendo como autora de sus registros.
+    Route::patch('usuarios/{user}/desactivar', [UserController::class, 'deactivate'])->name('usuarios.desactivar');
+    Route::patch('usuarios/{user}/reactivar', [UserController::class, 'reactivate'])->name('usuarios.reactivar');
 
     // El padrón se consulta y edita desde la zona médica; aquí solo se custodia
     // y se elimina, que es lo que el rol médico no puede hacer.

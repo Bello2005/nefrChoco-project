@@ -25,12 +25,23 @@ interface UserRow {
     name: string;
     email: string;
     role: string | null;
+    deactivated: boolean;
+    isSelf: boolean;
 }
 
 export default function UsuariosIndex({ users }: { users: UserRow[] }) {
-    const handleDelete = (id: number) => {
-        if (confirm('¿Eliminar este usuario? Esta acción no se puede deshacer.')) {
-            router.delete(route('admin.usuarios.destroy', id));
+    // Las cuentas no se borran: borrar a un médico arrastraba sus citas y sus
+    // notas. Desactivar solo le quita el acceso.
+    // TODO doc: guía de usuario — Desactivar/Reactivar en Admin → Usuarios; ya no hay "Eliminar cuenta" en Ajustes.
+    const handleDeactivate = (user: UserRow) => {
+        if (confirm(`¿Desactivar a ${user.name}? No podrá entrar, pero todo lo que registró se conserva.`)) {
+            router.patch(route('admin.usuarios.desactivar', user.id));
+        }
+    };
+
+    const handleReactivate = (user: UserRow) => {
+        if (confirm(`¿Reactivar a ${user.name}? Podrá volver a entrar con su contraseña.`)) {
+            router.patch(route('admin.usuarios.reactivar', user.id));
         }
     };
 
@@ -77,6 +88,7 @@ export default function UsuariosIndex({ users }: { users: UserRow[] }) {
                                                     {initialsFrom(user.name)}
                                                 </span>
                                                 <span className="font-semibold">{user.name}</span>
+                                                {user.deactivated && <Badge variant="outline">Desactivada</Badge>}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground text-sm">{user.email}</TableCell>
@@ -92,14 +104,22 @@ export default function UsuariosIndex({ users }: { users: UserRow[] }) {
                                                 <Button variant="outline" size="sm" asChild>
                                                     <Link href={route('admin.usuarios.edit', user.id)}>Editar</Link>
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-destructive hover:bg-destructive-soft"
-                                                    onClick={() => handleDelete(user.id)}
-                                                >
-                                                    Eliminar
-                                                </Button>
+                                                {user.deactivated ? (
+                                                    <Button variant="ghost" size="sm" onClick={() => handleReactivate(user)}>
+                                                        Reactivar
+                                                    </Button>
+                                                ) : (
+                                                    !user.isSelf && (
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="text-destructive hover:bg-destructive-soft"
+                                                            onClick={() => handleDeactivate(user)}
+                                                        >
+                                                            Desactivar
+                                                        </Button>
+                                                    )
+                                                )}
                                             </div>
                                         </TableCell>
                                     </TableRow>

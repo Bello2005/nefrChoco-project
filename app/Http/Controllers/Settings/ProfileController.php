@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Enums\Role;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -22,6 +22,14 @@ class ProfileController extends Controller
             'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
             'canChangeEmail' => ! $request->user()->isStaff(),
             'status' => $request->session()->get('status'),
+            // Sin "Eliminar cuenta": borrarla arrastraba lo que la persona
+            // registró. El paciente conserva su derecho a pedir que se
+            // corrijan o eliminen sus datos (Ley 1581 de 2012), y lo ejerce
+            // ante la IPS, que es la responsable del tratamiento.
+            // TODO: validar con el área jurídica de la IPS
+            'dataRequestEmail' => $request->user()->hasRole(Role::Paciente->value)
+                ? config('privacy.contact_email')
+                : null,
         ]);
     }
 
@@ -39,26 +47,5 @@ class ProfileController extends Controller
         $request->user()->save();
 
         return to_route('profile.edit');
-    }
-
-    /**
-     * Delete the user's account.
-     */
-    public function destroy(Request $request): RedirectResponse
-    {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
-        $user = $request->user();
-
-        Auth::logout();
-
-        $user->delete();
-
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/');
     }
 }

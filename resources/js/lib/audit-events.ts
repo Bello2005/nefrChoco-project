@@ -17,6 +17,8 @@ export const eventLabels: Record<string, string> = {
     doble_factor_desactivado: 'Desactivó doble factor',
     teleconsulta_autorizada: 'Autorizó teleconsulta',
     autorizado: 'Autorizó tratamiento de datos',
+    deactivated: 'Desactivó cuenta',
+    reactivated: 'Reactivó cuenta',
 };
 
 export const eventVerbs: Record<string, string> = {
@@ -28,6 +30,8 @@ export const eventVerbs: Record<string, string> = {
     doble_factor_desactivado: 'desactivó el doble factor',
     teleconsulta_autorizada: 'autorizó la teleconsulta',
     autorizado: 'autorizó el tratamiento de sus datos',
+    deactivated: 'desactivó la cuenta',
+    reactivated: 'reactivó la cuenta',
 };
 
 /**
