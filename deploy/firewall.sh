@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Activa ufw en el VPS de dirsoft.cloud sin cortar el acceso SSH.
+# Activa ufw en el VPS de pruebas sin cortar el acceso SSH.
 # Deja pasar exactamente lo que ya estaba en uso al analizar el servidor:
 # 22 (SSH), 80/443 (todos los sitios detrás de nginx) y 10000/udp (Jitsi).
 #
@@ -27,5 +27,5 @@ echo "Firewall activo. Reglas actuales:"
 ufw status verbose
 
 echo ""
-echo "AHORA: abre una terminal NUEVA y confirma que 'ssh dirsoft' todavía"
+echo "AHORA: abre una terminal NUEVA y confirma que tu acceso por ssh todavía"
 echo "funciona antes de continuar con el despliegue."

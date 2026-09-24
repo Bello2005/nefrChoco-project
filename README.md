@@ -13,7 +13,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | [docs/arquitectura.md](docs/arquitectura.md) | Diagramas, modelo de datos y el porqué de cada decisión |
 | [docs/manual-tecnico.md](docs/manual-tecnico.md) | Instalar, operar y mantener |
 | [docs/guia-usuario.md](docs/guia-usuario.md) | Cómo se usa, por rol |
-| [docs/despliegue.md](docs/despliegue.md) | Desplegar en el VPS de pruebas de dirsoft.cloud (nginx + PHP-FPM + PostgreSQL, junto al Jitsi autoalojado), respaldos cifrados y Hora Legal |
+| [docs/despliegue.md](docs/despliegue.md) | Desplegar en el VPS de pruebas (nginx + PHP-FPM + PostgreSQL, junto al Jitsi autoalojado), respaldos cifrados y Hora Legal |
 | [docs/cumplimiento-normativo.md](docs/cumplimiento-normativo.md) | Matriz norma → requisito → dónde se cumple → prueba → estado → responsable |
 | [docs/protocolo-baja-conectividad.md](docs/protocolo-baja-conectividad.md) | Plantilla de contingencia por mala señal y tabla de pruebas reales (por validar con la IPS) |
 | [docs/protocolo-escalamiento.md](docs/protocolo-escalamiento.md) | Plantilla de escalamiento del telemonitoreo (por validar con la médica) |
@@ -175,7 +175,7 @@ npm run test
 
 ## Pendiente para producción
 
-- Servidor de producción: lo monta la IPS. El VPS de dirsoft.cloud es solo de pruebas, con datos de demostración. Los scripts de [`deploy/`](deploy/) sirven de guía, ver [docs/despliegue.md](docs/despliegue.md)
+- Servidor de producción: lo monta la IPS. El VPS actual es solo de pruebas, con datos de demostración. Los scripts de [`deploy/`](deploy/) sirven de guía, ver [docs/despliegue.md](docs/despliegue.md)
 - Apuntar `JITSI_DOMAIN` (en Render y en el VPS) al Jitsi ya autoalojado (`jitsi.bello.works`)
 - Sumar autenticación JWT a la sala autoalojada: sin ella, el nombre de sala no adivinable es lo único que impide entrar — con JWT, solo el médico y el paciente de la cita podrían hacerlo
 - Definir una Content-Security-Policy una vez que el video sea de origen propio

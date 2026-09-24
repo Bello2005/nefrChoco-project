@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Despliega IPS NefroChocó en el VPS de dirsoft.cloud, nativo
+# Despliega IPS NefroChocó en el VPS de pruebas, nativo
 # (nginx + PHP-FPM + PostgreSQL), igual que el resto de sitios del servidor.
 # Docker se deja intacto: solo lo usa Jitsi, y este script no lo toca.
 #

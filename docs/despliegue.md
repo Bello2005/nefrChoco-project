@@ -1,6 +1,6 @@
-# Despliegue — VPS de pruebas de dirsoft.cloud
+# Despliegue — VPS de pruebas
 
-**Es un entorno de pruebas.** El VPS de dirsoft.cloud (`nefrochoco.bello.works`) sirve para desarrollar y mostrar la plataforma con datos de demostración. La IPS montará su propio servidor de producción: los scripts de `deploy/` sirven de guía, pero la llave de respaldos, la Hora Legal y los datos reales se configuran allá.
+**Es un entorno de pruebas.** El VPS de pruebas (`nefrochoco.bello.works`) sirve para desarrollar y mostrar la plataforma con datos de demostración. La IPS montará su propio servidor de producción: los scripts de `deploy/` sirven de guía, pero la llave de respaldos, la Hora Legal y los datos reales se configuran allá.
 
 Cómo queda IPS NefroChocó corriendo en el mismo VPS (Hostinger, Ubuntu 24.04) donde ya vive `jitsi.bello.works`, y por qué se decidió así.
 
@@ -8,7 +8,7 @@ Cómo queda IPS NefroChocó corriendo en el mismo VPS (Hostinger, Ubuntu 24.04) 
 
 ## Por qué nativo y no Docker
 
-El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativos; Docker solo se usa para el stack oficial de Jitsi (`docker-jitsi-meet`), porque así es como Jitsi se distribuye. Meter la app en un contenedor habría duplicado PHP-FPM y PostgreSQL sin necesidad, en una máquina de 2 vCPU / 8 GB compartida entre varios clientes. Un sitio nativo más, siguiendo el mismo patrón que ya usan `agrolink`, `granja`, `quantum`, `visitchoco`, etc., es lo que menos sorpresas trae.
+El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativos; Docker solo se usa para el stack oficial de Jitsi (`docker-jitsi-meet`), porque así es como Jitsi se distribuye. Meter la app en un contenedor habría duplicado PHP-FPM y PostgreSQL sin necesidad, en una máquina de 2 vCPU / 8 GB compartida entre varios clientes. Un sitio nativo más, con el mismo patrón que los otros sitios del servidor, es lo que menos sorpresas trae.
 
 ## Qué hacen los scripts
 
@@ -39,7 +39,7 @@ El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativo
 
 ## Si el navegador dice "La conexión no es privada"
 
-Prueba desde el servidor: `curl -svI https://nefrochoco.bello.works 2>&1 | grep subject`. Si el `subject` es **otro sitio** (por ejemplo `agrolink.dirsoft.cloud`), nginx no tiene el bloque 443 de NefroChocó y está entregando el certificado de otro sitio del servidor. Pasaba en versiones viejas de `deploy.sh`: el paso 8 reescribía el sitio de nginx sin el 443 y el paso 9 no volvía a instalarlo. Arreglo inmediato, sin pedir certificado nuevo:
+Prueba desde el servidor: `curl -svI https://nefrochoco.bello.works 2>&1 | grep subject`. Si el `subject` es **otro sitio** (el dominio de otro sitio alojado en el mismo servidor), nginx no tiene el bloque 443 de NefroChocó y está entregando el certificado de otro sitio del servidor. Pasaba en versiones viejas de `deploy.sh`: el paso 8 reescribía el sitio de nginx sin el 443 y el paso 9 no volvía a instalarlo. Arreglo inmediato, sin pedir certificado nuevo:
 
 ```bash
 sudo certbot --nginx -d nefrochoco.bello.works --non-interactive --redirect --keep-until-expiring
@@ -123,11 +123,13 @@ Los volcados contienen las columnas cifradas **tal como están en la base: cifra
 
 ### Restaurar un respaldo, paso a paso
 
+En los comandos, `servidor` es tu acceso SSH al VPS (el alias o `usuario@IP` que uses).
+
 El volcado se descifra en el computador que tiene la llave privada y viaja por SSH directo a `pg_restore`. **Nunca queda en claro en el disco de ninguno de los dos equipos.**
 
 1. Copia el respaldo que vas a usar al computador de la IPS:
    ```bash
-   scp dirsoft:/var/backups/nefrochoco/daily/nefrochoco-AAAA-MM-DD_HHMMSS.dump.age .
+   scp servidor:/var/backups/nefrochoco/daily/nefrochoco-AAAA-MM-DD_HHMMSS.dump.age .
    ```
 2. En el servidor, **respalda primero el estado actual** (si algo sale mal, vuelves a él) y pon la app en mantenimiento:
    ```bash
@@ -137,7 +139,7 @@ El volcado se descifra en el computador que tiene la llave privada y viaja por S
 3. Desde el computador de la IPS, descifra y restaura en un solo paso:
    ```bash
    age -d -i nefrochoco-respaldos.key nefrochoco-AAAA-MM-DD_HHMMSS.dump.age \
-     | ssh dirsoft 'sudo -u postgres pg_restore --clean --if-exists -d nefrochoco'
+     | ssh servidor 'sudo -u postgres pg_restore --clean --if-exists -d nefrochoco'
    ```
 4. Comprueba que la `APP_KEY` del `.env` es la misma que había cuando se hizo ese respaldo, y levanta la app:
    ```bash
@@ -154,7 +156,7 @@ Una vez al mes se restaura el respaldo más reciente en una **base temporal**, s
 sudo -u postgres createdb nefrochoco_prueba_restauracion
 # Desde el computador de la IPS
 age -d -i nefrochoco-respaldos.key ULTIMO.dump.age \
-  | ssh dirsoft 'sudo -u postgres pg_restore -d nefrochoco_prueba_restauracion'
+  | ssh servidor 'sudo -u postgres pg_restore -d nefrochoco_prueba_restauracion'
 # En el servidor: contar pacientes en las dos bases y comparar
 sudo -u postgres psql -d nefrochoco_prueba_restauracion -Atc 'select count(*) from patients'
 sudo -u postgres psql -d nefrochoco -Atc 'select count(*) from patients'
