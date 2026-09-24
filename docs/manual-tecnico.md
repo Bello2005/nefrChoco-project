@@ -179,7 +179,7 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 
 ## Pendiente para producción
 
-- **Desplegar en el VPS** (Ubuntu, Nginx + PHP-FPM + PostgreSQL).
+- **Servidor de producción:** lo monta la IPS. El VPS de dirsoft.cloud es solo de pruebas, con datos de demostración (ver `docs/despliegue.md`).
 - **Apuntar `JITSI_DOMAIN` en Render** al Jitsi ya autoalojado (`jitsi.bello.works`, versión `stable-11248`). Hoy producción sigue en `meet.jit.si`, que es público y de terceros.
 - **Sumar autenticación JWT a la sala autoalojada.** Hoy lo único que impide entrar a quien no sea médico o paciente es que el nombre de sala es un UUID no adivinable; con JWT, solo el médico y el paciente de la cita podrían hacerlo de verdad.
 - **Validar el contenido clínico** con la médica de la IPS. Está marcado en el código con `TODO: validar con la médica de la IPS`: los umbrales de `config/clinical_support.php`, los rangos de `config/vital_signs.php` y los textos de `EducationalContentSeeder` y de la guía de signos vitales.

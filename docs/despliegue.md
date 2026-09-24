@@ -1,6 +1,10 @@
-# Despliegue — VPS de dirsoft.cloud
+# Despliegue — VPS de pruebas de dirsoft.cloud
+
+**Es un entorno de pruebas.** El VPS de dirsoft.cloud (`nefrochoco.bello.works`) sirve para desarrollar y mostrar la plataforma con datos de demostración. La IPS montará su propio servidor de producción: los scripts de `deploy/` sirven de guía, pero la llave de respaldos, la Hora Legal y los datos reales se configuran allá.
 
 Cómo queda IPS NefroChocó corriendo en el mismo VPS (Hostinger, Ubuntu 24.04) donde ya vive `jitsi.bello.works`, y por qué se decidió así.
+
+**Datos de demostración** (solo en pruebas; crea cuentas con la contraseña `password`, no usar en producción): `sudo -u www-data php artisan db:seed --class=DemoDataSeeder --force`. Se corre una sola vez: repetirlo duplica citas e historias.
 
 ## Por qué nativo y no Docker
 
