@@ -86,7 +86,9 @@ npm ci
 npm run build
 
 echo "== 5/12 Configuración (.env) =="
+ENV_CREATED=0
 if [ ! -f .env ]; then
+  ENV_CREATED=1
   cp .env.example .env
 
   ADMIN_PASS_FILE=/root/.nefrochoco_admin_pass
@@ -280,8 +282,14 @@ echo ""
 echo "====================================================="
 echo "LISTO: https://${DOMAIN}"
 echo ""
-echo "Contraseña del admin inicial (guárdala y cámbiala al entrar):"
-cat /root/.nefrochoco_admin_pass 2>/dev/null || echo "(ya existía de antes, revisa /root/.nefrochoco_admin_pass)"
+# La contraseña solo se muestra el día que se crea: en cada actualización
+# terminaba copiada en logs y chats.
+if [ "$ENV_CREATED" -eq 1 ]; then
+  echo "Contraseña del admin inicial (guárdala y cámbiala al entrar):"
+  cat /root/.nefrochoco_admin_pass
+else
+  echo "Contraseña del admin inicial: no se muestra (está en /root/.nefrochoco_admin_pass)."
+fi
 echo ""
 echo "Pendiente que sigue quedando: MAIL_MAILER real (hoy 'log', el correo de"
 echo "recuperación de contraseña no llega a nadie todavía)."
