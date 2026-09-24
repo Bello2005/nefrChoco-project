@@ -184,6 +184,10 @@ Si más adelante cambias esa cuenta a otro rol, la ficha se suelta sola y vuelve
 
 **Datos profesionales y RETHUS (solo médicos).** Al editar la cuenta de un médico aparece **Datos profesionales**: tipo y número de documento, profesión, registro profesional y especialidad. Debajo está **Verificación en RETHUS**: busca al médico en la consulta pública de ReTHUS con su documento; si aparece activo, anota lo que viste y toca **Marcar como verificado en RETHUS**. Queda quién lo verificó y cuándo. Si después cambias el documento o el registro, la verificación se borra y hay que repetirla. Mientras el perfil esté incompleto, el médico ve un aviso, pero puede seguir atendiendo.
 
+### Preparación para interoperar
+
+**Preparación para interoperar** muestra, con contadores y listas, qué falta antes de enviar resúmenes de atención (RDA) o generar RIPS: pacientes sin documento, primer nombre, primer apellido, sexo biológico, municipio (DIVIPOLA) o EAPB; médicos sin perfil profesional completo o sin verificación en RETHUS; datos de la IPS (REPS y sede), y atenciones cerradas sin diagnóstico principal CIE-10. No muestra contenido clínico: solo el nombre, lo que falta y un enlace para completarlo.
+
 ### Datos de la institución
 
 **Datos de la institución** muestra la razón social, el NIT, el código de habilitación REPS, la sede y su municipio, y marca los que faltan. No se editan en la pantalla: se configuran en el servidor. La historia clínica imprimible muestra la razón social y el REPS cuando están configurados.

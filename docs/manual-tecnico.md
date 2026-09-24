@@ -259,3 +259,7 @@ sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie1
 - CIE-11: el campo solo se acepta si el catálogo `cie11` está importado. No hay equivalencias automáticas CIE-10 → CIE-11: si el Ministerio publica una tabla oficial, se importa como catálogo propio.
 - Tipo de diagnóstico, finalidad y causa externa: `config/catalogs.php` → `attention_fields`, en [CONFIRMAR] contra el anexo de la Res. 948 de 2026. Mientras tanto se aceptan como texto.
 - Las requests de cierre (`UpdateTeleconsultationRequest`, `UpdateAppointmentRequest`, `StoreTeleconsultationClarificationRequest`) autorizan **antes** de validar.
+
+## Preparación para interoperar
+
+`App\Services\InteroperabilityReadiness` tiene una regla por requisito: `missingForPatient`, `missingForPractitioner`, `missingForInstitution`, `missingForAppointment`, y `missingForDocument(Appointment)`, que las junta por dónde se completa. Es la que usarán la generación del RDA y la de RIPS para explicar por qué no pueden generar un documento. `summary()` alimenta Admin → Preparación para interoperar. Recorre en PHP porque varios datos van cifrados y no se pueden filtrar en SQL. Nunca devuelve contenido clínico.

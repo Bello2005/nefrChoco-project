@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EducationalContentController;
 use App\Http\Controllers\Admin\InstitutionController;
+use App\Http\Controllers\Admin\InteroperabilityController;
 use App\Http\Controllers\Admin\PatientController;
 use App\Http\Controllers\Admin\PractitionerProfileController;
 use App\Http\Controllers\Admin\SusReportController;
@@ -43,6 +44,7 @@ Route::middleware(['auth', 'role:admin', 'throttle:zona-clinica'])->prefix('admi
 
     Route::get('catalogos', [CatalogController::class, 'index'])->name('catalogos.index');
     Route::get('institucion', [InstitutionController::class, 'index'])->name('institucion.index');
+    Route::get('interoperabilidad', [InteroperabilityController::class, 'index'])->name('interoperabilidad.index');
 
     Route::get('usabilidad', [SusReportController::class, 'index'])->name('usabilidad.index');
 });
