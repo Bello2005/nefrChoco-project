@@ -19,7 +19,9 @@ class CsvCatalogParser
     private const PARENT_CANDIDATES = ['parent_code', 'codigo_padre', 'padre'];
 
     /**
-     * @param  array{name: string, value: string}|null  $activeColumn  columna que dice si el código está habilitado
+     * Con varias columnas de activo, el código debe cumplirlas todas.
+     *
+     * @param  array{name: string, value: string}|list<array{name: string, value: string}>|null  $activeColumn
      * @return list<ParsedCode>
      */
     public function parse(string $path, ?string $codeColumn = null, ?string $displayColumn = null, ?array $activeColumn = null): array
@@ -45,7 +47,16 @@ class CsvCatalogParser
         $codeIndex = $this->columnIndex($normalized, $codeColumn, self::CODE_CANDIDATES, 'del código', '--columna-codigo');
         $displayIndex = $this->columnIndex($normalized, $displayColumn, self::DISPLAY_CANDIDATES, 'del nombre', '--columna-nombre');
         $parentIndex = $this->findIndex($normalized, self::PARENT_CANDIDATES);
-        $activeIndex = $activeColumn !== null ? $this->findIndex($normalized, [mb_strtolower($activeColumn['name'])]) : null;
+        // Una condición o varias: SISPRO marca aparte si un código está
+        // habilitado y si aplica a consultas (Res. 948 de 2026).
+        $conditions = $activeColumn === null ? [] : (isset($activeColumn['name']) ? [$activeColumn] : $activeColumn);
+        $activeChecks = [];
+        foreach ($conditions as $condition) {
+            $index = $this->findIndex($normalized, [mb_strtolower($condition['name'])]);
+            if ($index !== null) {
+                $activeChecks[$index] = mb_strtoupper($condition['value']);
+            }
+        }
 
         $codes = [];
         foreach ($lines as $line) {
@@ -73,11 +84,23 @@ class CsvCatalogParser
                 parentCode: $parentIndex !== null && ($row[$parentIndex] ?? '') !== '' ? trim($row[$parentIndex]) : null,
                 extra: $extra,
                 // SISPRO marca con Habilitado=NO los códigos que ya no se deben usar.
-                active: $activeIndex === null || mb_strtoupper(trim((string) ($row[$activeIndex] ?? ''))) === mb_strtoupper($activeColumn['value']),
+                active: $this->meetsAll($row, $activeChecks),
             );
         }
 
         return $codes;
+    }
+
+    /** @param  list<string|null>  $row  @param  array<int, string>  $checks */
+    private function meetsAll(array $row, array $checks): bool
+    {
+        foreach ($checks as $index => $value) {
+            if (mb_strtoupper(trim((string) ($row[$index] ?? ''))) !== $value) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function detectDelimiter(string $headerLine): string

@@ -70,7 +70,7 @@ NefroChocó no factura. De esta norma solo usa las tablas de referencia, para qu
 
 | Requisito | Dónde se cumple | Prueba Pest | Estado | Responsable |
 |---|---|---|---|---|
-| Datos de la atención codificados (diagnóstico, procedimiento, finalidad, causa externa) | Registro estructurado de la atención, con los catálogos RIPS*Version2 de la guía RDA | `Atencion/RegistroAtencionTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 tablas confirmadas en el Documento técnico 1 (v001, 4-jun-2026); falta filtrar los códigos válidos para consultas con las tablas de SISPRO | Bello |
+| Datos de la atención codificados (diagnóstico, procedimiento, finalidad, causa externa) | Registro estructurado de la atención, con los catálogos RIPS*Version2 de la guía RDA | `Atencion/RegistroAtencionTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 tablas confirmadas en el Documento técnico 1 (v001, 4-jun-2026); solo se eligen los códigos que SISPRO marca para consultas. Falta importarlas en el servidor | Bello |
 | Generar o exportar RIPS para facturación | — | — | ➖ No aplica: la plataforma es de teleconsulta y seguimiento, no factura. Los RIPS los arma el sistema de facturación de la IPS | — |
 
 ## Resolución 1442 de 2024 y Resolución 1657 de 2025 — CIE-11

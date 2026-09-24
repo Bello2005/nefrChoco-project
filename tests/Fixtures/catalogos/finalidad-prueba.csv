@@ -1,0 +1,4 @@
+Tabla,Codigo,Nombre,Descripcion,Habilitado,Aplicacion,Extra_I:Consultas,Extra_II:Procedimientos,Fecha_Actualizacion
+RIPSFinalidadConsultaVersion2,TESTF1,FINALIDAD DE PRUEBA PARA CONSULTAS (FALSO),,SI,,SI,SI,2024-08-27 10:11:46 PM
+RIPSFinalidadConsultaVersion2,TESTF2,FINALIDAD DE PRUEBA SOLO PROCEDIMIENTOS (FALSO),,SI,,NO,SI,2024-08-27 10:11:46 PM
+RIPSFinalidadConsultaVersion2,TESTF3,FINALIDAD DE PRUEBA DESHABILITADA (FALSO),,NO,,SI,SI,2024-08-27 10:11:46 PM

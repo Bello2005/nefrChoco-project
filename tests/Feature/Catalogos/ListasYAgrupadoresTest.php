@@ -127,3 +127,17 @@ test('el tipo de afiliación se elige de la lista de tipo de usuario del RIPS', 
     $this->actingAs($medico)->post(route('medico.pacientes.store'), [...$ficha, 'affiliation_type' => 'TESTSP1'])
         ->assertSessionHasNoErrors();
 });
+
+test('en la finalidad solo se pueden elegir los códigos habilitados que SISPRO marca para consultas', function () {
+    importarFixture('finalidad_consulta', 'finalidad-prueba.csv');
+
+    $catalogo = app(CodeCatalog::class);
+
+    expect($catalogo->isActive('finalidad_consulta', 'TESTF1'))->toBeTrue();
+    expect($catalogo->isActive('finalidad_consulta', 'TESTF2'))->toBeFalse();
+    expect($catalogo->isActive('finalidad_consulta', 'TESTF3'))->toBeFalse();
+    // Los que no aplican se guardan igual, para mostrar registros viejos.
+    expect($catalogo->display('finalidad_consulta', 'TESTF2'))->toContain('PROCEDIMIENTOS');
+    expect(app(AttentionRecordService::class)->availability()['options']['purpose'])
+        ->toBe([['code' => 'TESTF1', 'display' => 'FINALIDAD DE PRUEBA PARA CONSULTAS (FALSO)']]);
+});

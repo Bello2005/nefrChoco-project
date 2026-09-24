@@ -21,6 +21,8 @@
 | que significa "sí". Un código que el archivo trae deshabilitado se guarda
 | inactivo: queda para mostrar registros viejos, pero no se puede elegir.
 | Si el archivo no trae la columna, todos los códigos quedan activos.
+| Puede ser una lista de condiciones: el código queda activo solo si cumple
+| todas (por ejemplo, Habilitado=SI y Extra_I:Consultas=SI).
 |
 | CIE-10, CUPS y EAPB: columnas cotejadas el 24-sep-2026 contra las tablas de
 | referencia de SISPRO (TablaReferencia_CIE10, _CUPS y _CodigoEAPByNit,
@@ -54,10 +56,19 @@ return [
         'identidad_genero' => ['name' => 'Identidad de género'],
         'etnia' => ['name' => 'Pertenencia étnica'],
         'discapacidad' => ['name' => 'Discapacidad'],
+        // OJO: ColombianResidenceZone del IHCE usa 01=Urbana y 02=Rural; la tabla
+        // ZonaVersion2 de SISPRO (RIPS) usa lo contrario, 01=Rural y 02=Urbano.
+        // Se guarda el código del IHCE porque es el que va en el RDA. Quien lleve
+        // la zona al RIPS debe traducirla, no copiarla.
         'zona_residencia' => ['name' => 'Zona de residencia'],
         'ocupacion' => ['name' => 'Ocupación (CIUO-88 A.C.)'],
-        'finalidad_consulta' => ['name' => 'Finalidad de la consulta'],
-        'causa_externa' => ['name' => 'Causa externa'],
+        // Finalidad y causa externa se importan de las tablas de SISPRO (CSV),
+        // no del JSON del IHCE: el anexo de la Res. 948 dice que en consultas
+        // solo valen los códigos con Extra_I:Consultas=SI, y el JSON no trae esa
+        // columna. Tablas exportadas el 24-sep-2026. En la finalidad, 17 de los
+        // 34 códigos no aplican a consultas; en la causa externa aplican todos.
+        'finalidad_consulta' => ['name' => 'Finalidad de la consulta', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => [['name' => 'Habilitado', 'value' => 'SI'], ['name' => 'Extra_I:Consultas', 'value' => 'SI']]],
+        'causa_externa' => ['name' => 'Causa externa', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => [['name' => 'Habilitado', 'value' => 'SI'], ['name' => 'Extra_I:Consultas', 'value' => 'SI']]],
         'tipo_diagnostico' => ['name' => 'Tipo de diagnóstico principal'],
 
         // Tabla RIPSTipoUsuarioVersion2 de SISPRO (exportada el 24-sep-2026,
@@ -112,10 +123,8 @@ return [
     | tipoDiagnosticoPrincipal, finalidadTecnologiaSalud y causaMotivoAtencion.
     | Mientras el catálogo no esté importado, el campo se guarda como texto.
     |
-    | TODO: el anexo dice que en consultas solo valen los códigos que la tabla
-    | de SISPRO marca "para consultas". Los JSON del IHCE no traen esa columna:
-    | hace falta exportar de SISPRO RIPSFinalidadConsultaVersion2 y
-    | RIPSCausaExternaVersion2 para ver la columna y filtrar con ella.
+    | En consultas solo valen los códigos que la tabla de SISPRO marca en
+    | Extra_I:Consultas: ver finalidad_consulta y causa_externa en 'systems'.
     */
     'attention_fields' => [
         'diagnosis_type' => 'tipo_diagnostico',
