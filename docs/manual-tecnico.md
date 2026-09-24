@@ -194,3 +194,44 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 - `patients.follow_up_risk_level` (cifrado, `App\Enums\FollowUpRiskLevel`: `bajo`, `medio`, `alto`). Lo asigna solo el médico (`PATCH medico/pacientes/{patient}/riesgo-seguimiento`); el cambio queda en la auditoría con el nombre del campo.
 - `config/vital_signs.php` → `max_days_without_reading[nivel][signo]`: días máximos sin medición. **Todos en `null` hasta que la médica los valide**; mientras tanto `FollowUpScheduleService::isActive()` es falso y no hay vencidos ni recordatorios.
 - `php artisan seguimiento:recordatorios` avisa a los pacientes con el control vencido (notificación por base de datos, una por día como máximo). Corre a diario a las 7:00 (America/Bogota) desde `routes/console.php`; en el VPS lo dispara `nefrochoco-scheduler.timer`, que instala `deploy/deploy.sh`.
+
+## Catálogos oficiales
+
+Tablas `code_systems` (un catálogo, con versión, fuente, SHA-256 del archivo, fecha y quién lo importó) y `codes` (código, nombre, código padre, `active` y `extra` en JSON). Son datos públicos de referencia: **no se cifran**. Un código **nunca se borra**: si desaparece en una versión nueva queda `active = false`, porque hay registros históricos que lo usan.
+
+### De dónde sale cada catálogo
+
+**Nunca se escriben códigos a mano ni de memoria.** Los archivos los descarga una persona de la fuente oficial y **no se suben al repositorio**: se guardan en el servidor en `storage/app/catalogos/` (ignorada por git).
+
+| Clave | Catálogo | Fuente oficial | Cada cuánto revisar |
+|---|---|---|---|
+| `cie10` | CIE-10 | Tablas de referencia de SISPRO (MinSalud) | Cuando MinSalud publique una actualización [CONFIRMAR periodicidad con la fuente] |
+| `cie11` | CIE-11 (Res. 1442 de 2024; transición y codificación dual según la Res. 1657 de 2025) | Tablas de referencia de SISPRO (MinSalud) | Ídem |
+| `cups` | CUPS | Tablas de referencia de SISPRO (MinSalud) | Ídem (la clasificación se actualiza por resolución) |
+| `divipola` | Municipios (DIVIPOLA) | DANE | Cuando el DANE publique cambios |
+| `eapb` | EAPB | Tablas de referencia de SISPRO (MinSalud) | Ídem |
+| `tipo_documento` | Tipos de documento | Tablas de referencia de SISPRO o CodeSystem del paquete FHIR del IHCE | Con cada versión de la guía |
+| (otras) | CodeSystem y ValueSet del RDA | Paquete FHIR `package.tgz` de la guía de implementación del IHCE | Con cada versión de la guía |
+
+Las URLs exactas de descarga quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anótalas en `--fuente` al importar, para que queden registradas.
+
+Los recursos del paquete FHIR del IHCE se publican bajo licencia CC BY-NC-SA 4.0 y exigen esta atribución: *"Este es un bien público digital producido por HL7 Colombia, para el Ministerio de Salud y Protección Social"*.
+
+### Cómo se importa
+
+```bash
+cd /var/www/nefrochoco-project
+sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie10.csv \
+  --version-catalogo="AAAA-MM" --fuente="SISPRO, tabla de referencia CIE-10, descargada el AAAA-MM-DD" \
+  --por=admin@nefrochoco.co
+```
+
+- **CSV:** detecta el separador (`;`, `,`, tabulador o `|`) y convierte Windows-1252 a UTF-8. Busca las columnas del código y del nombre por su nombre (`codigo`/`code`, `nombre`/`descripcion`/`display`). Si el archivo oficial usa otros nombres, indícalos con `--columna-codigo="..."` y `--columna-nombre="..."`, o déjalos fijos en `config/catalogs.php` (`csv_columns`, hoy en [CONFIRMAR]). Las demás columnas se guardan en `extra`.
+- **Excel (XLSX):** no se lee directamente, porque no hay librería de Excel en el proyecto. Ábrelo y guárdalo como *CSV UTF-8*.
+- **FHIR (JSON):** `CodeSystem` (con la jerarquía de `concept`) y `ValueSet` (`compose.include[].concept` o `expansion.contains`). Si no se pasa `--version-catalogo`, se toma la `version` del recurso.
+- **Idempotente:** importar el mismo archivo dos veces no cambia nada. Una versión nueva actualiza los nombres, agrega los códigos nuevos y desactiva los que ya no vienen.
+- La opción se llama `--version-catalogo` y no `--version`, porque Artisan reserva `--version` para mostrar la versión de Laravel.
+
+### Búsqueda
+
+`GET /catalogos/{sistema}/buscar?q=` (médico y admin, límite `catalogos` de 90 por minuto) devuelve los 20 primeros códigos **activos** por código o por nombre. En PostgreSQL la migración intenta crear la extensión `pg_trgm` y un índice GIN sobre `codes.display`; si el usuario de la base no tiene permiso, deja un índice normal y la búsqueda usa `ILIKE`. **Admin → Catálogos** muestra cuál quedó. En PostgreSQL 13 o superior `pg_trgm` es una extensión confiable, así que normalmente se crea sin ser superusuario.

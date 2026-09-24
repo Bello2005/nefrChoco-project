@@ -19,6 +19,7 @@ export const eventLabels: Record<string, string> = {
     teleconsulta_revocada: 'Retiró autorización de teleconsulta',
     autorizado: 'Autorizó tratamiento de datos',
     deactivated: 'Desactivó cuenta',
+    catalogo_importado: 'Importó catálogo',
     reactivated: 'Reactivó cuenta',
 };
 
@@ -33,6 +34,7 @@ export const eventVerbs: Record<string, string> = {
     teleconsulta_revocada: 'retiró su autorización de teleconsulta',
     autorizado: 'autorizó el tratamiento de sus datos',
     deactivated: 'desactivó la cuenta',
+    catalogo_importado: 'importó un catálogo oficial',
     reactivated: 'reactivó la cuenta',
 };
 

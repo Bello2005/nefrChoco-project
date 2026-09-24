@@ -12,6 +12,7 @@ import {
     FileHeart,
     HeartPulse,
     LayoutDashboard,
+    Library,
     ScrollText,
     ShieldCheck,
     UserRound,
@@ -37,6 +38,7 @@ const navByRole: Record<string, NavSection[]> = {
             label: 'Cumplimiento',
             items: [
                 { title: 'Auditoría', url: '/admin/auditoria', icon: ScrollText },
+                { title: 'Catálogos', url: '/admin/catalogos', icon: Library },
                 { title: 'Usabilidad', url: '/admin/usabilidad', icon: ClipboardCheck },
             ],
         },

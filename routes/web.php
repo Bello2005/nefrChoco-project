@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CatalogSearchController;
 use App\Http\Controllers\ClinicalHistoryController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SusController;
@@ -43,3 +44,9 @@ require __DIR__.'/auth.php';
 require __DIR__.'/admin.php';
 require __DIR__.'/medico.php';
 require __DIR__.'/paciente.php';
+
+// Buscador de catálogos oficiales para los formularios del personal.
+Route::middleware(['auth', 'role:admin|medico', 'throttle:catalogos'])
+    ->get('catalogos/{sistema}/buscar', CatalogSearchController::class)
+    ->where('sistema', '[a-z0-9_]+')
+    ->name('catalogos.buscar');

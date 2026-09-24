@@ -37,5 +37,10 @@ class AppServiceProvider extends ServiceProvider
     {
         RateLimiter::for('zona-clinica', fn (Request $request) => Limit::perMinute(120)
             ->by($request->user()?->id ?: $request->ip()));
+
+        // El buscador se llama mientras se escribe: margen para eso, pero no
+        // para descargar un catálogo entero a punta de consultas.
+        RateLimiter::for('catalogos', fn (Request $request) => Limit::perMinute(90)
+            ->by($request->user()?->id ?: $request->ip()));
     }
 }
