@@ -8,21 +8,22 @@ use App\Models\User;
 class AppointmentPolicy
 {
     /**
-     * Gestionar la cita: reprogramar, cambiar su estado o eliminarla.
+     * Gestionar la cita: reprogramarla, cambiar su estado o cancelarla.
      *
      * El padrón de pacientes es institucional, pero la agenda no: una cita es
      * el compromiso de un profesional concreto con una persona, y dejar que
      * otro médico la mueva o la cancele rompe tanto la agenda ajena como la
      * trazabilidad de quién decidió qué.
+     *
+     * Una cita atendida ya es parte del registro: cambiarle el paciente
+     * mudaría sus notas a la historia de otra persona, y cambiarle la fecha o
+     * el estado reescribiría cuándo y cómo se atendió. Las canceladas y las de
+     * inasistencia sí se editan, para corregir errores de agenda.
      */
     public function update(User $user, Appointment $appointment): bool
     {
-        return $this->isTreatingDoctor($user, $appointment);
-    }
-
-    public function delete(User $user, Appointment $appointment): bool
-    {
-        return $this->isTreatingDoctor($user, $appointment);
+        return $this->isTreatingDoctor($user, $appointment)
+            && ! $appointment->isAttended();
     }
 
     /**

@@ -39,9 +39,4 @@ class AppointmentService
 
         return $appointment;
     }
-
-    public function delete(Appointment $appointment): void
-    {
-        $appointment->delete();
-    }
 }

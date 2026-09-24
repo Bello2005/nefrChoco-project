@@ -62,14 +62,8 @@ test('un médico no puede reprogramar ni cancelar la cita de otro', function () 
     expect($cita->fresh()->type)->toBe(Appointment::TYPE_TELECONSULTATION);
 });
 
-test('un médico no puede eliminar la cita de otro', function () {
-    $cita = citaDe($this->medicoB, $this->patient);
-
-    $this->actingAs($this->medicoA)
-        ->delete(route('medico.citas.destroy', $cita))
-        ->assertForbidden();
-
-    expect(Appointment::find($cita->id))->not->toBeNull();
+test('el rol médico ya no expone ninguna ruta para eliminar citas', function () {
+    expect(Route::has('medico.citas.destroy'))->toBeFalse();
 });
 
 test('un médico no puede abrir la sala de teleconsulta de otro', function () {

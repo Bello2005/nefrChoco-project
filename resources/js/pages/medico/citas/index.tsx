@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { CalendarDays, CalendarPlus, Video, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -21,6 +21,10 @@ interface AppointmentRow {
     status: string;
     type: string;
     patient: { id: number; full_name: string } | null;
+    // Lo decide el servidor con la misma política que protege la ruta: una
+    // cita atendida ya es parte del registro y no se edita.
+    // TODO doc: guía de usuario — las citas ya no se eliminan (se cancelan) y las atendidas no se editan.
+    can_edit: boolean;
 }
 
 export default function CitasIndex({ appointments }: { appointments: AppointmentRow[] }) {
@@ -35,12 +39,6 @@ export default function CitasIndex({ appointments }: { appointments: Appointment
             return iso === selectedDate;
         });
     }, [appointments, selectedDate]);
-
-    const handleDelete = (id: number) => {
-        if (confirm('¿Eliminar esta cita?')) {
-            router.delete(route('medico.citas.destroy', id));
-        }
-    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -116,7 +114,7 @@ export default function CitasIndex({ appointments }: { appointments: Appointment
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-2">
-                                            {appointment.type === 'teleconsulta' && (
+                                            {appointment.type === 'teleconsulta' && appointment.status === 'programada' && (
                                                 <Button size="sm" asChild>
                                                     <Link href={route('medico.citas.teleconsulta', appointment.id)}>
                                                         <Video />
@@ -124,17 +122,11 @@ export default function CitasIndex({ appointments }: { appointments: Appointment
                                                     </Link>
                                                 </Button>
                                             )}
-                                            <Button size="sm" variant="outline" asChild>
-                                                <Link href={route('medico.citas.edit', appointment.id)}>Editar</Link>
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="ghost"
-                                                className="text-destructive hover:bg-destructive-soft"
-                                                onClick={() => handleDelete(appointment.id)}
-                                            >
-                                                Eliminar
-                                            </Button>
+                                            {appointment.can_edit && (
+                                                <Button size="sm" variant="outline" asChild>
+                                                    <Link href={route('medico.citas.edit', appointment.id)}>Editar</Link>
+                                                </Button>
+                                            )}
                                         </div>
                                     </li>
                                 ))}

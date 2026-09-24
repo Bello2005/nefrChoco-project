@@ -21,11 +21,18 @@ class AppointmentController extends Controller
 
     public function index(): Response
     {
+        // doctor_id va en las columnas porque la política lo compara, y la
+        // teleconsulta se carga de una vez porque isAttended() la consulta:
+        // sin eso sería una consulta por cada cita de la lista.
         $appointments = Appointment::query()
-            ->with('patient:id,full_name')
+            ->with(['patient:id,full_name', 'teleconsultation:id,appointment_id,status'])
             ->where('doctor_id', Auth::id())
             ->orderBy('scheduled_at')
-            ->get(['id', 'patient_id', 'scheduled_at', 'status', 'type']);
+            ->get(['id', 'patient_id', 'doctor_id', 'scheduled_at', 'status', 'type'])
+            ->map(fn (Appointment $appointment) => [
+                ...$appointment->only(['id', 'scheduled_at', 'status', 'type', 'patient']),
+                'can_edit' => Gate::allows('update', $appointment),
+            ]);
 
         return Inertia::render('medico/citas/index', [
             'appointments' => $appointments,
@@ -66,14 +73,5 @@ class AppointmentController extends Controller
         $this->appointmentService->update($appointment, $request->validated());
 
         return to_route('medico.citas.index')->with('success', 'Cita actualizada correctamente.');
-    }
-
-    public function destroy(Appointment $appointment)
-    {
-        Gate::authorize('delete', $appointment);
-
-        $this->appointmentService->delete($appointment);
-
-        return to_route('medico.citas.index')->with('success', 'Cita eliminada correctamente.');
     }
 }

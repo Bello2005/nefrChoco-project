@@ -21,9 +21,11 @@ Route::middleware(['auth', 'role:medico', 'throttle:zona-clinica'])->prefix('med
     Route::get('pacientes/{patient}/historia-clinica/crear', [ClinicalHistoryController::class, 'create'])->name('pacientes.historia-clinica.create');
     Route::post('pacientes/{patient}/historia-clinica', [ClinicalHistoryController::class, 'store'])->name('pacientes.historia-clinica.store');
 
+    // Sin destroy: una cita atendida es parte del registro clínico y arrastraba
+    // sus notas de teleconsulta. La que ya no va se cancela desde Editar.
     Route::resource('citas', AppointmentController::class)
         ->parameters(['citas' => 'appointment'])
-        ->except(['show']);
+        ->except(['show', 'destroy']);
 
     Route::get('citas/{appointment}/teleconsulta', [TeleconsultationController::class, 'show'])->name('citas.teleconsulta');
     Route::post('citas/{appointment}/teleconsulta/cerrar', [TeleconsultationController::class, 'complete'])->name('citas.teleconsulta.complete');

@@ -52,4 +52,17 @@ class Appointment extends Model
     {
         return $this->hasOne(Teleconsultation::class);
     }
+
+    /**
+     * La atención ya ocurrió y la cita queda fija.
+     *
+     * Se mira también la teleconsulta porque hay datos viejos en los que la
+     * sala se cerró con notas pero la cita quedó en 'programada': por el
+     * estado solo, esa cita se podría editar y sus notas cambiarían de dueño.
+     */
+    public function isAttended(): bool
+    {
+        return $this->status === self::STATUS_COMPLETED
+            || $this->teleconsultation?->status === Teleconsultation::STATUS_FINISHED;
+    }
 }
