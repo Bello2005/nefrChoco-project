@@ -61,3 +61,27 @@ test('un paciente no puede cerrar una teleconsulta', function () {
         ->post(route('medico.citas.teleconsulta.complete', $appointment), ['notes' => 'Intento no autorizado'])
         ->assertForbidden();
 });
+
+test('cerrar dos veces no reescribe la nota: se conserva la original y la segunda vez vuelve con un error', function () {
+    $appointment = Appointment::factory()->create([
+        'doctor_id' => $this->medico->id,
+        'patient_id' => Patient::factory(),
+        'type' => Appointment::TYPE_TELECONSULTATION,
+        'status' => Appointment::STATUS_SCHEDULED,
+    ]);
+
+    $this->actingAs($this->medico)->post(route('medico.citas.teleconsulta.complete', $appointment), [
+        'notes' => 'Nota original firmada al cerrar.',
+    ]);
+
+    // El doble clic o una pestaña vieja: la sala ya está cerrada.
+    $this->actingAs($this->medico)
+        ->post(route('medico.citas.teleconsulta.complete', $appointment), [
+            'notes' => 'Texto que intentaría reemplazar la nota.',
+        ])
+        ->assertRedirect(route('medico.citas.index'))
+        ->assertSessionHas('error', 'Esta teleconsulta ya estaba cerrada. Para corregir la nota, agrega una aclaración desde la historia clínica.');
+
+    $teleconsultation = Teleconsultation::where('appointment_id', $appointment->id)->first();
+    expect($teleconsultation->notes)->toBe('Nota original firmada al cerrar.');
+});

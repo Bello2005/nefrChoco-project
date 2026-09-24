@@ -6,6 +6,7 @@ use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Teleconsultation;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TeleconsultationService
@@ -29,17 +30,33 @@ class TeleconsultationService
      * Cerrar la sala también completa la cita: son el mismo hecho asistencial y
      * dejarlos desalineados haría que la agenda reportara atenciones pendientes
      * que en realidad ya ocurrieron.
+     *
+     * Una nota cerrada no se reescribe: la auditoría guarda qué campos cambió
+     * cada quien, no sus valores, así que la nota anterior se perdería sin
+     * rastro. Se relee la fila con bloqueo porque el doble clic o una pestaña
+     * vieja pueden llegar a la vez, y las dos verían la sala todavía abierta.
+     * Para corregir una nota cerrada están las aclaraciones.
+     *
+     * @throws \DomainException si la teleconsulta ya estaba cerrada
      */
     public function complete(Teleconsultation $teleconsultation, string $notes): Teleconsultation
     {
-        $teleconsultation->update([
-            'notes' => $notes,
-            'status' => Teleconsultation::STATUS_FINISHED,
-        ]);
+        return DB::transaction(function () use ($teleconsultation, $notes) {
+            $locked = Teleconsultation::whereKey($teleconsultation->id)->lockForUpdate()->firstOrFail();
 
-        $teleconsultation->appointment->update(['status' => Appointment::STATUS_COMPLETED]);
+            if ($locked->status === Teleconsultation::STATUS_FINISHED) {
+                throw new \DomainException('La teleconsulta ya estaba cerrada.');
+            }
 
-        return $teleconsultation;
+            $locked->update([
+                'notes' => $notes,
+                'status' => Teleconsultation::STATUS_FINISHED,
+            ]);
+
+            $locked->appointment->update(['status' => Appointment::STATUS_COMPLETED]);
+
+            return $locked;
+        });
     }
 
     /**

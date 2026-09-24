@@ -44,7 +44,11 @@ class TeleconsultationController extends Controller
 
         $teleconsultation = $this->teleconsultationService->findOrCreateForAppointment($appointment);
 
-        $this->teleconsultationService->complete($teleconsultation, $request->string('notes')->toString());
+        try {
+            $this->teleconsultationService->complete($teleconsultation, $request->string('notes')->toString());
+        } catch (\DomainException) {
+            return to_route('medico.citas.index')->with('error', 'Esta teleconsulta ya estaba cerrada. Para corregir la nota, agrega una aclaración desde la historia clínica.');
+        }
 
         return to_route('medico.citas.index')->with('success', 'Teleconsulta cerrada y cita marcada como completada.');
     }
