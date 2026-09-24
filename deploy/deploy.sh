@@ -163,12 +163,13 @@ nginx -t
 systemctl reload nginx
 
 echo "== 9/12 Certificado SSL =="
-if [ ! -d "/etc/letsencrypt/live/${DOMAIN}" ]; then
-  certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos \
-    --register-unsafely-without-email --redirect
-else
-  echo "Ya había certificado para ${DOMAIN}, no vuelvo a pedirlo."
-fi
+# Siempre se corre: el paso 8 reescribe el sitio de nginx solo con el puerto
+# 80, así que hay que volver a instalar el bloque 443. Antes se saltaba si el
+# certificado existía y nginx quedaba sirviendo el certificado de otro sitio
+# del servidor (el navegador lo rechaza). --keep-until-expiring reusa el
+# certificado vigente: no pide uno nuevo en cada despliegue.
+certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos \
+  --register-unsafely-without-email --redirect --keep-until-expiring
 
 echo "== 10/12 Hora Legal de Colombia =="
 # Res. 1644 de 2026, art. 22: los registros clínicos cronológicos deben poder

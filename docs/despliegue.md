@@ -33,6 +33,16 @@ El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativo
 - **`MAIL_MAILER` sigue en `log`**: "olvidé mi contraseña" no envía correo todavía. Pendiente de credenciales SMTP reales (ver sección siguiente).
 - **Contraseña de base de datos y del admin inicial**: se generan solas en el servidor (`openssl rand`) y se guardan en archivos con permisos `600` bajo `/root/`. Nunca viajan por chat ni se escriben en este repositorio.
 
+## Si el navegador dice "La conexión no es privada"
+
+Prueba desde el servidor: `curl -svI https://nefrochoco.bello.works 2>&1 | grep subject`. Si el `subject` es **otro sitio** (por ejemplo `agrolink.dirsoft.cloud`), nginx no tiene el bloque 443 de NefroChocó y está entregando el certificado de otro sitio del servidor. Pasaba en versiones viejas de `deploy.sh`: el paso 8 reescribía el sitio de nginx sin el 443 y el paso 9 no volvía a instalarlo. Arreglo inmediato, sin pedir certificado nuevo:
+
+```bash
+sudo certbot --nginx -d nefrochoco.bello.works --non-interactive --redirect --keep-until-expiring
+```
+
+El panel de Hostinger puede mostrar el SSL como "inactivo": ese panel no ve los certificados de Certbot dentro del VPS. Lo que vale es la prueba con `curl`.
+
 ## Pendiente: correo real (SMTP)
 
 Para que el correo de recuperación de contraseña llegue de verdad hace falta un proveedor SMTP. Con [Brevo](https://www.brevo.com) (plan gratuito, 300 correos/día) alcanza para el volumen de esta plataforma:
