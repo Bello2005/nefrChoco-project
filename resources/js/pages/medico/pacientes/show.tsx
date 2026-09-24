@@ -33,6 +33,7 @@ interface ClinicalHistoryRow {
     allergies: string | null;
     current_medication: string | null;
     created_at: string;
+    author: { id: number; name: string } | null;
 }
 
 interface AppointmentRow {
@@ -192,6 +193,11 @@ export default function PacientesShow({ patient, recommendations, egfrSeries, cl
                                                     <p className="font-semibold">{history.ecnt_diagnosis ?? 'Sin diagnóstico ECNT'}</p>
                                                     <span className="text-muted-foreground text-xs">{formatShortDate(history.created_at)}</span>
                                                 </div>
+                                                <p className="text-muted-foreground mt-1 text-xs">
+                                                    {history.author
+                                                        ? `Registrada por ${history.author.name}`
+                                                        : 'Autor no registrado (entrada anterior a este cambio)'}
+                                                </p>
                                                 <dl className="text-muted-foreground mt-2.5 grid gap-1.5 text-sm">
                                                     <div className="flex gap-2">
                                                         <dt className="shrink-0">Alergias:</dt>

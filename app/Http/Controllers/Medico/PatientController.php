@@ -59,7 +59,7 @@ class PatientController extends Controller
         $this->auditor->recordPatientFileAccess($patient, $request);
 
         $patient->load([
-            'clinicalHistories' => fn ($query) => $query->latest(),
+            'clinicalHistories' => fn ($query) => $query->with('author:id,name')->latest(),
             'appointments' => fn ($query) => $query->with('doctor:id,name')->latest('scheduled_at'),
             'clinicalForms' => fn ($query) => $query->latest()->limit(5),
             'vitalSigns' => fn ($query) => $query->latest('recorded_at')->limit(5),

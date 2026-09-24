@@ -24,7 +24,7 @@ class ClinicalHistoryController extends Controller
 
     public function store(StoreClinicalHistoryRequest $request, Patient $patient)
     {
-        $this->clinicalHistoryService->create($patient, $request->validated());
+        $this->clinicalHistoryService->create($patient, $request->user(), $request->validated());
 
         return to_route('medico.pacientes.show', $patient)->with('success', 'Historia clínica registrada correctamente.');
     }

@@ -48,6 +48,7 @@
             .meta { text-align: right; font-size: 11px; color: #5a6f76; }
 
             h1 { font-size: 17px; margin: 22px 0 14px; letter-spacing: -0.01em; }
+            .author { margin: -8px 0 16px; font-size: 11px; color: #5a6f76; }
             h2 { font-size: 12px; margin: 20px 0 7px; text-transform: uppercase; letter-spacing: 0.06em; color: #1a6b6f; }
 
             .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px 20px; }
@@ -73,7 +74,9 @@
             }
 
             .signature { margin-top: 42px; display: flex; gap: 40px; }
-            .signature div { flex: 1; border-top: 1px solid #14242a; padding-top: 6px; font-size: 10px; color: #5a6f76; }
+            .signature div { flex: 1; font-size: 10px; color: #5a6f76; }
+            .signature .signer { display: block; min-height: 16px; padding-bottom: 4px; font-size: 12px; color: #14242a; }
+            .signature .line { display: block; border-top: 1px solid #14242a; padding-top: 6px; }
 
             .toolbar { max-width: 820px; margin: 16px auto 0; padding: 0 24px; text-align: right; }
 
@@ -113,6 +116,14 @@
             </header>
 
             <h1>Historia clínica</h1>
+            {{-- Res. 1644 de 2026: cada atención identifica a quien la registró. --}}
+            <p class="author">
+                @if ($history->author)
+                    Registrada por {{ $history->author->name }} · {{ $history->created_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
+                @else
+                    Autor no registrado (entrada anterior a este cambio) · {{ $history->created_at->locale('es')->isoFormat('D [de] MMMM [de] YYYY') }}
+                @endif
+            </p>
 
             <h2>Identificación del paciente</h2>
             <dl class="grid">
@@ -136,9 +147,10 @@
             <h2>Medicación actual</h2>
             <div class="block">{{ $history->current_medication ?: 'Ninguna registrada.' }}</div>
 
+            {{-- Sin autor, el espacio queda en blanco para firmar a mano. --}}
             <div class="signature">
-                <div>Firma del profesional</div>
-                <div>Registro médico</div>
+                <div><span class="signer">{{ $history->author?->name }}</span><span class="line">Firma del profesional</span></div>
+                <div><span class="signer"></span><span class="line">Registro médico</span></div>
             </div>
 
             <footer>

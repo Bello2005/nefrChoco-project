@@ -22,7 +22,7 @@ class ClinicalHistoryController extends Controller
     {
         Gate::authorize('view', $clinicalHistory);
 
-        $clinicalHistory->load('patient:id,full_name,municipality,document_type,document_number');
+        $clinicalHistory->load(['patient:id,full_name,municipality,document_type,document_number', 'author:id,name']);
 
         $this->auditor->recordHistoryAccess($clinicalHistory, $request);
 
@@ -78,7 +78,7 @@ class ClinicalHistoryController extends Controller
     {
         Gate::authorize('view', $clinicalHistory);
 
-        $clinicalHistory->load('patient');
+        $clinicalHistory->load(['patient', 'author:id,name']);
 
         $this->auditor->recordHistoryAccess($clinicalHistory, $request);
 

@@ -35,4 +35,15 @@ class ClinicalHistory extends Model
     {
         return $this->belongsTo(Patient::class);
     }
+
+    /**
+     * Quién escribió la entrada. Queda fuera de $fillable: lo fija
+     * ClinicalHistoryService con el usuario autenticado, nunca lo que llegue
+     * en el formulario. Es null en entradas anteriores a este campo cuyo
+     * autor no se pudo recuperar de la auditoría.
+     */
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author_id');
+    }
 }

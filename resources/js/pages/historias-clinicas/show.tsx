@@ -20,6 +20,9 @@ interface ClinicalHistoryData {
     allergies: string | null;
     current_medication: string | null;
     created_at: string;
+    // null en entradas viejas cuyo autor no se pudo recuperar de la auditoría.
+    // TODO doc: guía de usuario — "Registrada por" en la historia, la ficha y la versión imprimible.
+    author: { id: number; name: string } | null;
     patient: {
         id: number;
         full_name: string;
@@ -120,7 +123,11 @@ export default function HistoriaClinicaShow({
                     <CardHeader className="flex-row items-start justify-between space-y-0">
                         <div>
                             <CardTitle>{clinicalHistory.ecnt_diagnosis ?? 'Sin diagnóstico ECNT registrado'}</CardTitle>
-                            <p className="text-muted-foreground mt-1 text-sm">Registrada el {formatDate(clinicalHistory.created_at)}</p>
+                            <p className="text-muted-foreground mt-1 text-sm">
+                                {clinicalHistory.author
+                                    ? `Registrada por ${clinicalHistory.author.name} · ${formatDate(clinicalHistory.created_at)}`
+                                    : `Autor no registrado (entrada anterior a este cambio) · ${formatDate(clinicalHistory.created_at)}`}
+                            </p>
                         </div>
                         <Badge variant="outline">
                             {clinicalHistory.patient.document_type} {clinicalHistory.patient.document_number}
