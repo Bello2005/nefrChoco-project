@@ -78,7 +78,7 @@ export default function PacienteTeleconsultaShow({ appointment, roomName, jitsiD
                     <div className="xl:col-span-2">
                         <JitsiMeeting domain={jitsiDomain} roomName={roomName} displayName={auth.user.name} />
                         <p className="text-muted-foreground mt-3 text-center text-xs">
-                            Esta sala es única para tu cita y nadie más puede entrar con el enlace.
+                            Esta sala es única para tu cita y su nombre no se puede adivinar.
                         </p>
                     </div>
 

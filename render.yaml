@@ -1,0 +1,86 @@
+# Blueprint de Render para el ambiente de demo. No afecta el despliegue de
+# produccion en el VPS.
+#
+# Variables que dependen de la instancia de Neon (host, base, usuario,
+# contraseña) y APP_URL quedan con sync: false: hay que completarlas a mano
+# en el dashboard al crear el servicio a partir de este blueprint.
+services:
+  - type: web
+    name: nefrochoco-demo
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    branch: develop
+    healthCheckPath: /up
+    envVars:
+      # generateValue: true no sirve aca: Render genera un base64 crudo
+      # ("B0jrph...") sin el prefijo "base64:" que Laravel exige para
+      # reconocerlo como clave ya codificada. Sin el prefijo, el encriptador
+      # lee esos caracteres como la clave literal (largo incorrecto) y tira
+      # excepcion en cuanto una request toca una cookie o la sesion, es
+      # decir, en cualquier pagina. Generar la clave real con
+      # `php artisan key:generate --show` y pegarla en el dashboard.
+      - key: APP_KEY
+        sync: false
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_LOCALE
+        value: es
+      - key: APP_FALLBACK_LOCALE
+        value: es
+      - key: APP_TIMEZONE
+        value: America/Bogota
+      - key: APP_URL
+        sync: false
+
+      # config/database.php cae en sqlite si DB_CONNECTION no esta seteada
+      # (es el default de fabrica de Laravel 12), asi que hay que fijarla
+      # explicitamente para que use la Postgres de Neon.
+      - key: DB_CONNECTION
+        value: pgsql
+      # DB_HOST tiene que ser el endpoint DIRECTO de Neon (sin "-pooler" en
+      # el nombre), no el agrupado. Probado: el endpoint agrupado (PgBouncer
+      # en modo transaccion) rompe la transaccion explicita con bloqueo de
+      # fila que usa el limitador de peticiones (cache de base de datos),
+      # con "current transaction is aborted" en la siguiente consulta.
+      # Reproducido en request real contra los dos endpoints: falla 100% de
+      # las veces contra el agrupado, funciona 100% contra el directo. Con
+      # WEB_CONCURRENCY=1 (una sola conexion a la vez) el limite de
+      # conexiones del endpoint directo no es un problema para esta demo.
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        value: '5432'
+      - key: DB_DATABASE
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+
+      # Jitsi autoalojado (jitsi.bello.works, version fijada a stable-11248,
+      # sin marca de terceros): no es secreto ni depende de la instancia, asi
+      # que va fijo. Sigue sin autenticacion JWT (ver docs/manual-tecnico.md,
+      # Pendiente para produccion): el nombre de sala no adivinable es hoy lo
+      # unico que impide entrar a quien no sea el medico o el paciente de la
+      # cita.
+      - key: JITSI_DOMAIN
+        value: jitsi.bello.works
+
+      # AdminUserSeeder exige esta variable fuera de local/testing (ver
+      # database/seeders/AdminUserSeeder.php): sin ella, sembrar la base
+      # falla en vez de crear el admin con la contrasena de la demo. No
+      # corre sola en cada arranque (el CMD del Dockerfile solo hace
+      # `migrate --force`), pero hay que definirla antes de correr
+      # `php artisan db:seed` a mano contra este servicio.
+      - key: ADMIN_INITIAL_PASSWORD
+        sync: false
+
+      # Sin esto, "olvide mi contrasena" no envia ningun correo: MAIL_MAILER
+      # cae en 'log' y el enlace de recuperacion queda escrito en el log del
+      # contenedor, invisible para quien lo pidio. Completar con un mailer
+      # real (Postmark, Resend, SES) y sus credenciales antes de que alguien
+      # dependa de recuperar su contrasena en esta demo.
+      - key: MAIL_MAILER
+        sync: false

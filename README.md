@@ -51,8 +51,8 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 - **Auditoría:** [spatie/laravel-activitylog](https://spatie.be/docs/laravel-activitylog) + trait propio para el rastro de cambios
 - **Segundo factor:** TOTP con [pragmarx/google2fa](https://github.com/antonioribeiro/google2fa) y [bacon/bacon-qr-code](https://github.com/Bacon/BaconQrCode)
 - **Videollamada:** Jitsi Meet External API
-- **Sin conexión:** service worker propio + cola en IndexedDB
-- **Tests:** [Pest](https://pestphp.com/)
+- **Sin conexión:** service worker propio + cola en IndexedDB, aislada por cuenta
+- **Tests:** [Pest](https://pestphp.com/) para el backend, [Vitest](https://vitest.dev/) para la lógica de la cola sin conexión
 
 ## Roles del sistema
 
@@ -81,7 +81,8 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Cifrado en reposo y consentimiento de datos (Ley 1581) | ✅ |
 | Auditoría de accesos y de cambios | ✅ |
 | Cabeceras de seguridad y límite de peticiones | ✅ |
-| Jitsi autoalojado en el VPS | ⏳ Pendiente para producción |
+| Jitsi autoalojado en el VPS (jitsi.bello.works, stable-11248) | ✅ |
+| Autenticación JWT en la sala de Jitsi | ⏳ Pendiente para producción |
 | Pagos, IA predictiva | ❌ Fuera de alcance |
 
 ## Decisiones de diseño que importan
@@ -102,7 +103,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 **Ley 1581 de 2012** — cifrado en reposo, consentimiento versionado del titular, y auditoría de lecturas *y* de cambios sobre datos clínicos. La lectura se registra en las cuatro pantallas que exponen contenido clínico: ficha del paciente, historia clínica, formulario clínico y telemonitoreo. El control de acceso se refuerza con policies donde el rol no basta.
 
-**Resolución 2654 de 2019** — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse y que puede pedirse atención presencial. La Etapa 3 de la norma respalda además el segundo factor.
+**Resolución 2654 de 2019** — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse, que la videollamada **no se graba** y que puede pedirse atención presencial. La Etapa 3 de la norma respalda además el segundo factor.
 
 ## Instalación
 
@@ -144,14 +145,22 @@ El paciente de demostración arranca con una teleconsulta en curso, para poder e
 
 ```bash
 php artisan test
+npm run test
 ```
 
-**310 pruebas con Pest** (1.171 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, el puntaje SUS contra sets de respuestas calculados a mano, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+**320 pruebas con Pest** (1.221 aserciones). Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el cifrado de las respuestas de los formularios clínicos, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los dos consentimientos, la auditoría de lecturas sobre las cuatro pantallas clínicas, el puntaje SUS contra sets de respuestas calculados a mano, y el contraste de color de ambos temas calculado sobre los tokens del CSS.
+
+**5 pruebas con Vitest** sobre `resources/js/lib/offline-queue.ts`: que la cola aísla lo pendiente por cuenta, que un 401/403/419 se conserva en vez de descartarse, y que las entradas guardadas antes de este aislamiento se migran sin perderse ni sincronizarse con la cuenta equivocada.
 
 ## Pendiente para producción
 
 - Desplegar en el VPS (Ubuntu, Nginx + PHP-FPM + PostgreSQL) — scripts listos en [`deploy/`](deploy/), ver [docs/despliegue.md](docs/despliegue.md)
-- Autoalojar Jitsi y apuntar `JITSI_DOMAIN` al servidor propio
+- Apuntar `JITSI_DOMAIN` (en Render y en el VPS) al Jitsi ya autoalojado (`jitsi.bello.works`)
+- Sumar autenticación JWT a la sala autoalojada: sin ella, el nombre de sala no adivinable es lo único que impide entrar — con JWT, solo el médico y el paciente de la cita podrían hacerlo
 - Definir una Content-Security-Policy una vez que el video sea de origen propio
 - Validar los umbrales de `config/clinical_support.php` con la médica de la IPS
 - Respaldar la `APP_KEY` aparte de la base de datos: sin ella los datos cifrados son irrecuperables
+- `APP_DEBUG=false` y `APP_ENV=production`
+- Configurar un `MAIL_MAILER` real: hoy es `log`, así que "olvidé mi contraseña" no envía ningún correo, solo lo escribe en el log
+- Definir `ADMIN_INITIAL_PASSWORD`: sin ella, `AdminUserSeeder` falla en vez de crear el admin con la contraseña de la demo
+- Revisar con la médica el contenido de `EducationalContentSeeder` **antes** del primer `--seed` en producción: ese seeder corre en todos los entornos, no solo en `local`

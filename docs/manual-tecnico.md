@@ -55,7 +55,7 @@ Además de las estándar de Laravel:
 | Variable | Para qué sirve |
 |---|---|
 | `DB_CONNECTION=pgsql` | Único motor soportado |
-| `JITSI_DOMAIN` | Dominio de la videollamada. Hoy `meet.jit.si`; al autoalojar, cambiar aquí y la política de permisos del navegador se ajusta sola |
+| `JITSI_DOMAIN` | Dominio de la videollamada. El servidor autoalojado ya existe (`jitsi.bello.works`, versión `stable-11248`), pero producción (Render) todavía apunta a `meet.jit.si` por defecto; al cambiar esta variable la política de permisos del navegador se ajusta sola |
 | `PRIVACY_CONSENT_VERSION` | Versión del consentimiento de datos (Ley 1581) |
 | `PRIVACY_TELECONSULTATION_CONSENT_VERSION` | Versión del consentimiento de teleconsulta (Res. 2654) |
 | `PRIVACY_CONTACT_EMAIL` | Correo de habeas data que se muestra al titular |
@@ -64,6 +64,7 @@ Además de las estándar de Laravel:
 | `ALLOWED_EMAIL_DOMAIN` | Dominio institucional exigido al personal (`admin` y `medico`) al crear o editar su cuenta. Los pacientes no tienen restricción: usan su correo personal |
 | `EDUCATIONAL_MAX_BODY_CHARACTERS` | Tope del cuerpo de un contenido educativo. No es un límite de base de datos sino de conexión: el material se descarga entero al teléfono del paciente |
 | `APP_LOCALE` / `APP_FALLBACK_LOCALE` | Ambos en `es`. El valor por defecto de `config/app.php` también es `es`, para que un entorno sin `.env` no revierta los mensajes a inglés |
+| `ADMIN_INITIAL_PASSWORD` | Contraseña del admin que crea `AdminUserSeeder`. Solo se usa fuera de `local`/`testing`: sin ella, el seeder falla en vez de crear la cuenta con la contraseña de la demo |
 
 **Subir una versión de consentimiento tiene efecto inmediato**: quienes aceptaron la anterior vuelven a ver la pantalla. Es el mecanismo previsto por la ley, no un efecto secundario.
 
@@ -123,9 +124,12 @@ resources/js/
 php artisan test                                   # todo
 php artisan test tests/Feature/Autorizacion        # una carpeta
 php artisan test --filter="contraste"              # por nombre
+npm run test                                        # Vitest: lógica de frontend (cola sin conexión)
 ```
 
-Las pruebas corren sobre SQLite en memoria con `RefreshDatabase`. Son **310** y cubren, entre otras cosas, la matriz de autorización entre profesionales, el segundo factor completo, la idempotencia de la cola sin conexión, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, el puntaje SUS sobre sets de respuestas calculados a mano, y el contraste de color de ambos temas leyendo los tokens del CSS.
+Las pruebas de backend corren sobre SQLite en memoria con `RefreshDatabase`. Son **320** y cubren, entre otras cosas, la matriz de autorización entre profesionales, el segundo factor completo, la idempotencia de la cola sin conexión, el cifrado de las respuestas de los formularios clínicos, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, el puntaje SUS sobre sets de respuestas calculados a mano, y el contraste de color de ambos temas leyendo los tokens del CSS.
+
+**5 pruebas con Vitest** cubren `resources/js/lib/offline-queue.ts` con `fake-indexeddb`: aislamiento de la cola por `ownerId`, que 401/403/419 se conservan para reintentar en vez de descartarse como un 422, y que las entradas de antes de este cambio (sin `ownerId`) se migran conservándolas en vez de perderlas o de atribuírselas a quien inicie sesión primero. Config en `vitest.config.ts`.
 
 Al agregar una prueba que renderiza una página nueva, compilar antes con `npm run build`.
 
@@ -165,11 +169,16 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 | Un paciente no ve citas ni historia | Su cuenta no está vinculada a una ficha. Se vincula desde `/admin/usuarios` |
 | El material educativo no queda disponible sin conexión | Solo se precarga el que tiene cuerpo propio y la marca de disponible sin conexión, y se descarga al abrir la pantalla de Educación con señal |
 | Los errores de formulario salen como `validation.algo` | Falta la línea en `lang/es/validation.php`, o `APP_LOCALE` no es `es` |
+| Un recurso externo nuevo no carga (fuente, script, iframe) | La Content-Security-Policy de `SecurityHeaders::contentSecurityPolicy()` solo deja pasar los orígenes ya listados ahí; hay que agregar el nuevo. En local no pasa: la CSP se salta a propósito porque bloquearía el servidor de Vite |
 
 ## Pendiente para producción
 
 - **Desplegar en el VPS** (Ubuntu, Nginx + PHP-FPM + PostgreSQL).
-- **Autoalojar Jitsi** y apuntar `JITSI_DOMAIN` al servidor propio. Es parte del alcance del proyecto, no algo descartado. Hoy las salas viven en `meet.jit.si`, que es público: el nombre de sala es un UUID no adivinable, pero la conversación pasa por infraestructura de terceros.
-- **Definir una Content-Security-Policy** una vez que el video sea de origen propio. No se puso antes porque una CSP mal ajustada rompe la videollamada sin mostrar ningún error.
+- **Apuntar `JITSI_DOMAIN` en Render** al Jitsi ya autoalojado (`jitsi.bello.works`, versión `stable-11248`). Hoy producción sigue en `meet.jit.si`, que es público y de terceros.
+- **Sumar autenticación JWT a la sala autoalojada.** Hoy lo único que impide entrar a quien no sea médico o paciente es que el nombre de sala es un UUID no adivinable; con JWT, solo el médico y el paciente de la cita podrían hacerlo de verdad.
 - **Validar el contenido clínico** con la médica de la IPS. Está marcado en el código con `TODO: validar con la médica de la IPS`: los umbrales de `config/clinical_support.php`, los rangos de `config/vital_signs.php` y los textos de `EducationalContentSeeder` y de la guía de signos vitales.
 - **Respaldo de la `APP_KEY`** separado del respaldo de la base de datos.
+- `APP_DEBUG=false` y `APP_ENV=production`.
+- **Configurar un `MAIL_MAILER` real.** Hoy es `log`: "olvidé mi contraseña" genera el enlace pero no envía ningún correo, solo lo escribe en `storage/logs/laravel.log`.
+- **Definir `ADMIN_INITIAL_PASSWORD`.** Sin ella, `AdminUserSeeder` falla en vez de crear el admin con la contraseña de la demo — ver [Variables de entorno](#variables-de-entorno).
+- **Revisar con la médica el contenido de `EducationalContentSeeder` antes del primer `--seed` en producción.** A diferencia de `DemoDataSeeder`, este corre en **todos** los entornos: lo que tenga cargado el día del primer `--seed` es lo que verán los pacientes.

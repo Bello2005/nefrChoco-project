@@ -29,7 +29,9 @@ class ClinicalForm extends Model
     protected function casts(): array
     {
         return [
-            'answers' => 'array',
+            // Texto narrativo del paciente (síntomas, plan, barreras): ver la
+            // migración 2026_09_21_130000_encrypt_clinical_forms_answers.
+            'answers' => 'encrypted:array',
         ];
     }
 

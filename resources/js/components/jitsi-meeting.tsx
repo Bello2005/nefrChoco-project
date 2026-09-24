@@ -21,8 +21,8 @@ const CONFIG_OVERWRITE = {
     disableInviteFunctions: true,
 
     // Sin llamadas a Gravatar ni a otros servicios de terceros con datos del
-    // usuario. El video ya pasa por infraestructura propia; no tiene sentido
-    // filtrar identidad por un costado.
+    // usuario: no hay razón para filtrar identidad por un costado, sea cual
+    // sea el dominio de Jitsi configurado en `domain`.
     disableThirdPartyRequests: true,
 
     // No deja el nombre de la sala en el almacenamiento del navegador. El

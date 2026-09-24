@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Appointment;
+use App\Models\Patient;
+use App\Models\User;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -44,3 +48,69 @@ test('las tres zonas autenticadas están limitadas por peticiones', function (st
     'paciente.dashboard',
     'admin.dashboard',
 ]);
+
+test('el login lleva una Content-Security-Policy que permite el script y el iframe de Jitsi', function () {
+    $response = $this->get('/login');
+
+    $response->assertOk();
+
+    $csp = $response->headers->get('Content-Security-Policy');
+    $jitsi = 'https://'.config('services.jitsi.domain');
+
+    expect($csp)->not->toBeNull();
+    expect($csp)->toContain("default-src 'self'");
+    expect($csp)->toContain("script-src 'self' 'nonce-");
+    expect($csp)->toContain($jitsi);
+    expect($csp)->toContain("frame-src {$jitsi}");
+    expect($csp)->toContain('https://fonts.bunny.net');
+    expect($csp)->toContain("frame-ancestors 'none'");
+    expect($csp)->toContain("object-src 'none'");
+});
+
+test('el nonce de la CSP es el mismo que lleva el script inline de Ziggy', function () {
+    $response = $this->get('/login');
+
+    $csp = $response->headers->get('Content-Security-Policy');
+    preg_match("/'nonce-([^']+)'/", $csp, $match);
+
+    expect($match)->not->toBeEmpty();
+
+    $response->assertSee(sprintf('nonce="%s"', $match[1]), false);
+});
+
+test('en local no se manda Content-Security-Policy, porque rompería la recarga en caliente de Vite', function () {
+    app()->instance('env', 'local');
+
+    $response = $this->get('/login');
+
+    $response->assertOk();
+    expect($response->headers->get('Content-Security-Policy'))->toBeNull();
+});
+
+test('una teleconsulta real carga con la CSP puesta y sin que se rompa la sala', function () {
+    $this->seed(RoleSeeder::class);
+
+    $medico = User::factory()->create();
+    $medico->assignRole('medico');
+
+    $appointment = Appointment::factory()->create([
+        'doctor_id' => $medico->id,
+        'patient_id' => Patient::factory(),
+        'type' => Appointment::TYPE_TELECONSULTATION,
+        'status' => Appointment::STATUS_SCHEDULED,
+        'scheduled_at' => now(),
+    ]);
+
+    $response = $this->actingAs($medico)->get(route('medico.citas.teleconsulta', $appointment));
+
+    $response->assertOk();
+    $response->assertInertia(fn ($page) => $page->component('medico/teleconsulta/show'));
+
+    $csp = $response->headers->get('Content-Security-Policy');
+    $jitsi = 'https://'.config('services.jitsi.domain');
+
+    expect($csp)->not->toBeNull();
+    expect($csp)->toContain("script-src 'self' 'nonce-")
+        ->toContain($jitsi)
+        ->toContain("frame-src {$jitsi}");
+});

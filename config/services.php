@@ -45,4 +45,15 @@ return [
         'domain' => env('JITSI_DOMAIN', 'meet.jit.si'),
     ],
 
+    /*
+     * Contraseña inicial del admin sembrado por AdminUserSeeder fuera de
+     * local/testing. Se lee acá (y no con env() directo en el seeder) porque
+     * config:cache, que corre en cualquier deploy real, deja de leer el .env:
+     * un env() fuera de un archivo de config devolvería null aunque la
+     * variable sí esté definida en el servidor.
+     */
+    'admin' => [
+        'initial_password' => env('ADMIN_INITIAL_PASSWORD'),
+    ],
+
 ];
