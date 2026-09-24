@@ -27,6 +27,7 @@ interface UserRow {
     role: string | null;
     deactivated: boolean;
     isSelf: boolean;
+    practitionerPending: boolean;
 }
 
 export default function UsuariosIndex({ users }: { users: UserRow[] }) {
@@ -89,6 +90,7 @@ export default function UsuariosIndex({ users }: { users: UserRow[] }) {
                                                 </span>
                                                 <span className="font-semibold">{user.name}</span>
                                                 {user.deactivated && <Badge variant="outline">Desactivada</Badge>}
+                                                {user.practitionerPending && <Badge variant="warning">Perfil profesional pendiente</Badge>}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-muted-foreground text-sm">{user.email}</TableCell>

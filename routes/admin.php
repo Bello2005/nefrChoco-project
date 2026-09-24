@@ -4,7 +4,9 @@ use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\CatalogController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EducationalContentController;
+use App\Http\Controllers\Admin\InstitutionController;
 use App\Http\Controllers\Admin\PatientController;
+use App\Http\Controllers\Admin\PractitionerProfileController;
 use App\Http\Controllers\Admin\SusReportController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +23,9 @@ Route::middleware(['auth', 'role:admin', 'throttle:zona-clinica'])->prefix('admi
     // desactiva, y la cuenta sigue existiendo como autora de sus registros.
     Route::patch('usuarios/{user}/desactivar', [UserController::class, 'deactivate'])->name('usuarios.desactivar');
     Route::patch('usuarios/{user}/reactivar', [UserController::class, 'reactivate'])->name('usuarios.reactivar');
+    Route::put('usuarios/{user}/perfil-profesional', [PractitionerProfileController::class, 'update'])->name('usuarios.perfil-profesional');
+    // La verificación la hace una persona en la consulta pública de ReTHUS.
+    Route::post('usuarios/{user}/verificar-rethus', [PractitionerProfileController::class, 'verifyRethus'])->name('usuarios.verificar-rethus');
 
     // El padrón se consulta y edita desde la zona médica; aquí solo se custodia
     // y se elimina, que es lo que el rol médico no puede hacer.
@@ -37,6 +42,7 @@ Route::middleware(['auth', 'role:admin', 'throttle:zona-clinica'])->prefix('admi
     Route::get('auditoria', [AuditController::class, 'index'])->name('auditoria.index');
 
     Route::get('catalogos', [CatalogController::class, 'index'])->name('catalogos.index');
+    Route::get('institucion', [InstitutionController::class, 'index'])->name('institucion.index');
 
     Route::get('usabilidad', [SusReportController::class, 'index'])->name('usabilidad.index');
 });

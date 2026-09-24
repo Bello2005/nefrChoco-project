@@ -44,6 +44,7 @@
 
             .brand strong { display: block; font-size: 15px; letter-spacing: -0.01em; }
             .brand span { font-size: 11px; color: #5a6f76; }
+            .brand .reps { display: block; margin-top: 2px; }
 
             .meta { text-align: right; font-size: 11px; color: #5a6f76; }
 
@@ -104,8 +105,11 @@
                         </svg>
                     </span>
                     <div>
-                        <strong>IPS NefroChocó</strong>
+                        <strong>{{ $institution['name'] ?? 'IPS NefroChocó' }}</strong>
                         <span>Programa de enfermedades crónicas no transmisibles</span>
+                        @if ($institution['reps_code'])
+                            <span class="reps">Código de habilitación REPS: {{ $institution['reps_code'] }}@if ($institution['site_code']) · Sede {{ $institution['site_code'] }}@endif</span>
+                        @endif
                     </div>
                 </div>
 

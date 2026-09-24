@@ -73,6 +73,7 @@ interface Props {
     appointmentsTrend: { label: string; value: number }[];
     alerts: Alert[];
     followUp: { isActive: boolean; overduePatients: { id: number; name: string; overdue: string[] }[] };
+    practitionerMissing: string[];
 }
 
 export default function MedicoDashboard({
@@ -85,6 +86,7 @@ export default function MedicoDashboard({
     appointmentsTrend,
     alerts,
     followUp,
+    practitionerMissing,
 }: Props) {
     const firstName = doctorName.split(' ').slice(0, 2).join(' ');
     const totalDiagnoses = ecntDistribution.reduce((sum, item) => sum + item.value, 0);
@@ -114,6 +116,16 @@ export default function MedicoDashboard({
                         </>
                     }
                 />
+
+                {practitionerMissing.length > 0 && (
+                    <div className="border-warning/30 bg-warning-soft flex items-start gap-3 rounded-xl border p-4">
+                        <TriangleAlert className="text-warning mt-0.5 size-5 shrink-0" aria-hidden="true" />
+                        <p className="text-sm">
+                            <span className="font-semibold">Tu perfil profesional está incompleto.</span> Falta: {practitionerMissing.join(', ')}.
+                            Puedes seguir atendiendo; pídele al administrador que lo complete, porque la historia clínica interoperable lo necesita.
+                        </p>
+                    </div>
+                )}
 
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard label="Pacientes activos" value={stats.patients} icon={Users} tone="primary" />

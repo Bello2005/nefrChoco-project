@@ -6,6 +6,7 @@ import { Link, usePage } from '@inertiajs/react';
 import {
     Activity,
     BookOpen,
+    Building2,
     CalendarDays,
     ClipboardCheck,
     ClipboardList,
@@ -41,6 +42,7 @@ const navByRole: Record<string, NavSection[]> = {
             items: [
                 { title: 'Auditoría', url: '/admin/auditoria', icon: ScrollText },
                 { title: 'Catálogos', url: '/admin/catalogos', icon: Library },
+                { title: 'Datos de la institución', url: '/admin/institucion', icon: Building2 },
                 { title: 'Usabilidad', url: '/admin/usabilidad', icon: ClipboardCheck },
             ],
         },

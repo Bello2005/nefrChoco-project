@@ -166,6 +166,12 @@ En **Usuarios** creas las cuentas del personal y de los pacientes que van a usar
 
 Si más adelante cambias esa cuenta a otro rol, la ficha se suelta sola y vuelve a quedar disponible.
 
+**Datos profesionales y RETHUS (solo médicos).** Al editar la cuenta de un médico aparece **Datos profesionales**: tipo y número de documento, profesión, registro profesional y especialidad. Debajo está **Verificación en RETHUS**: busca al médico en la consulta pública de ReTHUS con su documento; si aparece activo, anota lo que viste y toca **Marcar como verificado en RETHUS**. Queda quién lo verificó y cuándo. Si después cambias el documento o el registro, la verificación se borra y hay que repetirla. Mientras el perfil esté incompleto, el médico ve un aviso, pero puede seguir atendiendo.
+
+### Datos de la institución
+
+**Datos de la institución** muestra la razón social, el NIT, el código de habilitación REPS, la sede y su municipio, y marca los que faltan. No se editan en la pantalla: se configuran en el servidor. La historia clínica imprimible muestra la razón social y el REPS cuando están configurados.
+
 ### Custodia del padrón
 
 En **Pacientes** ves todas las fichas con cuánto dato clínico cuelga de cada una, y puedes eliminarlas. Es la única zona donde se puede hacer.

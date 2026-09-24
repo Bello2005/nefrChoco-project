@@ -6,6 +6,7 @@ use App\Models\ClinicalHistory;
 use App\Models\Teleconsultation;
 use App\Models\TeleconsultationClarification;
 use App\Services\ClinicalAccessAuditor;
+use App\Services\InstitutionService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -86,6 +87,8 @@ class ClinicalHistoryController extends Controller
             'history' => $clinicalHistory,
             'patient' => $clinicalHistory->patient,
             'printedBy' => $request->user(),
+            // Solo lo que esté configurado: nunca un valor de relleno.
+            'institution' => app(InstitutionService::class)->data(),
         ]);
     }
 }

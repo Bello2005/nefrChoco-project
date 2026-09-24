@@ -350,3 +350,7 @@ El RDA exige que el paciente coincida con el registro nacional en tipo y número
 - **Fichas existentes:** la migración `backfill_patient_identity` propone los nombres separados con una heurística (y siempre marca la ficha), y mapea tipo de documento y municipio solo cuando coinciden exactamente con el catálogo. Lo demás queda en **Fichas por revisar** (admin y médico). Después de importar catálogos se vuelve a correr con `php artisan pacientes:revisar-identidad`.
 - **Guía FHIR del IHCE:** el `package.tgz` oficial se llama `co.gov.minsalud.rda` (versión 1.0.0, FHIR 4.0.1) y sus artefactos usan URLs `http://ihcecol.gov.co/fhir/...`, pero la portada publicada de la guía dice `minsalud.fhir.co.rda` y `https://fhir.minsalud.gov.co/rda/...`. Para los artefactos manda el paquete; la diferencia se valida con el validador de HL7 cuando se construya el RDA.
 
+## Profesionales e institución para el RDA
+
+`practitioner_profiles` guarda la identidad profesional del médico (documento en claro y único; profesión, registro, especialidad y nota de verificación cifrados). La verificación en RETHUS es manual y queda con autor y fecha. La institución (razón social, NIT, REPS, sede y municipio) no vive en la base sino en la configuración (`INSTITUTION_*`), porque es una sola y la administra quien opera el servidor.
+

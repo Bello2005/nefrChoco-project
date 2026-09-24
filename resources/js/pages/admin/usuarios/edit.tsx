@@ -1,5 +1,6 @@
 import { Field, FormCard } from '@/components/forms/field';
 import { PageHeader } from '@/components/page-header';
+import { type PractitionerData, PractitionerProfileSection } from '@/components/practitioner-profile-section';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -32,10 +33,12 @@ export default function UsuariosEdit({
     user,
     roles,
     patients,
+    practitioner,
 }: {
     user: UserData;
     roles: { value: string; label: string }[];
     patients: LinkablePatient[];
+    practitioner: PractitionerData | null;
 }) {
     const { data, setData, put, processing, errors } = useForm({
         name: user.name,
@@ -130,6 +133,8 @@ export default function UsuariosEdit({
                         </div>
                     </FormCard>
                 </form>
+
+                {practitioner && <PractitionerProfileSection userId={user.id} practitioner={practitioner} />}
             </div>
         </AppLayout>
     );

@@ -16,11 +16,26 @@ class DashboardController extends Controller
         private readonly FollowUpScheduleService $followUpSchedule,
     ) {}
 
+    /** @return list<string> */
+    private function practitionerMissing(): array
+    {
+        $profile = Auth::user()->practitionerProfile;
+        $missing = $profile?->missingFields() ?? ['tus datos profesionales'];
+
+        if ($profile?->rethus_verified_at === null) {
+            $missing[] = 'la verificación en RETHUS';
+        }
+
+        return $missing;
+    }
+
     public function index(): Response
     {
         return Inertia::render('medico/dashboard', [
             ...$this->dashboardService->forDoctor(Auth::user()),
             'doctorName' => Auth::user()->name,
+            // Aviso sin bloquear la atención: el RDA necesita el perfil profesional.
+            'practitionerMissing' => $this->practitionerMissing(),
             // El padrón es institucional: cualquier médico ve los controles vencidos.
             'followUp' => [
                 'isActive' => $this->followUpSchedule->isActive(),

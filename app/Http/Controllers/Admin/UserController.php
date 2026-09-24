@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Models\Patient;
 use App\Models\User;
+use App\Services\Catalogs\CodeCatalog;
 use App\Services\UserManagementService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,11 +23,14 @@ class UserController extends Controller
 
     public function index(Request $request): Response
     {
-        $users = User::with('roles')
+        $users = User::with(['roles', 'practitionerProfile'])
             ->orderBy('name')
             ->get()
             ->map(fn (User $user) => [
                 'id' => $user->id,
+                // Aviso sin bloquear: al médico le falta el perfil o la verificación RETHUS.
+                'practitionerPending' => $user->hasRole(Role::Medico->value)
+                    && (! $user->practitionerProfile?->isComplete() || $user->practitionerProfile?->rethus_verified_at === null),
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->roles->first()?->name,
@@ -66,6 +70,8 @@ class UserController extends Controller
                 'role' => $user->roles->first()?->name,
                 'patientId' => $user->patient?->id,
             ],
+            // Solo se muestra para el rol medico (RDA: profesional activo en RETHUS).
+            'practitioner' => $user->hasRole(Role::Medico->value) ? $this->practitionerData($user) : null,
             'roles' => array_map(fn (Role $role) => ['value' => $role->value, 'label' => $role->label()], Role::cases()),
             'patients' => $this->linkablePatients($user),
         ]);
@@ -94,6 +100,26 @@ class UserController extends Controller
         $this->userManagementService->reactivate($user);
 
         return to_route('admin.usuarios.index')->with('success', "{$user->name} puede volver a entrar.");
+    }
+
+    /** @return array<string, mixed> */
+    private function practitionerData(User $user): array
+    {
+        $profile = $user->practitionerProfile;
+
+        return [
+            'documentType' => $profile?->document_type,
+            'documentNumber' => $profile?->document_number,
+            'profession' => $profile?->profession,
+            'professionalRegistration' => $profile?->professional_registration,
+            'specialty' => $profile?->specialty,
+            'missing' => $profile?->missingFields() ?? ['datos profesionales'],
+            'documentTypeCatalog' => app(CodeCatalog::class)->has('tipo_documento') ? 'tipo_documento' : null,
+            'documentTypeLabel' => app(CodeCatalog::class)->display('tipo_documento', $profile?->document_type),
+            'rethusVerifiedAt' => $profile?->rethus_verified_at,
+            'rethusVerifiedBy' => $profile?->verifier?->name,
+            'rethusNote' => $profile?->rethus_note,
+        ];
     }
 
     /**

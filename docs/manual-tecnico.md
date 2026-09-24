@@ -243,3 +243,8 @@ sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie1
 - Validación: `config/catalogs.php` → `patient_fields` dice contra qué catálogo se valida cada campo. Si el catálogo no está importado, o la clave es `null` (hoy: identidad de género, etnia, discapacidad, ocupación, zona y tipo de afiliación, pendientes de confirmar contra el paquete FHIR del IHCE), el campo se acepta como texto.
 - Después de importar `tipo_documento` o `divipola`, corre `php artisan pacientes:revisar-identidad` para mapear las fichas viejas. Nunca pisa lo que ya completó una persona, y el marcador de nombres solo se quita guardando la ficha.
 - Sexo biológico → FHIR: `config/catalogs.php` → `biological_sex_fhir`, tomado del ValueSet `IHCE-SexoBiologico-VS` del paquete oficial.
+
+## Profesionales (RETHUS) e institución (REPS)
+
+- `practitioner_profiles` (1:1 con usuarios de rol `medico`): `document_type`, `document_number` (sin cifrar, único), `profession`, `professional_registration`, `specialty` y `rethus_note` (cifrados, con `LogsChangedFields`); `rethus_verified_at` y `rethus_verified_by`. Se edita en Admin → Usuarios. La verificación RETHUS la hace una persona en la consulta pública de ReTHUS: **no hay consultas automáticas ni scraping**. Si cambia el documento o el registro, la verificación se borra.
+- Institución: `config/nefrochoco.php` → `institution`, leído de `INSTITUTION_NAME`, `INSTITUTION_NIT`, `INSTITUTION_REPS_CODE`, `INSTITUTION_SITE_CODE` e `INSTITUTION_MUNICIPALITY_CODE` (DIVIPOLA). **Todos vacíos por defecto, [CONFIRMAR] con la IPS**: nunca se inventan. Un valor vacío cuenta como faltante. Después de cambiarlos en el `.env`, corre `php artisan config:cache`.

@@ -47,4 +47,26 @@ return [
         'max_body_characters' => (int) env('EDUCATIONAL_MAX_BODY_CHARACTERS', 20000),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Institución (REPS)
+    |--------------------------------------------------------------------------
+    |
+    | Identificación de la IPS para el RDA del IHCE: razón social, NIT, código
+    | de habilitación REPS, código de sede y municipio de la sede (DIVIPOLA).
+    |
+    | [CONFIRMAR] con la IPS (Tania). Todos en null por defecto: NUNCA se
+    | escriben valores inventados. Mientras falten, Admin → Datos de la
+    | institución muestra qué falta, y la historia imprimible no los muestra.
+    |
+    */
+
+    'institution' => [
+        'name' => env('INSTITUTION_NAME'), // [CONFIRMAR] razón social
+        'nit' => env('INSTITUTION_NIT'), // [CONFIRMAR]
+        'reps_code' => env('INSTITUTION_REPS_CODE'), // [CONFIRMAR] código de habilitación REPS
+        'site_code' => env('INSTITUTION_SITE_CODE'), // [CONFIRMAR] código de sede
+        'municipality_code' => env('INSTITUTION_MUNICIPALITY_CODE'), // [CONFIRMAR] DIVIPOLA de la sede
+    ],
+
 ];
