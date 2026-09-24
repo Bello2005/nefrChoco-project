@@ -5,7 +5,8 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Consentimiento informado de teleconsulta (Resolución 2654 de 2019).
+ * Consentimiento informado de teleconsulta (Resolución 2654 de 2019, derogada
+ * por la Res. 1644 de 2026).
  *
  * Es distinto del consentimiento de datos de la Ley 1581, que ya existe: aquel
  * autoriza tratar los datos personales, y este autoriza ser atendido por

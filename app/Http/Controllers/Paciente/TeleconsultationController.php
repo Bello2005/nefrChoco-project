@@ -26,7 +26,7 @@ class TeleconsultationController extends Controller
         }
 
         // La atención por videollamada se autoriza aparte del tratamiento de
-        // datos (Resolución 2654 de 2019), y se pide aquí, con la cita a la
+        // datos (Resolución 1644 de 2026), y se pide aquí, con la cita a la
         // vista, en vez de en un muro general al iniciar sesión.
         if (! Auth::user()->patient?->hasCurrentTeleconsultationConsent()) {
             return to_route('paciente.mis-citas.teleconsulta.consentimiento', $appointment);

@@ -6,8 +6,8 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateTime } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
-import { MonitorSmartphone, ShieldCheck, Stethoscope, WifiOff } from 'lucide-react';
-import { FormEventHandler } from 'react';
+import { HeartHandshake, MonitorSmartphone, Phone, Pill, ShieldCheck, Siren, Stethoscope, Undo2, WifiOff, type LucideIcon } from 'lucide-react';
+import { FormEventHandler, type ReactNode } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Mis citas', href: '/paciente/mis-citas' },
@@ -22,6 +22,19 @@ interface Props {
     };
     version: string;
     contactEmail: string;
+}
+
+function ConsentItem({ icon: Icon, title, children }: { icon: LucideIcon; title: string; children: ReactNode }) {
+    return (
+        <li className="flex items-start gap-3">
+            <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
+                <Icon className="size-4" aria-hidden="true" />
+            </span>
+            <p>
+                <span className="font-semibold">{title}</span> {children}
+            </p>
+        </li>
+    );
 }
 
 export default function ConsentimientoTeleconsulta({ appointment, version, contactEmail }: Props) {
@@ -56,6 +69,12 @@ export default function ConsentimientoTeleconsulta({ appointment, version, conta
                     </p>
 
                     <ul className="space-y-4 text-sm">
+                        {/* Res. 1644 de 2026, art. 7. Los textos nuevos son borradores cortos:
+                            TODO: validar con la médica de la IPS y el área jurídica. */}
+                        <ConsentItem icon={HeartHandshake} title="Lo que ganas.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Te evitas el viaje al puesto de salud y puedes tener tu control desde donde estés.
+                        </ConsentItem>
                         <li className="flex items-start gap-3">
                             <span className="bg-brand-soft text-brand-strong flex size-8 shrink-0 items-center justify-center rounded-lg">
                                 <Stethoscope className="size-4" aria-hidden="true" />
@@ -83,6 +102,34 @@ export default function ConsentimientoTeleconsulta({ appointment, version, conta
                                 tú y tu profesional. La videollamada no se graba.
                             </p>
                         </li>
+                        <ConsentItem icon={ShieldCheck} title="Cuida tu privacidad.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Toda comunicación por internet tiene riesgos: alguien a tu lado puede escuchar, o tu teléfono puede estar en manos de otra
+                            persona. Busca un lugar donde estés solo, usa audífonos si puedes y no compartas el enlace de la sala.
+                        </ConsentItem>
+                        <ConsentItem icon={Stethoscope} title="Lo que te pedimos.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Conéctate a la hora de tu cita, ten a mano tus medicamentos y tus últimas mediciones, y cuéntale a tu profesional cómo te
+                            has sentido de verdad.
+                        </ConsentItem>
+                        <ConsentItem icon={Pill} title="Si te formulan algo.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Tu profesional te dirá durante la consulta si te formula medicamentos o exámenes, y la IPS te explicará cómo recibir la
+                            fórmula.
+                        </ConsentItem>
+                        <ConsentItem icon={Phone} title="Cómo te contactamos.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Si la IPS necesita comunicarse contigo, usa los datos de contacto de tu ficha. Si cambias de número, avísale a la IPS.
+                        </ConsentItem>
+                        <ConsentItem icon={Siren} title="No es para urgencias.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Si te sientes muy mal o tienes una urgencia, no esperes la teleconsulta: ve al servicio de urgencias más cercano.
+                        </ConsentItem>
+                        <ConsentItem icon={Undo2} title="Puedes cambiar de opinión.">
+                            {/* TODO: validar con la médica de la IPS y el área jurídica. */}
+                            Puedes retirar esta autorización cuando quieras desde «Mis consentimientos». Si la retiras, te la volvemos a pedir antes
+                            de tu próxima teleconsulta.
+                        </ConsentItem>
                     </ul>
 
                     <p className="text-muted-foreground border-border/70 border-t pt-4 text-sm">

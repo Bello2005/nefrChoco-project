@@ -47,6 +47,7 @@ class Patient extends Model
             'biological_sex' => BiologicalSex::class,
             'consent_accepted_at' => 'datetime',
             'teleconsultation_consent_accepted_at' => 'datetime',
+            'teleconsultation_consent_revoked_at' => 'datetime',
             'phone' => 'encrypted',
             'emergency_contact_name' => 'encrypted',
             'emergency_contact_phone' => 'encrypted',
@@ -66,7 +67,7 @@ class Patient extends Model
     }
 
     /**
-     * Autorización para ser atendido por videollamada (Resolución 2654 de 2019).
+     * Autorización para ser atendido por videollamada (Resolución 1644 de 2026).
      *
      * Va aparte del consentimiento de datos: aceptar que traten tu información
      * no es lo mismo que aceptar que te atiendan sin examen físico y con una
@@ -74,7 +75,10 @@ class Patient extends Model
      */
     public function hasCurrentTeleconsultationConsent(): bool
     {
+        // Retirada, no cuenta aunque la versión sea la vigente: la persona
+        // tiene que volver a aceptar para entrar a una sala (art. 7).
         return $this->teleconsultation_consent_accepted_at !== null
+            && $this->teleconsultation_consent_revoked_at === null
             && $this->teleconsultation_consent_version === config('privacy.teleconsultation_consent_version');
     }
 

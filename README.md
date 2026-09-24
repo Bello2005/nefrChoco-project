@@ -69,7 +69,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Pacientes e historia clínica | ✅ |
 | Agenda de citas con calendario | ✅ |
 | Teleconsulta: sala del profesional y sala del paciente | ✅ |
-| Consentimiento informado de teleconsulta (Res. 2654) | ✅ |
+| Consentimiento informado de teleconsulta (Res. 1644 de 2026) | ✅ |
 | Formularios clínicos con motor de puntuación | ✅ |
 | Telemonitoreo de signos vitales con alertas | ✅ |
 | Función renal: TFGe (CKD-EPI 2021) y clasificación KDIGO | ✅ |
@@ -103,7 +103,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 **Ley 1581 de 2012** — cifrado en reposo, consentimiento versionado del titular, y auditoría de lecturas *y* de cambios sobre datos clínicos. La lectura se registra en las cuatro pantallas que exponen contenido clínico: ficha del paciente, historia clínica, formulario clínico y telemonitoreo. El control de acceso se refuerza con policies donde el rol no basta.
 
-**Resolución 2654 de 2019** — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse, que la videollamada **no se graba** y que puede pedirse atención presencial. La Etapa 3 de la norma respalda además el segundo factor.
+**Resolución 1644 de 2026** (derogó la Res. 2654 de 2019) — consentimiento informado específico de teleconsulta, distinto del de datos: se pide al entrar a la sala, explica en lenguaje sencillo que no hay examen físico, que la conexión puede cortarse, que la videollamada **no se graba**, que puede pedirse atención presencial, y además beneficios, responsabilidades, contacto, prescripción, emergencias, fallas tecnológicas y riesgos para la confidencialidad (art. 7). El paciente puede retirarlo desde "Mis consentimientos". El segundo factor se había justificado con la Etapa 3 de la Res. 2654, hoy derogada: [CONFIRMAR] qué artículo de la 1644 lo respalda.
 
 ## Instalación
 

@@ -54,8 +54,19 @@ La primera vez te vamos a explicar cómo funciona la atención por videollamada 
 - **No hay examen físico.** Tu profesional no puede tocarte ni tomarte muestras. Si hace falta, te pedirá ir al puesto de salud.
 - **La conexión puede cortarse.** Si pasa, vuelve a entrar: la sala sigue abierta y tu profesional te espera adentro.
 - **La sala es privada** y solo entran tú y tu profesional. La videollamada no se graba.
+- **Cuida tu privacidad:** busca un lugar donde estés solo y no compartas el enlace de la sala.
+- **No es para urgencias.** Si te sientes muy mal, ve al servicio de urgencias más cercano.
+
+La pantalla también te cuenta qué ganas con la teleconsulta, qué te pedimos, qué pasa si te formulan algo y cómo te contactamos. Si la IPS cambia ese texto, te lo volvemos a mostrar para que lo aceptes de nuevo.
 
 Puedes pedir atención presencial en cualquier momento, sin dar explicaciones y sin perder tu cita.
+
+### Mis consentimientos
+
+En el menú, **Mis consentimientos** te muestra lo que autorizaste y cuándo:
+
+- **Atención por videollamada.** Puedes retirarla con el botón **Retirar mi consentimiento**. Tus citas no se cancelan; solo te la volvemos a pedir antes de tu próxima teleconsulta.
+- **Tratamiento de tus datos.** Tu historia clínica se conserva por el tiempo que exige la ley, aunque retires esta autorización. Si quieres retirarla o corregir tus datos, escribe al correo que aparece en esa pantalla.
 
 > **Si la señal está débil:** apaga tu cámara. El audio consume mucho menos datos y es lo que tu profesional necesita para atenderte.
 

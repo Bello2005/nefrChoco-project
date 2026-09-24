@@ -3,6 +3,7 @@
 use App\Http\Controllers\Paciente\AppointmentController;
 use App\Http\Controllers\Paciente\ClinicalHistoryController;
 use App\Http\Controllers\Paciente\ConsentController;
+use App\Http\Controllers\Paciente\ConsentsController;
 use App\Http\Controllers\Paciente\DashboardController;
 use App\Http\Controllers\Paciente\EducationalContentController;
 use App\Http\Controllers\Paciente\TeleconsultationConsentController;
@@ -26,6 +27,11 @@ Route::middleware(['auth', 'role:paciente', 'throttle:zona-clinica'])->prefix('p
             ->name('mis-citas.teleconsulta.consentimiento');
         Route::post('mis-citas/{appointment}/teleconsulta/consentimiento', [TeleconsultationConsentController::class, 'store'])
             ->name('mis-citas.teleconsulta.consentimiento.store');
+
+        // Sin identificador en la ruta: cada quien ve y retira solo lo suyo.
+        Route::get('mis-consentimientos', [ConsentsController::class, 'show'])->name('mis-consentimientos.show');
+        Route::post('mis-consentimientos/teleconsulta/retirar', [ConsentsController::class, 'revokeTeleconsultation'])
+            ->name('mis-consentimientos.teleconsulta.retirar');
 
         Route::get('mi-historia-clinica', [ClinicalHistoryController::class, 'show'])->name('mi-historia-clinica.show');
 

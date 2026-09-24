@@ -42,7 +42,7 @@ flowchart TD
     Dash -->|paciente| Pac["/paciente<br/>mis citas · historia · signos vitales<br/>educación · sala de teleconsulta"]
 
     Pac -.->|sin autorizar datos| Consent["Muro de consentimiento<br/>Ley 1581"]
-    Pac -.->|al entrar a la sala| ConsentTele["Consentimiento de teleconsulta<br/>Resolución 2654"]
+    Pac -.->|al entrar a la sala| ConsentTele["Consentimiento de teleconsulta<br/>Resolución 1644"]
 
     Login -.->|con doble factor| Reto["Desafío TOTP"]
     Reto --> Dash
@@ -113,7 +113,7 @@ erDiagram
         emergency_contact_phone text "cifrado"
         consent_accepted_at timestamp "Ley 1581"
         consent_version string
-        teleconsultation_consent_accepted_at timestamp "Res. 2654"
+        teleconsultation_consent_accepted_at timestamp "Res. 1644"
         teleconsultation_consent_version string
     }
 

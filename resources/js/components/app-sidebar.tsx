@@ -13,6 +13,7 @@ import {
     HeartPulse,
     LayoutDashboard,
     ScrollText,
+    ShieldCheck,
     UserRound,
     Users,
 } from 'lucide-react';
@@ -64,6 +65,7 @@ const navByRole: Record<string, NavSection[]> = {
                 { title: 'Inicio', url: '/paciente/dashboard', icon: LayoutDashboard },
                 { title: 'Mis citas', url: '/paciente/mis-citas', icon: CalendarDays },
                 { title: 'Mi historia', url: '/paciente/mi-historia-clinica', icon: FileHeart },
+                { title: 'Mis consentimientos', url: '/paciente/mis-consentimientos', icon: ShieldCheck },
             ],
         },
         {

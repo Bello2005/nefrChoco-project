@@ -12,7 +12,7 @@ use Inertia\Response;
 
 /**
  * Consentimiento informado para ser atendido por videollamada
- * (Resolución 2654 de 2019).
+ * (Resolución 1644 de 2026, art. 7).
  *
  * Se pide al entrar a la sala y no en un muro general al iniciar sesión: es
  * una autorización sobre la modalidad de atención, así que tiene sentido justo
@@ -56,10 +56,13 @@ class TeleconsultationConsentController extends Controller
             return back()->with('error', 'Tu cuenta aún no está vinculada a una ficha de paciente.');
         }
 
-        $patient->update([
+        // Aceptar de nuevo deja sin efecto un retiro anterior; la fecha del
+        // retiro vive en la auditoría (teleconsulta_revocada).
+        $patient->forceFill([
             'teleconsultation_consent_accepted_at' => now(),
             'teleconsultation_consent_version' => config('privacy.teleconsultation_consent_version'),
-        ]);
+            'teleconsultation_consent_revoked_at' => null,
+        ])->save();
 
         activity('consentimiento')
             ->causedBy($request->user())

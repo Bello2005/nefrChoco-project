@@ -7,7 +7,7 @@ use Database\Seeders\RoleSeeder;
 use Spatie\Activitylog\Models\Activity;
 
 /**
- * Consentimiento informado de teleconsulta (Resolución 2654 de 2019).
+ * Consentimiento informado de teleconsulta (Resolución 1644 de 2026).
  *
  * Es independiente del consentimiento de datos de la Ley 1581: aceptar que
  * traten tu información no equivale a aceptar que te atiendan sin examen

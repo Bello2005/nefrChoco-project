@@ -11,7 +11,10 @@ use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
 
 /**
- * Segundo factor por TOTP (Resolución 2654 de 2019).
+ * Segundo factor por TOTP.
+ *
+ * Se justificó con la Etapa 3 de la Resolución 2654 de 2019, derogada por la
+ * Res. 1644 de 2026. [CONFIRMAR] qué artículo de la 1644 lo respalda.
  *
  * Se eligió TOTP y no un código por SMS o correo justamente por el contexto:
  * una aplicación de autenticación genera el código sin red, mientras que un

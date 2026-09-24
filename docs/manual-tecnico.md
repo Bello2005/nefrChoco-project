@@ -57,7 +57,7 @@ Además de las estándar de Laravel:
 | `DB_CONNECTION=pgsql` | Único motor soportado |
 | `JITSI_DOMAIN` | Dominio de la videollamada. El servidor autoalojado ya existe (`jitsi.bello.works`, versión `stable-11248`), pero producción (Render) todavía apunta a `meet.jit.si` por defecto; al cambiar esta variable la política de permisos del navegador se ajusta sola |
 | `PRIVACY_CONSENT_VERSION` | Versión del consentimiento de datos (Ley 1581) |
-| `PRIVACY_TELECONSULTATION_CONSENT_VERSION` | Versión del consentimiento de teleconsulta (Res. 2654) |
+| `PRIVACY_TELECONSULTATION_CONSENT_VERSION` | Versión del consentimiento de teleconsulta (Res. 1644 de 2026) |
 | `PRIVACY_CONTACT_EMAIL` | Correo de habeas data que se muestra al titular |
 | `TELECONSULTATION_JOIN_MINUTES_BEFORE` | Minutos antes de la cita en que se abre la sala |
 | `TELECONSULTATION_JOIN_MINUTES_AFTER` | Minutos después en que la sala se cierra |
@@ -67,6 +67,10 @@ Además de las estándar de Laravel:
 | `ADMIN_INITIAL_PASSWORD` | Contraseña del admin que crea `AdminUserSeeder`. Solo se usa fuera de `local`/`testing`: sin ella, el seeder falla en vez de crear la cuenta con la contraseña de la demo |
 
 **Subir una versión de consentimiento tiene efecto inmediato**: quienes aceptaron la anterior vuelven a ver la pantalla. Es el mecanismo previsto por la ley, no un efecto secundario.
+
+**Ojo: el valor del `.env` manda sobre el de `config/privacy.php`.** Con los textos de la Res. 1644 de 2026 la versión del consentimiento de teleconsulta pasó a `2026-09`. Un servidor cuyo `.env` todavía diga `PRIVACY_TELECONSULTATION_CONSENT_VERSION=2026-01` sigue usando la versión vieja y nadie ve el texto nuevo: hay que cambiarla en el `.env` y correr `php artisan config:cache`.
+
+**Retiro del consentimiento de teleconsulta** (Res. 1644 de 2026, art. 7): el paciente lo retira desde *Mis consentimientos* (`paciente.mis-consentimientos.*`). Se guarda `patients.teleconsultation_consent_revoked_at` sin borrar la aceptación (esa fecha respalda las teleconsultas ya hechas), y la auditoría registra el evento `teleconsulta_revocada` sin propiedades. `Patient::hasCurrentTeleconsultationConsent()` exige que no esté retirado, así que la sala vuelve a pedir la autorización; aceptarla de nuevo limpia el retiro. La autorización de datos (Ley 1581) no se retira con un botón: la historia se conserva por la Res. 839 de 2017, y el titular lo pide por `PRIVACY_CONTACT_EMAIL`.
 
 `APP_KEY` cifra los campos sensibles. **Perderla vuelve ilegibles las historias clínicas, los teléfonos y los secretos del segundo factor.** Debe respaldarse aparte de la base de datos.
 

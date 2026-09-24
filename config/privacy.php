@@ -22,13 +22,13 @@ return [
     |--------------------------------------------------------------------------
     |
     | Versión del consentimiento específico para ser atendido por videollamada
-    | (Resolución 2654 de 2019). Es independiente del anterior: uno autoriza
+    | (Resolución 1644 de 2026). Es independiente del anterior: uno autoriza
     | tratar los datos, este autoriza la modalidad de atención. Se versiona por
     | separado porque sus textos cambian por razones distintas.
     |
     */
 
-    'teleconsultation_consent_version' => env('PRIVACY_TELECONSULTATION_CONSENT_VERSION', '2026-01'),
+    'teleconsultation_consent_version' => env('PRIVACY_TELECONSULTATION_CONSENT_VERSION', '2026-09'),
 
     'contact_email' => env('PRIVACY_CONTACT_EMAIL', 'habeasdata@nefrochoco.co'),
 
