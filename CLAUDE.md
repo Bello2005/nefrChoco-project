@@ -44,6 +44,6 @@ Auditoría: spatie/laravel-activitylog + trait LogsChangedFields + app/Services/
 - Clases en inglés; valores de dominio, rutas y textos visibles en español. Los comentarios explican el porqué.
 - Reutiliza Field, FormCard, PageHeader, EmptyState, Badge y los tokens de Tailwind.
 - Mantén sincronizados README.md y docs/{manual-tecnico,arquitectura,guia-usuario,despliegue}.md.
-- Norma de telemedicina vigente: Res. 1644 de 2026 (derogó la Res. 2654 de 2019).
+- Norma de telemedicina vigente: Res. 1644 de 2026.
 - Commits: Conventional Commits en español, con un cuerpo que explique el porqué.
 - Si una instrucción choca con estas reglas, detente y pregunta antes de seguir.

@@ -5,8 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Segundo factor de autenticación (Resolución 2654 de 2019, derogada por la
- * Res. 1644 de 2026).
+ * Segundo factor de autenticación.
  *
  * El secreto TOTP y los códigos de recuperación se guardan cifrados: quien
  * llegue a leer la base sin la APP_KEY no puede generar códigos válidos ni

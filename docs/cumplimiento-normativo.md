@@ -52,7 +52,7 @@ Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en 
 | Enviar el RDA (API gateway, API Key, cola y bitácora) | — | — | ❌ prompt 11, esperando el manual y las credenciales de QA | Bello / IPS |
 | Consultar RDA de otros prestadores | — | — | ❌ prompt 12, además con visto bueno de jurídica | IPS |
 
-## Resolución 1644 de 2026 — telemedicina (derogó la Res. 2654 de 2019)
+## Resolución 1644 de 2026 — telemedicina
 
 | Norma y artículo | Requisito | Dónde se cumple | Prueba Pest | Estado | Responsable |
 |---|---|---|---|---|---|
