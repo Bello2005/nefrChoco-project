@@ -35,6 +35,10 @@ class TeleconsultationController extends Controller
             'appointment' => $appointment->load('patient:id,full_name'),
             'teleconsultation' => $teleconsultation,
             'jitsiDomain' => config('services.jitsi.domain'),
+            'connectionCheck' => $appointment->connection_check_level ? [
+                'level' => $appointment->connection_check_level,
+                'at' => $appointment->connection_check_at,
+            ] : null,
         ]);
     }
 

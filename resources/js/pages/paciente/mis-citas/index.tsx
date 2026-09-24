@@ -1,3 +1,4 @@
+import { type ConnectionCheck, ConnectionCheckBadge } from '@/components/connection-check-badge';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
@@ -6,7 +7,7 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateTime, formatRelative } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { CalendarDays, Video } from 'lucide-react';
+import { CalendarDays, Gauge, Video } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Mis citas', href: '/paciente/mis-citas' }];
 
@@ -17,6 +18,7 @@ interface AppointmentRow {
     type: string;
     doctor: { id: number; name: string } | null;
     can_join: boolean;
+    connection_check: ConnectionCheck | null;
 }
 
 export default function MisCitasIndex({ appointments }: { appointments: AppointmentRow[] }) {
@@ -47,6 +49,19 @@ export default function MisCitasIndex({ appointments }: { appointments: Appointm
             <div className="flex flex-wrap items-center gap-2">
                 <AppointmentTypeBadge type={appointment.type} />
                 <AppointmentStatusBadge status={appointment.status} />
+                {/* Probar la conexión antes del día de la cita da tiempo de buscar
+                    un lugar con mejor señal o pedir una llamada (Res. 1644, art. 24.8). */}
+                {!isPast && appointment.type === 'teleconsulta' && appointment.status === 'programada' && (
+                    <>
+                        <ConnectionCheckBadge check={appointment.connection_check} />
+                        <Button size="sm" variant="outline" asChild>
+                            <Link href={route('paciente.mis-citas.probar-conexion', appointment.id)}>
+                                <Gauge />
+                                Probar mi conexión
+                            </Link>
+                        </Button>
+                    </>
+                )}
                 {appointment.can_join && (
                     <Button size="sm" asChild>
                         <Link href={route('paciente.mis-citas.teleconsulta', appointment.id)}>

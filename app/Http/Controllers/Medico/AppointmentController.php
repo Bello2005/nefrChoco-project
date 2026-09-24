@@ -28,10 +28,15 @@ class AppointmentController extends Controller
             ->with(['patient:id,full_name', 'teleconsultation:id,appointment_id,status'])
             ->where('doctor_id', Auth::id())
             ->orderBy('scheduled_at')
-            ->get(['id', 'patient_id', 'doctor_id', 'scheduled_at', 'status', 'type'])
+            ->get(['id', 'patient_id', 'doctor_id', 'scheduled_at', 'status', 'type', 'connection_check_level', 'connection_check_at'])
             ->map(fn (Appointment $appointment) => [
                 ...$appointment->only(['id', 'scheduled_at', 'status', 'type', 'patient']),
                 'can_edit' => Gate::allows('update', $appointment),
+                // Último "Probar mi conexión" del paciente: solo el nivel y la fecha.
+                'connection_check' => $appointment->connection_check_level ? [
+                    'level' => $appointment->connection_check_level,
+                    'at' => $appointment->connection_check_at,
+                ] : null,
             ]);
 
         return Inertia::render('medico/citas/index', [

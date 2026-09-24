@@ -1,3 +1,4 @@
+import { type ConnectionCheck, ConnectionCheckBadge } from '@/components/connection-check-badge';
 import { Field } from '@/components/forms/field';
 import { JitsiMeeting } from '@/components/jitsi-meeting';
 import { Badge } from '@/components/ui/badge';
@@ -24,9 +25,10 @@ interface Props {
     };
     teleconsultation: { id: number; room_name: string; status: string; notes: string | null };
     jitsiDomain: string;
+    connectionCheck: ConnectionCheck | null;
 }
 
-export default function TeleconsultaShow({ appointment, teleconsultation, jitsiDomain }: Props) {
+export default function TeleconsultaShow({ appointment, teleconsultation, jitsiDomain, connectionCheck }: Props) {
     const { auth } = usePage<SharedData>().props;
     const isFinished = teleconsultation.status === 'finalizada';
 
@@ -66,6 +68,7 @@ export default function TeleconsultaShow({ appointment, teleconsultation, jitsiD
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                        <ConnectionCheckBadge check={connectionCheck} />
                         {isFinished ? (
                             <Badge variant="success">
                                 <CheckCircle2 />

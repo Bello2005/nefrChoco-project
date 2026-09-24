@@ -1,4 +1,5 @@
 import { AppointmentCalendar } from '@/components/appointment-calendar';
+import { type ConnectionCheck, ConnectionCheckBadge } from '@/components/connection-check-badge';
 import { EmptyState } from '@/components/empty-state';
 import { PageHeader } from '@/components/page-header';
 import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
@@ -25,6 +26,7 @@ interface AppointmentRow {
     // cita atendida ya es parte del registro y no se edita.
     // TODO doc: guía de usuario — las citas ya no se eliminan (se cancelan) y las atendidas no se editan.
     can_edit: boolean;
+    connection_check: ConnectionCheck | null;
 }
 
 export default function CitasIndex({ appointments }: { appointments: AppointmentRow[] }) {
@@ -111,6 +113,7 @@ export default function CitasIndex({ appointments }: { appointments: Appointment
                                         <div className="flex flex-wrap items-center gap-2">
                                             <AppointmentTypeBadge type={appointment.type} />
                                             <AppointmentStatusBadge status={appointment.status} />
+                                            {appointment.status === 'programada' && <ConnectionCheckBadge check={appointment.connection_check} />}
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-2">

@@ -45,6 +45,10 @@ Antes de ver tus datos te pedimos autorizar su tratamiento, como exige la ley. S
 
 En **Mis citas** ves las próximas y el historial. Cada una dice si es **presencial** (vas al puesto de salud) o **teleconsulta** (por videollamada).
 
+### Probar tu conexión antes de la cita
+
+En **Mis citas**, cada teleconsulta programada tiene el botón **Probar mi conexión**. Revisa tu internet, tu cámara y tu micrófono en unos segundos, sin grabar nada, y te dice si estás **listo para video**, si es **mejor solo audio** o si tu conexión **no alcanza** (en ese caso, busca un lugar con mejor señal o comunícate con la IPS). Tu médico ve el resultado antes de la cita.
+
 ### Entrar a una teleconsulta
 
 Cuando se acerque la hora aparece el botón **Unirse a la teleconsulta**, tanto en Inicio como en Mis citas. La sala se abre 15 minutos antes de tu cita.

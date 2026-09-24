@@ -23,6 +23,19 @@ class Appointment extends Model
 
     public const TYPE_TELECONSULTATION = 'teleconsulta';
 
+    /** Niveles de "Probar mi conexión" (resources/js/lib/connection-check.ts). */
+    public const CONNECTION_VIDEO = 'video';
+
+    public const CONNECTION_AUDIO_ONLY = 'solo_audio';
+
+    public const CONNECTION_INSUFFICIENT = 'insuficiente';
+
+    public const CONNECTION_LEVELS = [
+        self::CONNECTION_VIDEO,
+        self::CONNECTION_AUDIO_ONLY,
+        self::CONNECTION_INSUFFICIENT,
+    ];
+
     protected $fillable = [
         'patient_id',
         'doctor_id',
@@ -35,6 +48,7 @@ class Appointment extends Model
     {
         return [
             'scheduled_at' => 'datetime',
+            'connection_check_at' => 'datetime',
         ];
     }
 

@@ -61,6 +61,8 @@ Además de las estándar de Laravel:
 | `PRIVACY_CONTACT_EMAIL` | Correo de habeas data que se muestra al titular |
 | `TELECONSULTATION_JOIN_MINUTES_BEFORE` | Minutos antes de la cita en que se abre la sala |
 | `TELECONSULTATION_JOIN_MINUTES_AFTER` | Minutos después en que la sala se cierra |
+| `CONNECTION_CHECK_VIDEO_MIN_KBPS` / `CONNECTION_CHECK_VIDEO_MAX_LATENCY_MS` | Umbrales de "Probar mi conexión" para video. **[CONFIRMAR]** contra los requisitos de Jitsi y las pruebas de `docs/protocolo-baja-conectividad.md` |
+| `CONNECTION_CHECK_AUDIO_MIN_KBPS` / `CONNECTION_CHECK_AUDIO_MAX_LATENCY_MS` | Lo mismo para solo audio. **[CONFIRMAR]** |
 | `ALLOWED_EMAIL_DOMAIN` | Dominio institucional exigido al personal (`admin` y `medico`) al crear o editar su cuenta. Los pacientes no tienen restricción: usan su correo personal |
 | `EDUCATIONAL_MAX_BODY_CHARACTERS` | Tope del cuerpo de un contenido educativo. No es un límite de base de datos sino de conexión: el material se descarga entero al teléfono del paciente |
 | `APP_LOCALE` / `APP_FALLBACK_LOCALE` | Ambos en `es`. El valor por defecto de `config/app.php` también es `es`, para que un entorno sin `.env` no revierta los mensajes a inglés |

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Paciente\AppointmentController;
 use App\Http\Controllers\Paciente\ClinicalHistoryController;
+use App\Http\Controllers\Paciente\ConnectionCheckController;
 use App\Http\Controllers\Paciente\ConsentController;
 use App\Http\Controllers\Paciente\ConsentsController;
 use App\Http\Controllers\Paciente\DashboardController;
@@ -22,6 +23,9 @@ Route::middleware(['auth', 'role:paciente', 'throttle:zona-clinica'])->prefix('p
 
         Route::get('mis-citas', [AppointmentController::class, 'index'])->name('mis-citas.index');
         Route::get('mis-citas/{appointment}/teleconsulta', [TeleconsultationController::class, 'show'])->name('mis-citas.teleconsulta');
+
+        Route::get('mis-citas/{appointment}/probar-conexion', [ConnectionCheckController::class, 'show'])->name('mis-citas.probar-conexion');
+        Route::post('mis-citas/{appointment}/probar-conexion', [ConnectionCheckController::class, 'store'])->name('mis-citas.probar-conexion.store');
 
         Route::get('mis-citas/{appointment}/teleconsulta/consentimiento', [TeleconsultationConsentController::class, 'show'])
             ->name('mis-citas.teleconsulta.consentimiento');
