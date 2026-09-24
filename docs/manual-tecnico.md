@@ -199,7 +199,7 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 
 ## Catálogos oficiales
 
-Tablas `code_systems` (un catálogo, con versión, fuente, SHA-256 del archivo, fecha y quién lo importó) y `codes` (código, nombre, código padre, `active` y `extra` en JSON). Son datos públicos de referencia: **no se cifran**. Un código **nunca se borra**: si desaparece en una versión nueva queda `active = false`, porque hay registros históricos que lo usan.
+Tablas `code_systems` (un catálogo, con versión, fuente, SHA-256 del archivo, fecha y quién lo importó) y `codes` (código, nombre, texto de búsqueda, código padre, `active` y `extra` en JSON). Son datos públicos de referencia: **no se cifran**. Un código **nunca se borra**: si desaparece en una versión nueva queda `active = false`, porque hay registros históricos que lo usan.
 
 ### De dónde sale cada catálogo
 
@@ -207,15 +207,17 @@ Tablas `code_systems` (un catálogo, con versión, fuente, SHA-256 del archivo, 
 
 | Clave | Catálogo | Fuente oficial | Cada cuánto revisar |
 |---|---|---|---|
-| `cie10` | CIE-10 | Tablas de referencia de SISPRO (MinSalud) | Cuando MinSalud publique una actualización [CONFIRMAR periodicidad con la fuente] |
+| `cie10` | CIE-10 | [Tabla de referencia CIE10 de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CIE10) (se exporta a Excel) | Cuando MinSalud publique una actualización [CONFIRMAR periodicidad con la fuente] |
 | `cie11` | CIE-11 (Res. 1442 de 2024; transición y codificación dual según la Res. 1657 de 2025) | Tablas de referencia de SISPRO (MinSalud) | Ídem |
-| `cups` | CUPS | Tablas de referencia de SISPRO (MinSalud) | Ídem (la clasificación se actualiza por resolución) |
+| `cups` | CUPS | [Tabla de referencia CUPS de SISPRO](https://web.sispro.gov.co/WebPublico/Consultas/ConsultarDetalleReferenciaBasica.aspx?Code=CUPS) (se exporta a Excel) | Ídem (la clasificación se actualiza por resolución) |
 | `divipola` | Municipios (DIVIPOLA) | DANE | Cuando el DANE publique cambios |
 | `eapb` | EAPB | Tablas de referencia de SISPRO (MinSalud) | Ídem |
 | `tipo_documento` | Tipos de documento | Tablas de referencia de SISPRO o CodeSystem del paquete FHIR del IHCE | Con cada versión de la guía |
 | (otras) | CodeSystem y ValueSet del RDA | Paquete FHIR `package.tgz` de la guía de implementación del IHCE | Con cada versión de la guía |
 
-Las URLs exactas de descarga quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anótalas en `--fuente` al importar, para que queden registradas.
+Las URLs de CIE-10 y CUPS se cotejaron con los archivos descargados el 24-sep-2026. Las demás quedan en **[CONFIRMAR]**: no se escribieron de memoria. Anota siempre la fuente en `--fuente` al importar, para que quede registrada.
+
+**Formato de las tablas de SISPRO** (cotejado con CIE-10 y CUPS): columnas `Tabla`, `Codigo`, `Nombre`, `Descripcion`, `Habilitado` (SI/NO) y varias `Extra_*`. `config/catalogs.php` fija `Codigo` y `Nombre` como código y nombre, y `Habilitado` como la columna que dice si el código se puede usar. Un código con `Habilitado=NO` se guarda **inactivo**: se sigue viendo en los registros viejos, pero no se puede elegir. Las demás columnas quedan en `extra`.
 
 Los recursos del paquete FHIR del IHCE se publican bajo licencia CC BY-NC-SA 4.0 y exigen esta atribución: *"Este es un bien público digital producido por HL7 Colombia, para el Ministerio de Salud y Protección Social"*.
 
@@ -228,15 +230,15 @@ sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie1
   --por=admin@nefrochoco.co
 ```
 
-- **CSV:** detecta el separador (`;`, `,`, tabulador o `|`) y convierte Windows-1252 a UTF-8. Busca las columnas del código y del nombre por su nombre (`codigo`/`code`, `nombre`/`descripcion`/`display`). Si el archivo oficial usa otros nombres, indícalos con `--columna-codigo="..."` y `--columna-nombre="..."`, o déjalos fijos en `config/catalogs.php` (`csv_columns`, hoy en [CONFIRMAR]). Las demás columnas se guardan en `extra`.
-- **Excel (XLSX):** no se lee directamente, porque no hay librería de Excel en el proyecto. Ábrelo y guárdalo como *CSV UTF-8*.
+- **CSV:** detecta el separador (`;`, `,`, tabulador o `|`) y convierte Windows-1252 a UTF-8. Busca las columnas del código y del nombre por su nombre (`codigo`/`code`, `nombre`/`descripcion`/`display`). Si el archivo oficial usa otros nombres, indícalos con `--columna-codigo="..."` y `--columna-nombre="..."`, o déjalos fijos en `config/catalogs.php` (`csv_columns`; confirmados para CIE-10 y CUPS, el resto en [CONFIRMAR]). Las demás columnas se guardan en `extra`.
+- **Excel (XLSX):** no se lee directamente, porque no hay librería de Excel en el proyecto. Ábrelo y guárdalo como *CSV UTF-8 (delimitado por comas)*. Las tablas de SISPRO tienen una sola hoja, así que se exporta completa.
 - **FHIR (JSON):** `CodeSystem` (con la jerarquía de `concept`) y `ValueSet` (`compose.include[].concept` o `expansion.contains`). Si no se pasa `--version-catalogo`, se toma la `version` del recurso.
 - **Idempotente:** importar el mismo archivo dos veces no cambia nada. Una versión nueva actualiza los nombres, agrega los códigos nuevos y desactiva los que ya no vienen.
 - La opción se llama `--version-catalogo` y no `--version`, porque Artisan reserva `--version` para mostrar la versión de Laravel.
 
 ### Búsqueda
 
-`GET /catalogos/{sistema}/buscar?q=` (médico y admin, límite `catalogos` de 90 por minuto) devuelve los 20 primeros códigos **activos** por código o por nombre. En PostgreSQL la migración intenta crear la extensión `pg_trgm` y un índice GIN sobre `codes.display`; si el usuario de la base no tiene permiso, deja un índice normal y la búsqueda usa `ILIKE`. **Admin → Catálogos** muestra cuál quedó. En PostgreSQL 13 o superior `pg_trgm` es una extensión confiable, así que normalmente se crea sin ser superusuario.
+`GET /catalogos/{sistema}/buscar?q=` (médico y admin, límite `catalogos` de 90 por minuto) devuelve los 20 primeros códigos **activos** por código o por nombre, sin importar tildes, mayúsculas ni el orden de las palabras ("crónica renal" encuentra "ENFERMEDAD RENAL CRONICA"). Hace falta porque los archivos oficiales no son parejos: la CIE-10 de SISPRO viene sin tildes y los CUPS con tildes. Para eso cada código guarda `search_text` (código y nombre sin tildes y en minúsculas, `Code::searchText()`), que se calcula al importar. En PostgreSQL la migración intenta crear la extensión `pg_trgm` y un índice GIN sobre `codes.search_text`; si el usuario de la base no tiene permiso, deja un índice normal. **Admin → Catálogos** muestra cuál quedó. En PostgreSQL 13 o superior `pg_trgm` es una extensión confiable, así que normalmente se crea sin ser superusuario.
 
 ## Identidad del paciente (Res. 866 de 2021)
 

@@ -11,5 +11,6 @@ final class ParsedCode
         public readonly string $display,
         public readonly ?string $parentCode = null,
         public readonly array $extra = [],
+        public readonly bool $active = true,
     ) {}
 }

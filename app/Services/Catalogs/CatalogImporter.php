@@ -65,6 +65,7 @@ class CatalogImporter
                 $path,
                 $codeColumn ?? ($configured['csv_columns']['code'] ?? null),
                 $displayColumn ?? ($configured['csv_columns']['display'] ?? null),
+                $configured['active_column'] ?? null,
             );
         }
 
@@ -89,9 +90,10 @@ class CatalogImporter
                     'code_system_id' => $system->id,
                     'code' => $parsed->code,
                     'display' => $parsed->display,
+                    'search_text' => Code::searchText($parsed->code, $parsed->display),
                     'parent_code' => $parsed->parentCode,
                     'extra' => $parsed->extra ? json_encode($parsed->extra, JSON_UNESCAPED_UNICODE) : null,
-                    'active' => true,
+                    'active' => $parsed->active,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
@@ -99,7 +101,7 @@ class CatalogImporter
 
             // Por lotes: la CIE-10 y los CUPS traen miles de códigos.
             foreach (array_chunk(array_values($rows), 500) as $chunk) {
-                Code::upsert($chunk, ['code_system_id', 'code'], ['display', 'parent_code', 'extra', 'active', 'updated_at']);
+                Code::upsert($chunk, ['code_system_id', 'code'], ['display', 'search_text', 'parent_code', 'extra', 'active', 'updated_at']);
             }
 
             // Lo que ya no viene queda inactivo. La diferencia se calcula aquí y no
@@ -114,16 +116,20 @@ class CatalogImporter
                 Code::where('code_system_id', $system->id)->whereIn('code', $chunk->all())->update(['active' => false, 'updated_at' => now()]);
             }
 
-            $deactivated = $missing->count();
+            // Desactivados: los que desaparecieron más los que el archivo trae
+            // deshabilitados.
+            $disabledInFile = collect($rows)->where('active', false)->count();
+            $deactivated = $missing->count() + $disabledInFile;
+            $active = count($rows) - $disabledInFile;
 
             activity('catalogos')
                 ->causedBy($importedBy)
                 ->performedOn($system)
-                ->withProperties(['version' => $version, 'codigos' => count($rows), 'desactivados' => $deactivated])
+                ->withProperties(['version' => $version, 'codigos' => $active, 'desactivados' => $deactivated])
                 ->event('catalogo_importado')
                 ->log("Importó el catálogo {$systemKey}");
 
-            return ['system' => $system, 'total' => count($rows), 'deactivated' => $deactivated];
+            return ['system' => $system, 'total' => $active, 'deactivated' => $deactivated];
         });
     }
 }

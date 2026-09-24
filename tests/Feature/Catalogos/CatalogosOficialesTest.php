@@ -108,6 +108,37 @@ test('la búsqueda devuelve solo activos, por código o por nombre', function ()
     expect($catalogo->search('no_existe', 'TEST'))->toBeEmpty();
 });
 
+test('la búsqueda no depende de tildes, mayúsculas ni del orden de las palabras', function () {
+    // Mismo formato de la tabla de referencia de SISPRO: la CIE-10 viene sin
+    // tildes y los CUPS con tildes.
+    $this->artisan('catalogos:importar', ['sistema' => 'cie10', 'archivo' => fixture('sispro-prueba.csv')])->assertSuccessful();
+
+    $catalogo = app(CodeCatalog::class);
+    $codigos = fn (string $texto) => $catalogo->search('cie10', $texto)->pluck('code')->all();
+
+    expect($codigos('crónica'))->toBe(['TESTSP1']);
+    expect($codigos('CRONICA'))->toBe(['TESTSP1']);
+    expect($codigos('puncion'))->toBe(['TESTSP2']);
+    expect($codigos('punción'))->toBe(['TESTSP2']);
+    expect($codigos('cronica enfermedad'))->toBe(['TESTSP1']);
+    expect($codigos('testsp2'))->toBe(['TESTSP2']);
+    expect($codigos('cronica tildes con'))->toBeEmpty();
+});
+
+test('un código que SISPRO marca Habilitado=NO queda inactivo, pero conserva su nombre', function () {
+    $this->artisan('catalogos:importar', ['sistema' => 'cie10', 'archivo' => fixture('sispro-prueba.csv')])
+        ->expectsOutputToContain('2 códigos vigentes, 1 desactivados')
+        ->assertSuccessful();
+
+    $catalogo = app(CodeCatalog::class);
+
+    expect(Code::where('code', 'TESTSP3')->sole()->active)->toBeFalse();
+    expect($catalogo->isActive('cie10', 'TESTSP3'))->toBeFalse();
+    expect($catalogo->display('cie10', 'TESTSP3'))->toContain('DESHABILITADO');
+    expect($catalogo->search('cie10', 'deshabilitado'))->toBeEmpty();
+    expect(Code::where('code', 'TESTSP1')->sole()->extra)->toMatchArray(['Descripcion' => 'PRUEBA', 'Habilitado' => 'SI']);
+});
+
 test('la regla ActiveCode acepta activos y rechaza inactivos o inexistentes', function () {
     importarPrueba('prueba-v1.csv');
     importarPrueba('prueba-v2.csv', 'v2');

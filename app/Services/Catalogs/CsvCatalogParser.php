@@ -18,8 +18,11 @@ class CsvCatalogParser
 
     private const PARENT_CANDIDATES = ['parent_code', 'codigo_padre', 'padre'];
 
-    /** @return list<ParsedCode> */
-    public function parse(string $path, ?string $codeColumn = null, ?string $displayColumn = null): array
+    /**
+     * @param  array{name: string, value: string}|null  $activeColumn  columna que dice si el código está habilitado
+     * @return list<ParsedCode>
+     */
+    public function parse(string $path, ?string $codeColumn = null, ?string $displayColumn = null, ?array $activeColumn = null): array
     {
         $content = file_get_contents($path);
 
@@ -42,6 +45,7 @@ class CsvCatalogParser
         $codeIndex = $this->columnIndex($normalized, $codeColumn, self::CODE_CANDIDATES, 'del código', '--columna-codigo');
         $displayIndex = $this->columnIndex($normalized, $displayColumn, self::DISPLAY_CANDIDATES, 'del nombre', '--columna-nombre');
         $parentIndex = $this->findIndex($normalized, self::PARENT_CANDIDATES);
+        $activeIndex = $activeColumn !== null ? $this->findIndex($normalized, [mb_strtolower($activeColumn['name'])]) : null;
 
         $codes = [];
         foreach ($lines as $line) {
@@ -68,6 +72,8 @@ class CsvCatalogParser
                 display: trim((string) ($row[$displayIndex] ?? '')),
                 parentCode: $parentIndex !== null && ($row[$parentIndex] ?? '') !== '' ? trim($row[$parentIndex]) : null,
                 extra: $extra,
+                // SISPRO marca con Habilitado=NO los códigos que ya no se deben usar.
+                active: $activeIndex === null || mb_strtoupper(trim((string) ($row[$activeIndex] ?? ''))) === mb_strtoupper($activeColumn['value']),
             );
         }
 

@@ -52,7 +52,8 @@ class CodeCatalog
     }
 
     /**
-     * Primeros códigos activos que coinciden con el texto, por código o por nombre.
+     * Primeros códigos activos que coinciden con el texto, por código o por
+     * nombre, sin importar tildes, mayúsculas ni el orden de las palabras.
      *
      * @return Collection<int, array{code: string, display: string}>
      */
@@ -69,13 +70,19 @@ class CodeCatalog
 
         $operator = DB::getDriverName() === 'pgsql' ? 'ilike' : 'like';
         $escaped = addcslashes($query, '%_\\');
+        $words = explode(' ', addcslashes(Code::normalizeForSearch($query), '%_\\'));
 
         return Code::query()
             ->where('code_system_id', $systemId)
             ->where('active', true)
-            ->where(fn ($where) => $where
-                ->where('code', $operator, $escaped.'%')
-                ->orWhere('display', $operator, '%'.$escaped.'%'))
+            // Cada palabra en cualquier orden: "cronica renal" encuentra
+            // "ENFERMEDAD RENAL CRONICA". search_text ya está sin tildes y en
+            // minúsculas, así que basta un LIKE, que aprovecha el índice pg_trgm.
+            ->where(function ($where) use ($words) {
+                foreach ($words as $word) {
+                    $where->where('search_text', 'like', '%'.$word.'%');
+                }
+            })
             // Primero lo que empieza por el código escrito: es lo que busca
             // quien ya conoce el código.
             ->orderByRaw('case when code '.$operator.' ? then 0 else 1 end', [$escaped.'%'])
@@ -94,7 +101,7 @@ class CodeCatalog
 
         $hasTrigram = DB::table('pg_indexes')
             ->where('tablename', 'codes')
-            ->where('indexname', 'codes_display_trgm_index')
+            ->where('indexname', 'codes_search_text_trgm_index')
             ->exists();
 
         return $hasTrigram ? 'pg_trgm' : 'ilike';

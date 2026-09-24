@@ -33,7 +33,7 @@ interface Props {
 
 const searchModeLabel: Record<string, string> = {
     pg_trgm: 'PostgreSQL con pg_trgm (búsqueda por parte del nombre, con índice)',
-    ilike: 'PostgreSQL con ILIKE e índice normal (sin pg_trgm)',
+    ilike: 'PostgreSQL con índice normal (sin pg_trgm)',
     like: 'LIKE (entorno de pruebas)',
 };
 

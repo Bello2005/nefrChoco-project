@@ -17,6 +17,15 @@
 | "code"/"codigo" y "display"/"nombre"/"descripcion", y se pueden indicar a
 | mano con --columna-codigo y --columna-nombre.
 |
+| active_column: columna que marca si el código está habilitado y el valor
+| que significa "sí". Un código que el archivo trae deshabilitado se guarda
+| inactivo: queda para mostrar registros viejos, pero no se puede elegir.
+| Si el archivo no trae la columna, todos los códigos quedan activos.
+|
+| CIE-10 y CUPS: columnas cotejadas el 24-sep-2026 contra las tablas de
+| referencia de SISPRO (TablaReferencia_CIE10 y TablaReferencia_CUPS,
+| exportadas de web.sispro.gov.co): Codigo, Nombre y Habilitado (SI/NO).
+|
 | Se puede importar cualquier otro sistema (por ejemplo, los CodeSystem y
 | ValueSet del paquete FHIR del IHCE) con una clave en minúsculas.
 |
@@ -25,9 +34,9 @@
 return [
 
     'systems' => [
-        'cie10' => ['name' => 'CIE-10', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
+        'cie10' => ['name' => 'CIE-10', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
         'cie11' => ['name' => 'CIE-11', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
-        'cups' => ['name' => 'CUPS', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
+        'cups' => ['name' => 'CUPS', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
         'divipola' => ['name' => 'DIVIPOLA (municipios)', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
         'eapb' => ['name' => 'EAPB', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
         'tipo_documento' => ['name' => 'Tipos de documento', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
