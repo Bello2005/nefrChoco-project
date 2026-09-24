@@ -11,7 +11,8 @@ El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativo
 | Script | Qué hace |
 |---|---|
 | [`deploy/firewall.sh`](../deploy/firewall.sh) | Activa `ufw` (estaba inactivo) dejando pasar solo 22 (SSH), 80/443 (todos los sitios) y 10000/udp (medios de Jitsi). Se corre aparte porque un firewall mal armado puede dejarte afuera del servidor. |
-| [`deploy/deploy.sh`](../deploy/deploy.sh) | Instala dependencias del sistema, clona/actualiza el código, corre `composer`/`npm`, arma el `.env` de producción, migra la base de datos, cachea configuración y deja el `server {}` de nginx + certificado Let's Encrypt para `nefrochoco.bello.works`. Es idempotente: se puede volver a correr para desplegar una actualización y no toca un `.env` que ya exista. |
+| [`deploy/deploy.sh`](../deploy/deploy.sh) | Instala dependencias del sistema, clona/actualiza el código, corre `composer`/`npm`, arma el `.env` de producción, migra la base de datos, cachea configuración y deja el `server {}` de nginx + certificado Let's Encrypt para `nefrochoco.bello.works`. Es idempotente: se puede volver a correr para desplegar una actualización y no toca un `.env` que ya exista. También configura la Hora Legal (INM) e instala el timer de respaldos. |
+| [`deploy/backup.sh`](../deploy/backup.sh) | Respaldo diario de la base, cifrado con la llave pública de la IPS. Lo corre el timer `nefrochoco-backup.timer`; ver "Respaldos cifrados". |
 
 ## Pasos, en orden
 
@@ -53,3 +54,117 @@ Para que el correo de recuperación de contraseña llegue de verdad hace falta u
 5. `php artisan config:cache` para que tome el cambio.
 
 Estas credenciales se escriben directo en el servidor, nunca se comparten por chat.
+
+## Respaldos cifrados (Res. 1644 de 2026, art. 14 par. 2)
+
+`deploy/deploy.sh` instala el timer `nefrochoco-backup.timer`, que corre [`deploy/backup.sh`](../deploy/backup.sh) todos los días a las 3:30 a. m. (hora de Colombia). El script:
+
+- vuelca la base con `pg_dump -Fc`, leyendo las credenciales del `.env` de la app sin imprimirlas;
+- cifra el volcado con [`age`](https://age-encryption.org) **usando solo la llave pública de la IPS**. El servidor puede cifrar, pero no descifrar: quien se lleve el disco o los respaldos no puede leerlos;
+- nunca escribe un volcado sin cifrar. Si falta la llave pública, se niega a correr;
+- guarda los archivos en `/var/backups/nefrochoco/{daily,weekly,monthly}` con permisos `700`.
+
+### Primera vez: la llave de la IPS
+
+La llave privada **no se genera ni se guarda en el servidor**. En un computador de la IPS (idealmente sin conexión a internet):
+
+```bash
+age-keygen -o nefrochoco-respaldos.key      # llave privada: se guarda con la IPS, en dos lugares seguros
+age-keygen -y nefrochoco-respaldos.key      # imprime la llave pública (empieza por age1...)
+```
+
+En el servidor se guarda solo la pública:
+
+```bash
+sudo install -m 600 /dev/null /etc/nefrochoco/backup-recipients.txt
+sudo nano /etc/nefrochoco/backup-recipients.txt   # pegar la línea age1...
+sudo systemctl start nefrochoco-backup.service      # primer respaldo de prueba
+sudo journalctl -u nefrochoco-backup -n 20
+```
+
+Si la llave privada se pierde, **los respaldos no se pueden abrir nunca más**.
+
+### Retención
+
+Se configura en `/etc/nefrochoco/backup.env` (opcional):
+
+```bash
+KEEP_DAILY=7      # [CONFIRMAR con la IPS]
+KEEP_WEEKLY=4     # [CONFIRMAR con la IPS] copia de cada domingo
+KEEP_MONTHLY=12   # [CONFIRMAR con la IPS] copia del día 1 de cada mes
+```
+
+Esto es cuántas copias de recuperación se guardan en el servidor. La historia clínica en sí se conserva 15 años en la base (Res. 839 de 2017).
+
+### ⚠️ La APP_KEY se respalda aparte
+
+Los volcados contienen las columnas cifradas **tal como están en la base: cifradas con la `APP_KEY`**. Un respaldo sin su `APP_KEY` sirve para restaurar la estructura, pero la historia clínica, las notas, los teléfonos y los formularios quedan **ilegibles para siempre**.
+
+- La `APP_KEY` (`grep '^APP_KEY=' /var/www/nefrochoco-project/.env`) se guarda en el gestor de contraseñas de la IPS, **separada** de los respaldos y de la llave de `age`.
+- Si la `APP_KEY` cambia, los respaldos anteriores necesitan la llave vieja: guarda todas las versiones con su fecha.
+
+### Restaurar un respaldo, paso a paso
+
+El volcado se descifra en el computador que tiene la llave privada y viaja por SSH directo a `pg_restore`. **Nunca queda en claro en el disco de ninguno de los dos equipos.**
+
+1. Copia el respaldo que vas a usar al computador de la IPS:
+   ```bash
+   scp dirsoft:/var/backups/nefrochoco/daily/nefrochoco-AAAA-MM-DD_HHMMSS.dump.age .
+   ```
+2. En el servidor, **respalda primero el estado actual** (si algo sale mal, vuelves a él) y pon la app en mantenimiento:
+   ```bash
+   sudo systemctl start nefrochoco-backup.service
+   cd /var/www/nefrochoco-project && sudo -u www-data php artisan down
+   ```
+3. Desde el computador de la IPS, descifra y restaura en un solo paso:
+   ```bash
+   age -d -i nefrochoco-respaldos.key nefrochoco-AAAA-MM-DD_HHMMSS.dump.age \
+     | ssh dirsoft 'sudo -u postgres pg_restore --clean --if-exists -d nefrochoco'
+   ```
+4. Comprueba que la `APP_KEY` del `.env` es la misma que había cuando se hizo ese respaldo, y levanta la app:
+   ```bash
+   cd /var/www/nefrochoco-project && sudo -u www-data php artisan up
+   ```
+5. Entra con una cuenta de prueba y abre una historia clínica: si se lee el texto, la `APP_KEY` es la correcta.
+
+### Prueba de restauración mensual (evidencia)
+
+Una vez al mes se restaura el respaldo más reciente en una **base temporal**, sin tocar la real, y se anota el resultado. Un respaldo que nunca se probó no es un respaldo.
+
+```bash
+# En el servidor
+sudo -u postgres createdb nefrochoco_prueba_restauracion
+# Desde el computador de la IPS
+age -d -i nefrochoco-respaldos.key ULTIMO.dump.age \
+  | ssh dirsoft 'sudo -u postgres pg_restore -d nefrochoco_prueba_restauracion'
+# En el servidor: contar pacientes en las dos bases y comparar
+sudo -u postgres psql -d nefrochoco_prueba_restauracion -Atc 'select count(*) from patients'
+sudo -u postgres psql -d nefrochoco -Atc 'select count(*) from patients'
+# Borrar la base temporal al terminar
+sudo -u postgres dropdb nefrochoco_prueba_restauracion
+```
+
+| Fecha | Respaldo usado | Quién | Pacientes (respaldo / real) | Resultado | Observaciones |
+|---|---|---|---|---|---|
+| | | | | | |
+
+### Copias fuera del servidor (pendiente de decisión de la IPS)
+
+Hoy los respaldos **solo viven en el mismo VPS**: protegen contra errores y borrados, pero no contra la pérdida del servidor. No se configuró ninguna copia a una nube ni a un servicio externo, porque eso saca datos de salud a un tercero, y esa decisión le corresponde a la IPS (contrato, encargado del tratamiento según la Ley 1581 de 2012 y ubicación de los datos).
+
+Cuando la IPS lo decida, las opciones, de menos a más dependencia de terceros:
+
+1. **Un equipo de la IPS** que descargue los `.age` todos los días con `rsync` por SSH desde el servidor (un usuario de solo lectura sobre `/var/backups/nefrochoco`).
+2. **Un disco o NAS de la IPS** con la misma sincronización.
+3. **Un almacenamiento en la nube** contratado por la IPS (por ejemplo, con `rclone`). Como los archivos ya salen cifrados con la llave pública, el proveedor no puede leerlos, pero igual requiere la decisión y el contrato de la IPS.
+
+## Hora Legal de Colombia (Res. 1644 de 2026, art. 22)
+
+`deploy/deploy.sh` configura `systemd-timesyncd` para sincronizar el reloj del servidor con los servidores NTP del Instituto Nacional de Metrología (`ntp1.inm.gov.co` y `ntp2.inm.gov.co`), que distribuyen la Hora Legal de Colombia. Afecta a todo el VPS, no solo a esta app. Si el servidor usa `chrony`, el script no lo toca y solo avisa qué agregar.
+
+Cada despliegue guarda la evidencia en `/var/log/nefrochoco/hora-legal-<fecha>.txt` (salida de `timedatectl status` y `timedatectl timesync-status`). Para revisarla:
+
+```bash
+ls -1 /var/log/nefrochoco/hora-legal-*.txt | tail -1 | xargs cat
+timedatectl timesync-status     # "Server:" debe mostrar un servidor del INM
+```

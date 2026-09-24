@@ -30,12 +30,12 @@ fi
 
 cd "$APP_DIR"
 
-echo "== 1/9 Paquetes del sistema =="
+echo "== 1/11 Paquetes del sistema =="
 apt-get update -y
 apt-get install -y \
   php${PHP_VERSION}-xml php${PHP_VERSION}-pgsql php${PHP_VERSION}-mbstring \
   php${PHP_VERSION}-curl php${PHP_VERSION}-zip php${PHP_VERSION}-gd \
-  php${PHP_VERSION}-bcmath php${PHP_VERSION}-intl unzip git
+  php${PHP_VERSION}-bcmath php${PHP_VERSION}-intl unzip git age
 systemctl reload php${PHP_VERSION}-fpm
 
 if ! command -v composer >/dev/null 2>&1; then
@@ -59,7 +59,7 @@ if [ "$NODE_MAJOR" -lt 20 ]; then
 fi
 node -v
 
-echo "== 2/9 Base de datos =="
+echo "== 2/11 Base de datos =="
 DB_PASS_FILE=/root/.nefrochoco_db_pass
 if [ ! -f "$DB_PASS_FILE" ]; then
   DB_PASS=$(openssl rand -hex 24)
@@ -72,17 +72,17 @@ else
   echo "Ya existía una contraseña de BD guardada en ${DB_PASS_FILE}, la reuso."
 fi
 
-echo "== 3/9 Código al día =="
+echo "== 3/11 Código al día =="
 git fetch origin main
 git checkout main
 git reset --hard origin/main
 
-echo "== 4/9 Dependencias y build =="
+echo "== 4/11 Dependencias y build =="
 composer install --no-dev --optimize-autoloader --no-interaction
 npm ci
 npm run build
 
-echo "== 5/9 Configuración (.env) =="
+echo "== 5/11 Configuración (.env) =="
 if [ ! -f .env ]; then
   cp .env.example .env
 
@@ -106,13 +106,13 @@ else
   echo ".env ya existía, no lo toco (para no pisar configuración ya hecha a mano)."
 fi
 
-echo "== 6/9 Migraciones =="
+echo "== 6/11 Migraciones =="
 php artisan migrate --force
 echo "AVISO: no corrí 'migrate --seed'. EducationalContentSeeder corre en todos"
 echo "los entornos (no solo local) — revisa su contenido con la médica antes de"
 echo "correrlo a mano en producción: php artisan db:seed --force"
 
-echo "== 7/9 Cache y permisos =="
+echo "== 7/11 Cache y permisos =="
 php artisan storage:link || true
 php artisan config:cache
 php artisan route:cache
@@ -122,7 +122,7 @@ PHP_FPM_USER=$(grep -oP '^user\s*=\s*\K.+' /etc/php/${PHP_VERSION}/fpm/pool.d/ww
 chown -R "${PHP_FPM_USER}:${PHP_FPM_USER}" storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
-echo "== 8/9 Nginx =="
+echo "== 8/11 Nginx =="
 PHP_SOCK=$(grep -oP '^listen\s*=\s*\K.+' /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf)
 
 cat > "/etc/nginx/sites-available/${DOMAIN}" <<NGINX
@@ -162,12 +162,85 @@ ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN
 nginx -t
 systemctl reload nginx
 
-echo "== 9/9 Certificado SSL =="
+echo "== 9/11 Certificado SSL =="
 if [ ! -d "/etc/letsencrypt/live/${DOMAIN}" ]; then
   certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos \
     --register-unsafely-without-email --redirect
 else
   echo "Ya había certificado para ${DOMAIN}, no vuelvo a pedirlo."
+fi
+
+echo "== 10/11 Hora Legal de Colombia =="
+# Res. 1644 de 2026, art. 22: los registros clínicos cronológicos deben poder
+# demostrar sincronización con la Hora Legal de Colombia, que distribuye el
+# Instituto Nacional de Metrología (INM) por NTP. Afecta el reloj de todo el
+# servidor, no solo a esta app. No se cambia la zona horaria del sistema: la
+# app ya usa APP_TIMEZONE=America/Bogota y NTP trabaja en UTC.
+LOG_DIR=/var/log/nefrochoco
+mkdir -p "$LOG_DIR"
+if systemctl is-active --quiet chrony 2>/dev/null; then
+  echo "AVISO: chrony está activo y maneja el reloj; no toco timesyncd."
+  echo "Agrega a chrony: server ntp1.inm.gov.co iburst / server ntp2.inm.gov.co iburst"
+else
+  apt-get install -y systemd-timesyncd
+  mkdir -p /etc/systemd/timesyncd.conf.d
+  cat > /etc/systemd/timesyncd.conf.d/nefrochoco-hora-legal.conf <<'TIMESYNC'
+# Hora Legal de Colombia (INM). Lo escribe deploy/deploy.sh.
+[Time]
+NTP=ntp1.inm.gov.co ntp2.inm.gov.co
+TIMESYNC
+  timedatectl set-ntp true
+  systemctl restart systemd-timesyncd
+  # Unos segundos para que alcance a consultar el servidor antes de guardar
+  # la evidencia.
+  sleep 10
+  EVIDENCE="$LOG_DIR/hora-legal-$(date +%Y-%m-%d_%H%M%S).txt"
+  {
+    echo "Evidencia de sincronización con la Hora Legal (INM)"
+    echo "Generada: $(date --iso-8601=seconds)"
+    echo
+    timedatectl status
+    echo
+    timedatectl timesync-status
+  } > "$EVIDENCE" 2>&1 || true
+  echo "Evidencia guardada en $EVIDENCE"
+  grep -E "Server:" "$EVIDENCE" || echo "AVISO: todavía no aparece el servidor NTP; revisa $EVIDENCE"
+fi
+
+echo "== 11/11 Respaldos diarios cifrados =="
+# Res. 1644 de 2026, art. 14 par. 2. El timer se instala siempre; backup.sh se
+# niega a correr mientras no exista la llave pública de la IPS, así nunca
+# queda un volcado sin cifrar.
+mkdir -p /etc/nefrochoco
+chmod 700 /etc/nefrochoco
+cat > /etc/systemd/system/nefrochoco-backup.service <<UNIT
+[Unit]
+Description=Respaldo cifrado de la base de IPS NefroChocó
+After=postgresql.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash ${APP_DIR}/deploy/backup.sh
+UNIT
+cat > /etc/systemd/system/nefrochoco-backup.timer <<'UNIT'
+[Unit]
+Description=Respaldo diario de IPS NefroChocó
+
+[Timer]
+# 3:30 a. m. hora de Colombia, fuera del horario de atención.
+OnCalendar=*-*-* 03:30:00 America/Bogota
+RandomizedDelaySec=10min
+# Si el servidor estaba apagado a esa hora, corre al encender.
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now nefrochoco-backup.timer
+if [ ! -s /etc/nefrochoco/backup-recipients.txt ]; then
+  echo "AVISO: falta /etc/nefrochoco/backup-recipients.txt (llave pública age de la IPS)."
+  echo "Hasta que exista, el respaldo diario falla a propósito. Ver docs/despliegue.md."
 fi
 
 echo ""
