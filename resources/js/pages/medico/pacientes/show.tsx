@@ -1,14 +1,17 @@
 import { DecisionSupportNotice, RecommendationList } from '@/components/clinical-recommendations';
 import { EgfrSeries, kdigoVariants, type EgfrPoint } from '@/components/egfr-series';
+import { Field } from '@/components/forms/field';
 import { AppointmentStatusBadge, AppointmentTypeBadge } from '@/components/status-badge';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NativeSelect } from '@/components/ui/native-select';
 import AppLayout from '@/layouts/app-layout';
 import { calculateAge, formatDateTime, formatRelative, formatShortDate, initialsFrom } from '@/lib/format';
 import { type BreadcrumbItem, type ClinicalRecommendation } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { Activity, CalendarPlus, ClipboardList, FileHeart, HeartPulse, ListChecks, Pencil, Phone, TriangleAlert } from 'lucide-react';
+import { type FormEventHandler } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/medico/dashboard' },
@@ -74,9 +77,60 @@ interface Props {
         createdAt: string;
     }[];
     vitalSigns: { id: number; label: string; value: number; unit: string; status: string; recordedAt: string }[];
+    followUp: { level: string | null; options: { value: string; label: string }[]; isActive: boolean; overdue: string[] };
 }
 
-export default function PacientesShow({ patient, recommendations, egfrSeries, clinicalForms, vitalSigns }: Props) {
+/**
+ * Nivel de riesgo para el seguimiento remoto (Res. 1644 de 2026, art. 19 par. 1).
+ * Lo asigna el médico; decide cada cuánto se espera una medición del paciente.
+ */
+function FollowUpCard({ patientId, followUp }: { patientId: number; followUp: Props['followUp'] }) {
+    const { data, setData, patch, processing } = useForm({ follow_up_risk_level: followUp.level ?? '' });
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+        patch(route('medico.pacientes.riesgo-seguimiento', patientId), { preserveScroll: true });
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-sm">Seguimiento remoto</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <form onSubmit={submit} className="space-y-3">
+                    <Field htmlFor="follow_up_risk_level" label="Nivel de riesgo para el seguimiento">
+                        <NativeSelect
+                            id="follow_up_risk_level"
+                            value={data.follow_up_risk_level}
+                            onChange={(e) => setData('follow_up_risk_level', e.target.value)}
+                        >
+                            <option value="">Sin asignar</option>
+                            {followUp.options.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                    {option.label}
+                                </option>
+                            ))}
+                        </NativeSelect>
+                    </Field>
+                    <Button type="submit" size="sm" variant="outline" disabled={processing}>
+                        Guardar nivel
+                    </Button>
+                </form>
+                {!followUp.isActive ? (
+                    <p className="text-muted-foreground text-xs">
+                        La frecuencia de seguimiento por nivel todavía no está definida: por ahora el nivel se guarda, pero no genera controles
+                        vencidos ni recordatorios.
+                    </p>
+                ) : followUp.overdue.length > 0 ? (
+                    <p className="text-warning text-xs font-semibold">Control vencido: {followUp.overdue.join(', ')}</p>
+                ) : null}
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function PacientesShow({ patient, recommendations, egfrSeries, clinicalForms, vitalSigns, followUp }: Props) {
     const latestHistory = patient.clinical_histories[0];
 
     return (
@@ -247,6 +301,8 @@ export default function PacientesShow({ patient, recommendations, egfrSeries, cl
                     </div>
 
                     <div className="space-y-5">
+                        <FollowUpCard patientId={patient.id} followUp={followUp} />
+
                         <Card>
                             <CardHeader className="flex-row items-center justify-between space-y-0">
                                 <CardTitle className="text-sm">Últimas mediciones</CardTitle>

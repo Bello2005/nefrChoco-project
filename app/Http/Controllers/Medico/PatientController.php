@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Medico;
 
 use App\Enums\BiologicalSex;
+use App\Enums\FollowUpRiskLevel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
 use App\Http\Requests\Patient\UpdatePatientRequest;
@@ -11,6 +12,7 @@ use App\Models\Patient;
 use App\Services\ClinicalAccessAuditor;
 use App\Services\ClinicalDecisionSupport;
 use App\Services\ClinicalFormService;
+use App\Services\FollowUpScheduleService;
 use App\Services\PatientService;
 use App\Support\ClinicalRules\Recommendation;
 use Carbon\CarbonImmutable;
@@ -24,6 +26,7 @@ class PatientController extends Controller
         private readonly PatientService $patientService,
         private readonly ClinicalDecisionSupport $clinicalDecisionSupport,
         private readonly ClinicalAccessAuditor $auditor,
+        private readonly FollowUpScheduleService $followUpSchedule,
     ) {}
 
     public function index(): Response
@@ -89,6 +92,12 @@ class PatientController extends Controller
                 'status' => $sign->status(),
                 'recordedAt' => $sign->recorded_at->toIso8601String(),
             ]),
+            'followUp' => [
+                'level' => $patient->followUpRiskLevel()?->value,
+                'options' => FollowUpRiskLevel::options(),
+                'isActive' => $this->followUpSchedule->isActive(),
+                'overdue' => $this->followUpSchedule->overdueFor($patient)->pluck('label'),
+            ],
         ]);
     }
 

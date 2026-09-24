@@ -188,3 +188,9 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 - **Configurar un `MAIL_MAILER` real.** Hoy es `log`: "olvidé mi contraseña" genera el enlace pero no envía ningún correo, solo lo escribe en `storage/logs/laravel.log`.
 - **Definir `ADMIN_INITIAL_PASSWORD`.** Sin ella, `AdminUserSeeder` falla en vez de crear el admin con la contraseña de la demo — ver [Variables de entorno](#variables-de-entorno).
 - **Revisar con la médica el contenido de `EducationalContentSeeder` antes del primer `--seed` en producción.** A diferencia de `DemoDataSeeder`, este corre en **todos** los entornos: lo que tenga cargado el día del primer `--seed` es lo que verán los pacientes.
+
+## Frecuencia de seguimiento por riesgo (Res. 1644 de 2026, art. 19 par. 1)
+
+- `patients.follow_up_risk_level` (cifrado, `App\Enums\FollowUpRiskLevel`: `bajo`, `medio`, `alto`). Lo asigna solo el médico (`PATCH medico/pacientes/{patient}/riesgo-seguimiento`); el cambio queda en la auditoría con el nombre del campo.
+- `config/vital_signs.php` → `max_days_without_reading[nivel][signo]`: días máximos sin medición. **Todos en `null` hasta que la médica los valide**; mientras tanto `FollowUpScheduleService::isActive()` es falso y no hay vencidos ni recordatorios.
+- `php artisan seguimiento:recordatorios` avisa a los pacientes con el control vencido (notificación por base de datos, una por día como máximo). Corre a diario a las 7:00 (America/Bogota) desde `routes/console.php`; en el VPS lo dispara `nefrochoco-scheduler.timer`, que instala `deploy/deploy.sh`.

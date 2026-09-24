@@ -41,6 +41,7 @@ interface Props {
     series: VitalSeries[];
     clinicalHistoryId: number | null;
     suggestedContents: Content[];
+    followUpDue: string[];
 }
 
 export default function PacienteDashboard({
@@ -52,6 +53,7 @@ export default function PacienteDashboard({
     series,
     clinicalHistoryId,
     suggestedContents,
+    followUpDue,
 }: Props) {
     const firstName = patientName.split(' ')[0];
     const highlightedSeries = series.slice(0, 2);
@@ -84,6 +86,21 @@ export default function PacienteDashboard({
                             <Link href={route('paciente.mis-citas.teleconsulta', activeTeleconsultation.id)}>
                                 <Video />
                                 Unirse a la teleconsulta
+                            </Link>
+                        </Button>
+                    </div>
+                )}
+
+                {followUpDue.length > 0 && (
+                    <div className="border-warning/30 bg-warning-soft flex flex-wrap items-center justify-between gap-4 rounded-xl border p-5">
+                        <div className="min-w-0">
+                            <p className="font-display text-base font-bold">Te toca medirte</p>
+                            <p className="text-muted-foreground mt-1 text-sm">Registra tu {followUpDue.join(', ').toLowerCase()} cuando puedas.</p>
+                        </div>
+                        <Button asChild>
+                            <Link href={route('paciente.signos-vitales.index')}>
+                                <HeartPulse />
+                                Registrar medición
                             </Link>
                         </Button>
                     </div>

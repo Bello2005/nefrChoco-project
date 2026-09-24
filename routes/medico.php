@@ -4,6 +4,7 @@ use App\Http\Controllers\Medico\AppointmentController;
 use App\Http\Controllers\Medico\ClinicalFormController;
 use App\Http\Controllers\Medico\ClinicalHistoryController;
 use App\Http\Controllers\Medico\DashboardController;
+use App\Http\Controllers\Medico\FollowUpRiskController;
 use App\Http\Controllers\Medico\PatientController;
 use App\Http\Controllers\Medico\TeleconsultationClarificationController;
 use App\Http\Controllers\Medico\TeleconsultationController;
@@ -18,6 +19,8 @@ Route::middleware(['auth', 'role:medico', 'throttle:zona-clinica'])->prefix('med
     Route::resource('pacientes', PatientController::class)
         ->parameters(['pacientes' => 'patient'])
         ->except(['destroy']);
+
+    Route::patch('pacientes/{patient}/riesgo-seguimiento', [FollowUpRiskController::class, 'update'])->name('pacientes.riesgo-seguimiento');
 
     Route::get('pacientes/{patient}/historia-clinica/crear', [ClinicalHistoryController::class, 'create'])->name('pacientes.historia-clinica.create');
     Route::post('pacientes/{patient}/historia-clinica', [ClinicalHistoryController::class, 'store'])->name('pacientes.historia-clinica.store');

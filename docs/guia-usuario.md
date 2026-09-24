@@ -76,6 +76,8 @@ En el menú, **Mis consentimientos** te muestra lo que autorizaste y cuándo:
 
 ### Registrar tus mediciones
 
+Si te toca medirte, en **Inicio** aparece la tarjeta **Te toca medirte** con la medición que falta, y te llega un aviso en la campana.
+
 La primera vez que entras a **Signos vitales** aparece una guía corta con cómo tomarte la medición, dónde leer el valor y cómo anotarlo. Cuando la hayas leído puedes cerrarla con **Entendido, no volver a mostrar** y no vuelve a salir.
 
 Ahí anotas tu presión, peso, glucemia u otras medidas que te haya pedido tu profesional. Si un valor sale fuera de lo esperado, tu médico recibe un aviso.
@@ -137,6 +139,8 @@ En el **seguimiento de enfermedad renal crónica**, al ingresar la creatinina de
 ### Telemonitoreo
 
 Muestra las mediciones de cada paciente en gráficas y resalta las que salen del rango de referencia. Las alertas se calculan sobre todo el histórico, no solo sobre las últimas mediciones.
+
+**Frecuencia de seguimiento.** En la ficha de cada paciente, la tarjeta **Seguimiento remoto** te deja asignar su nivel de riesgo (bajo, medio o alto). Con ese nivel la plataforma sabe cada cuánto debería medirse y, cuando se pasa el plazo, lo muestra en **Pacientes con control vencido** de tu panel y le avisa al paciente. Mientras la IPS no defina los plazos, la función está apagada y la tarjeta lo dice. Qué hacer con un control vencido está en `docs/protocolo-escalamiento.md`.
 
 ---
 

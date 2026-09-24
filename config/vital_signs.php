@@ -36,4 +36,51 @@ return [
         'glucemia' => ['min' => 70, 'max' => 140],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Frecuencia mínima de seguimiento remoto por nivel de riesgo
+    |--------------------------------------------------------------------------
+    |
+    | Res. 1644 de 2026, art. 19 par. 1: en programas de ECNT hay que definir
+    | la frecuencia mínima de seguimiento según el perfil de riesgo. Aquí va,
+    | por nivel (App\Enums\FollowUpRiskLevel) y por signo vital, el máximo de
+    | días sin una medición antes de que el control se considere vencido.
+    |
+    | TODO: validar con la médica de la IPS. TODOS los valores están en null a
+    | propósito: mientras lo estén, la función queda inactiva (nadie aparece
+    | con control vencido y no se envían recordatorios) y la interfaz lo dice.
+    | Un null en un signo vital significa "no se exige ese signo en ese nivel".
+    |
+    */
+
+    'max_days_without_reading' => [
+        'bajo' => [
+            'presion_arterial' => null,
+            'presion_diastolica' => null,
+            'frecuencia_cardiaca' => null,
+            'peso' => null,
+            'temperatura' => null,
+            'saturacion_oxigeno' => null,
+            'glucemia' => null,
+        ],
+        'medio' => [
+            'presion_arterial' => null,
+            'presion_diastolica' => null,
+            'frecuencia_cardiaca' => null,
+            'peso' => null,
+            'temperatura' => null,
+            'saturacion_oxigeno' => null,
+            'glucemia' => null,
+        ],
+        'alto' => [
+            'presion_arterial' => null,
+            'presion_diastolica' => null,
+            'frecuencia_cardiaca' => null,
+            'peso' => null,
+            'temperatura' => null,
+            'saturacion_oxigeno' => null,
+            'glucemia' => null,
+        ],
+    ],
+
 ];

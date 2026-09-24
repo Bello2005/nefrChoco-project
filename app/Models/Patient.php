@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\BiologicalSex;
+use App\Enums\FollowUpRiskLevel;
 use App\Models\Concerns\LogsChangedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +52,8 @@ class Patient extends Model
             'phone' => 'encrypted',
             'emergency_contact_name' => 'encrypted',
             'emergency_contact_phone' => 'encrypted',
+            // Dato clínico: cifrado. Se lee como enum con followUpRiskLevel().
+            'follow_up_risk_level' => 'encrypted',
         ];
     }
 
@@ -80,6 +83,15 @@ class Patient extends Model
         return $this->teleconsultation_consent_accepted_at !== null
             && $this->teleconsultation_consent_revoked_at === null
             && $this->teleconsultation_consent_version === config('privacy.teleconsultation_consent_version');
+    }
+
+    /**
+     * Nivel de riesgo para el seguimiento remoto, o null si el médico no lo ha
+     * asignado. Queda fuera de $fillable: solo lo cambia la ruta del médico.
+     */
+    public function followUpRiskLevel(): ?FollowUpRiskLevel
+    {
+        return FollowUpRiskLevel::tryFrom((string) $this->follow_up_risk_level);
     }
 
     public function clinicalHistories(): HasMany

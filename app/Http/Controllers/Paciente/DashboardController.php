@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Paciente;
 
 use App\Http\Controllers\Controller;
 use App\Models\EducationalContent;
+use App\Services\FollowUpScheduleService;
 use App\Services\TeleconsultationService;
 use App\Services\VitalSignService;
 use Illuminate\Support\Facades\Auth;
@@ -15,6 +16,7 @@ class DashboardController extends Controller
     public function __construct(
         private readonly VitalSignService $vitalSignService,
         private readonly TeleconsultationService $teleconsultationService,
+        private readonly FollowUpScheduleService $followUpSchedule,
     ) {}
 
     public function index(): Response
@@ -40,6 +42,8 @@ class DashboardController extends Controller
                 ->count() ?? 0,
             'series' => $patient ? $this->vitalSignService->seriesFor($patient, 8) : [],
             'clinicalHistoryId' => $patient?->latestClinicalHistory?->id,
+            // "Te toca medirte": solo qué medición falta, nunca el nivel de riesgo.
+            'followUpDue' => $patient ? $this->followUpSchedule->overdueFor($patient)->pluck('label') : [],
             'suggestedContents' => EducationalContent::latest()
                 ->limit(3)
                 ->get(['id', 'title', 'description', 'type', 'body', 'url_or_path', 'ecnt_category'])

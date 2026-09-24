@@ -30,7 +30,7 @@ fi
 
 cd "$APP_DIR"
 
-echo "== 1/11 Paquetes del sistema =="
+echo "== 1/12 Paquetes del sistema =="
 apt-get update -y
 apt-get install -y \
   php${PHP_VERSION}-xml php${PHP_VERSION}-pgsql php${PHP_VERSION}-mbstring \
@@ -59,7 +59,7 @@ if [ "$NODE_MAJOR" -lt 20 ]; then
 fi
 node -v
 
-echo "== 2/11 Base de datos =="
+echo "== 2/12 Base de datos =="
 DB_PASS_FILE=/root/.nefrochoco_db_pass
 if [ ! -f "$DB_PASS_FILE" ]; then
   DB_PASS=$(openssl rand -hex 24)
@@ -72,17 +72,17 @@ else
   echo "Ya existía una contraseña de BD guardada en ${DB_PASS_FILE}, la reuso."
 fi
 
-echo "== 3/11 Código al día =="
+echo "== 3/12 Código al día =="
 git fetch origin main
 git checkout main
 git reset --hard origin/main
 
-echo "== 4/11 Dependencias y build =="
+echo "== 4/12 Dependencias y build =="
 composer install --no-dev --optimize-autoloader --no-interaction
 npm ci
 npm run build
 
-echo "== 5/11 Configuración (.env) =="
+echo "== 5/12 Configuración (.env) =="
 if [ ! -f .env ]; then
   cp .env.example .env
 
@@ -106,13 +106,13 @@ else
   echo ".env ya existía, no lo toco (para no pisar configuración ya hecha a mano)."
 fi
 
-echo "== 6/11 Migraciones =="
+echo "== 6/12 Migraciones =="
 php artisan migrate --force
 echo "AVISO: no corrí 'migrate --seed'. EducationalContentSeeder corre en todos"
 echo "los entornos (no solo local) — revisa su contenido con la médica antes de"
 echo "correrlo a mano en producción: php artisan db:seed --force"
 
-echo "== 7/11 Cache y permisos =="
+echo "== 7/12 Cache y permisos =="
 php artisan storage:link || true
 php artisan config:cache
 php artisan route:cache
@@ -122,7 +122,7 @@ PHP_FPM_USER=$(grep -oP '^user\s*=\s*\K.+' /etc/php/${PHP_VERSION}/fpm/pool.d/ww
 chown -R "${PHP_FPM_USER}:${PHP_FPM_USER}" storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
-echo "== 8/11 Nginx =="
+echo "== 8/12 Nginx =="
 PHP_SOCK=$(grep -oP '^listen\s*=\s*\K.+' /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf)
 
 cat > "/etc/nginx/sites-available/${DOMAIN}" <<NGINX
@@ -162,7 +162,7 @@ ln -sf "/etc/nginx/sites-available/${DOMAIN}" "/etc/nginx/sites-enabled/${DOMAIN
 nginx -t
 systemctl reload nginx
 
-echo "== 9/11 Certificado SSL =="
+echo "== 9/12 Certificado SSL =="
 if [ ! -d "/etc/letsencrypt/live/${DOMAIN}" ]; then
   certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos \
     --register-unsafely-without-email --redirect
@@ -170,7 +170,7 @@ else
   echo "Ya había certificado para ${DOMAIN}, no vuelvo a pedirlo."
 fi
 
-echo "== 10/11 Hora Legal de Colombia =="
+echo "== 10/12 Hora Legal de Colombia =="
 # Res. 1644 de 2026, art. 22: los registros clínicos cronológicos deben poder
 # demostrar sincronización con la Hora Legal de Colombia, que distribuye el
 # Instituto Nacional de Metrología (INM) por NTP. Afecta el reloj de todo el
@@ -207,7 +207,7 @@ TIMESYNC
   grep -E "Server:" "$EVIDENCE" || echo "AVISO: todavía no aparece el servidor NTP; revisa $EVIDENCE"
 fi
 
-echo "== 11/11 Respaldos diarios cifrados =="
+echo "== 11/12 Respaldos diarios cifrados =="
 # Res. 1644 de 2026, art. 14 par. 2. El timer se instala siempre; backup.sh se
 # niega a correr mientras no exista la llave pública de la IPS, así nunca
 # queda un volcado sin cifrar.
@@ -242,6 +242,35 @@ if [ ! -s /etc/nefrochoco/backup-recipients.txt ]; then
   echo "AVISO: falta /etc/nefrochoco/backup-recipients.txt (llave pública age de la IPS)."
   echo "Hasta que exista, el respaldo diario falla a propósito. Ver docs/despliegue.md."
 fi
+
+echo "== 12/12 Tareas programadas de Laravel =="
+# Recordatorios "Te toca medirte" (seguimiento:recordatorios) y cualquier otra
+# tarea de routes/console.php. Sin cron: un timer de systemd que corre
+# schedule:run cada minuto, igual de idempotente que el de respaldos.
+PHP_FPM_USER_SCHED=$(grep -oP '^user\s*=\s*\K.+' /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf)
+cat > /etc/systemd/system/nefrochoco-scheduler.service <<UNIT
+[Unit]
+Description=Tareas programadas de IPS NefroChocó (schedule:run)
+
+[Service]
+Type=oneshot
+User=${PHP_FPM_USER_SCHED}
+WorkingDirectory=${APP_DIR}
+ExecStart=/usr/bin/php ${APP_DIR}/artisan schedule:run
+UNIT
+cat > /etc/systemd/system/nefrochoco-scheduler.timer <<'UNIT'
+[Unit]
+Description=Cada minuto: schedule:run de IPS NefroChocó
+
+[Timer]
+OnCalendar=*-*-* *:*:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+UNIT
+systemctl daemon-reload
+systemctl enable --now nefrochoco-scheduler.timer
 
 echo ""
 echo "====================================================="

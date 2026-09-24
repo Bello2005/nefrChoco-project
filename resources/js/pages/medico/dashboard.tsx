@@ -10,7 +10,18 @@ import AppLayout from '@/layouts/app-layout';
 import { formatDateTime, formatRelative, formatTime, initialsFrom } from '@/lib/format';
 import { type BreadcrumbItem, type ClinicalRecommendation } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Activity, CalendarCheck, CalendarDays, ListChecks, MonitorSmartphone, TriangleAlert, UserPlus, Users, Video } from 'lucide-react';
+import {
+    Activity,
+    CalendarCheck,
+    CalendarClock,
+    CalendarDays,
+    ListChecks,
+    MonitorSmartphone,
+    TriangleAlert,
+    UserPlus,
+    Users,
+    Video,
+} from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/medico/dashboard' }];
 
@@ -61,6 +72,7 @@ interface Props {
     ecntDistribution: { label: string; value: number }[];
     appointmentsTrend: { label: string; value: number }[];
     alerts: Alert[];
+    followUp: { isActive: boolean; overduePatients: { id: number; name: string; overdue: string[] }[] };
 }
 
 export default function MedicoDashboard({
@@ -72,6 +84,7 @@ export default function MedicoDashboard({
     ecntDistribution,
     appointmentsTrend,
     alerts,
+    followUp,
 }: Props) {
     const firstName = doctorName.split(' ').slice(0, 2).join(' ');
     const totalDiagnoses = ecntDistribution.reduce((sum, item) => sum + item.value, 0);
@@ -108,6 +121,40 @@ export default function MedicoDashboard({
                     <StatCard label="Citas esta semana" value={stats.appointmentsWeek} icon={CalendarDays} tone="success" />
                     <StatCard label="Teleconsultas pendientes" value={stats.pendingTeleconsultations} icon={MonitorSmartphone} tone="brand" />
                 </div>
+
+                {/* Res. 1644 de 2026, art. 19 par. 1: frecuencia de seguimiento por riesgo. */}
+                <Card>
+                    <CardHeader className="flex-row items-center gap-2.5 space-y-0">
+                        <span className="bg-warning-soft text-warning flex size-9 items-center justify-center rounded-lg">
+                            <CalendarClock className="size-4.5" aria-hidden="true" />
+                        </span>
+                        <div>
+                            <CardTitle>Pacientes con control vencido</CardTitle>
+                            <p className="text-muted-foreground mt-1 text-sm">Sin medición en el plazo que corresponde a su nivel de riesgo</p>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        {!followUp.isActive ? (
+                            <p className="text-muted-foreground text-sm">
+                                Esta función está apagada: la frecuencia de seguimiento por nivel de riesgo todavía no está definida. La define la
+                                médica de la IPS en la configuración.
+                            </p>
+                        ) : followUp.overduePatients.length === 0 ? (
+                            <p className="text-muted-foreground text-sm">Ningún paciente tiene el control vencido.</p>
+                        ) : (
+                            <ul className="divide-border/70 divide-y">
+                                {followUp.overduePatients.map((row) => (
+                                    <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 py-2.5 first:pt-0 last:pb-0">
+                                        <Link href={route('medico.pacientes.show', row.id)} className="text-sm font-semibold hover:underline">
+                                            {row.name}
+                                        </Link>
+                                        <span className="text-muted-foreground text-xs">Falta: {row.overdue.join(', ')}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader className="flex-row items-center justify-between space-y-0">
