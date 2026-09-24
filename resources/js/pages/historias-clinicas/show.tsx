@@ -1,12 +1,15 @@
+import { Field } from '@/components/forms/field';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDateTime } from '@/lib/format';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { FileHeart, Printer, ShieldCheck, Video } from 'lucide-react';
+import { type FormEventHandler } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Historia clínica', href: '#' }];
 
@@ -26,11 +29,59 @@ interface ClinicalHistoryData {
     };
 }
 
+interface Clarification {
+    id: number;
+    body: string;
+    authorName: string;
+    createdAt: string;
+}
+
 interface TeleconsultationNote {
     id: number;
+    appointmentId: number;
     notes: string;
     scheduledAt: string;
     doctorName: string | null;
+    // Solo el médico de la cita, con la sala cerrada; el paciente lee sin formulario.
+    canClarify: boolean;
+    clarifications: Clarification[];
+}
+
+/**
+ * Formulario para aclarar una nota cerrada.
+ *
+ * La nota no se edita porque la auditoría guarda qué campo cambió, no su
+ * valor: reescribirla borraría la versión anterior sin rastro.
+ */
+function ClarificationForm({ appointmentId }: { appointmentId: number }) {
+    // TODO doc: guía de usuario — cómo corregir una nota cerrada con una aclaración.
+    const { data, setData, post, processing, errors, reset } = useForm({ body: '' });
+    const fieldId = `aclaracion-${appointmentId}`;
+
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        post(route('medico.citas.teleconsulta.aclaraciones.store', appointmentId), {
+            preserveScroll: true,
+            onSuccess: () => reset('body'),
+        });
+    };
+
+    return (
+        <form onSubmit={submit} className="space-y-3 pt-2">
+            <Field
+                htmlFor={fieldId}
+                label="Aclaración"
+                error={errors.body}
+                hint="Las notas cerradas no se editan. Tu aclaración queda con tu nombre y la fecha, y la nota original se conserva."
+            >
+                <Textarea id={fieldId} rows={3} maxLength={5000} value={data.body} onChange={(e) => setData('body', e.target.value)} />
+            </Field>
+            <Button type="submit" size="sm" variant="outline" disabled={processing}>
+                Agregar aclaración
+            </Button>
+        </form>
+    );
 }
 
 export default function HistoriaClinicaShow({
@@ -104,6 +155,21 @@ export default function HistoriaClinicaShow({
                                             {note.doctorName ? ` · ${note.doctorName}` : ''}
                                         </p>
                                         <p className="text-sm whitespace-pre-line">{note.notes}</p>
+
+                                        {note.clarifications.length > 0 && (
+                                            <ul className="border-border/70 mt-3 space-y-3 border-l-2 pl-4">
+                                                {note.clarifications.map((clarification) => (
+                                                    <li key={clarification.id} className="space-y-1">
+                                                        <p className="text-muted-foreground text-xs">
+                                                            Aclaración · {clarification.authorName} · {formatDateTime(clarification.createdAt)}
+                                                        </p>
+                                                        <p className="text-sm whitespace-pre-line">{clarification.body}</p>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+
+                                        {note.canClarify && <ClarificationForm appointmentId={note.appointmentId} />}
                                     </li>
                                 ))}
                             </ul>

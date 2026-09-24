@@ -5,6 +5,7 @@ use App\Http\Controllers\Medico\ClinicalFormController;
 use App\Http\Controllers\Medico\ClinicalHistoryController;
 use App\Http\Controllers\Medico\DashboardController;
 use App\Http\Controllers\Medico\PatientController;
+use App\Http\Controllers\Medico\TeleconsultationClarificationController;
 use App\Http\Controllers\Medico\TeleconsultationController;
 use App\Http\Controllers\Medico\VitalSignController;
 use Illuminate\Support\Facades\Route;
@@ -29,6 +30,8 @@ Route::middleware(['auth', 'role:medico', 'throttle:zona-clinica'])->prefix('med
 
     Route::get('citas/{appointment}/teleconsulta', [TeleconsultationController::class, 'show'])->name('citas.teleconsulta');
     Route::post('citas/{appointment}/teleconsulta/cerrar', [TeleconsultationController::class, 'complete'])->name('citas.teleconsulta.complete');
+    // Solo crear: una aclaración, como la nota que aclara, no se edita ni se borra.
+    Route::post('citas/{appointment}/teleconsulta/aclaraciones', [TeleconsultationClarificationController::class, 'store'])->name('citas.teleconsulta.aclaraciones.store');
 
     Route::get('formularios-clinicos', [ClinicalFormController::class, 'index'])->name('formularios-clinicos.index');
     Route::get('formularios-clinicos/crear', [ClinicalFormController::class, 'create'])->name('formularios-clinicos.create');

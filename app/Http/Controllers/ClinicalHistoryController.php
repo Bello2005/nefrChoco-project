@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClinicalHistory;
 use App\Models\Teleconsultation;
+use App\Models\TeleconsultationClarification;
 use App\Services\ClinicalAccessAuditor;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -27,18 +28,38 @@ class ClinicalHistoryController extends Controller
 
         // Las notas quedan en la teleconsulta, no en esta tabla: se anexan aquí
         // en lectura para que la historia sea el único lugar donde revisarlas.
+        // Las aclaraciones y sus autores se cargan de una vez para no hacer una
+        // consulta por nota.
         $teleconsultationNotes = Teleconsultation::query()
             ->whereNotNull('notes')
             ->whereHas('appointment', fn ($query) => $query->where('patient_id', $clinicalHistory->patient_id))
-            ->with(['appointment' => fn ($query) => $query->select('id', 'doctor_id', 'scheduled_at')->with('doctor:id,name')])
+            ->with([
+                'appointment' => fn ($query) => $query->select('id', 'doctor_id', 'scheduled_at')->with('doctor:id,name'),
+                'clarifications.author:id,name',
+            ])
             ->latest('updated_at')
-            ->get(['id', 'appointment_id', 'notes', 'updated_at'])
-            ->map(fn (Teleconsultation $teleconsultation) => [
-                'id' => $teleconsultation->id,
-                'notes' => $teleconsultation->notes,
-                'scheduledAt' => $teleconsultation->appointment->scheduled_at,
-                'doctorName' => $teleconsultation->appointment->doctor?->name,
-            ]);
+            ->get(['id', 'appointment_id', 'notes', 'status', 'updated_at'])
+            ->map(function (Teleconsultation $teleconsultation) use ($request) {
+                $appointment = $teleconsultation->appointment;
+                // La política mira la teleconsulta desde la cita: se la entrega
+                // ya cargada para no volver a pedirla.
+                $appointment->setRelation('teleconsultation', $teleconsultation);
+
+                return [
+                    'id' => $teleconsultation->id,
+                    'appointmentId' => $appointment->id,
+                    'notes' => $teleconsultation->notes,
+                    'scheduledAt' => $appointment->scheduled_at,
+                    'doctorName' => $appointment->doctor?->name,
+                    'canClarify' => $request->user()->can('clarifyTeleconsultation', $appointment),
+                    'clarifications' => $teleconsultation->clarifications->map(fn (TeleconsultationClarification $clarification) => [
+                        'id' => $clarification->id,
+                        'body' => $clarification->body,
+                        'authorName' => $clarification->author->name,
+                        'createdAt' => $clarification->created_at,
+                    ]),
+                ];
+            });
 
         return Inertia::render('historias-clinicas/show', [
             'clinicalHistory' => $clinicalHistory,

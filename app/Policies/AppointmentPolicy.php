@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Appointment;
+use App\Models\Teleconsultation;
 use App\Models\User;
 
 class AppointmentPolicy
@@ -36,6 +37,19 @@ class AppointmentPolicy
     public function manageTeleconsultation(User $user, Appointment $appointment): bool
     {
         return $this->isTreatingDoctor($user, $appointment);
+    }
+
+    /**
+     * Agregar una aclaración a la nota de una teleconsulta ya cerrada.
+     *
+     * Solo el médico de la cita, igual que la nota: solo él firma lo que
+     * dijo en esa atención. Y solo con la sala cerrada, porque mientras está
+     * abierta la nota todavía se escribe al cerrarla.
+     */
+    public function clarifyTeleconsultation(User $user, Appointment $appointment): bool
+    {
+        return $this->isTreatingDoctor($user, $appointment)
+            && $appointment->teleconsultation?->status === Teleconsultation::STATUS_FINISHED;
     }
 
     /**

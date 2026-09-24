@@ -6,6 +6,7 @@ use App\Models\Concerns\LogsChangedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Teleconsultation extends Model
 {
@@ -35,5 +36,11 @@ class Teleconsultation extends Model
     public function appointment(): BelongsTo
     {
         return $this->belongsTo(Appointment::class);
+    }
+
+    /** De la más vieja a la más nueva: se leen en el orden en que se escribieron. */
+    public function clarifications(): HasMany
+    {
+        return $this->hasMany(TeleconsultationClarification::class)->oldest('id');
     }
 }

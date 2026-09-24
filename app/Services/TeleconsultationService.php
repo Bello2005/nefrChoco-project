@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\Teleconsultation;
+use App\Models\TeleconsultationClarification;
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -57,6 +59,29 @@ class TeleconsultationService
 
             return $locked;
         });
+    }
+
+    /**
+     * Agrega una aclaración a la nota de una teleconsulta cerrada.
+     *
+     * La política ya lo revisó, pero se vuelve a comprobar aquí porque el
+     * servicio es el que escribe: una aclaración sobre una sala abierta no
+     * tiene nota que aclarar.
+     *
+     * @throws \DomainException si la teleconsulta todavía no está cerrada
+     */
+    public function addClarification(Teleconsultation $teleconsultation, User $author, string $body): TeleconsultationClarification
+    {
+        if ($teleconsultation->status !== Teleconsultation::STATUS_FINISHED) {
+            throw new \DomainException('Solo se aclaran notas de teleconsultas cerradas.');
+        }
+
+        $clarification = new TeleconsultationClarification(['body' => $body]);
+        $clarification->teleconsultation()->associate($teleconsultation);
+        $clarification->author()->associate($author);
+        $clarification->save();
+
+        return $clarification;
     }
 
     /**
