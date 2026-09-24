@@ -1,4 +1,5 @@
 import { type ConnectionCheck, ConnectionCheckBadge } from '@/components/connection-check-badge';
+import { type AttentionCatalogs, AttentionRecordFields, cleanAttention, emptyAttention } from '@/components/forms/attention-record-fields';
 import { Field } from '@/components/forms/field';
 import { JitsiMeeting } from '@/components/jitsi-meeting';
 import { Badge } from '@/components/ui/badge';
@@ -26,20 +27,24 @@ interface Props {
     teleconsultation: { id: number; room_name: string; status: string; notes: string | null };
     jitsiDomain: string;
     connectionCheck: ConnectionCheck | null;
+    attentionCatalogs: AttentionCatalogs;
 }
 
-export default function TeleconsultaShow({ appointment, teleconsultation, jitsiDomain, connectionCheck }: Props) {
+export default function TeleconsultaShow({ appointment, teleconsultation, jitsiDomain, connectionCheck, attentionCatalogs }: Props) {
     const { auth } = usePage<SharedData>().props;
     const isFinished = teleconsultation.status === 'finalizada';
 
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, transform } = useForm({
         notes: teleconsultation.notes ?? '',
+        ...emptyAttention(),
     });
+
+    transform((values) => ({ ...values, ...cleanAttention(values) }));
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
-        if (!isFinished && !confirm('¿Estás seguro de que quieres cerrar esta teleconsulta?')) {
+        if (!confirm('¿Estás seguro de que quieres cerrar esta teleconsulta? Después no se puede editar.')) {
             return;
         }
 
@@ -97,28 +102,49 @@ export default function TeleconsultaShow({ appointment, teleconsultation, jitsiD
                         </p>
                     </div>
 
-                    <form onSubmit={submit} className="bg-card border-border/70 h-fit space-y-4 rounded-xl border p-5 shadow-sm">
-                        <div>
-                            <h2 className="font-display text-base font-bold">Notas de la consulta</h2>
-                            <p className="text-muted-foreground mt-1 text-sm">
-                                Quedan en la historia del paciente y cierran la cita como completada.
+                    {isFinished ? (
+                        // Una nota cerrada no se reescribe: se corrige con una aclaración.
+                        <div className="bg-card border-border/70 h-fit space-y-3 rounded-xl border p-5 shadow-sm">
+                            <h2 className="font-display text-base font-bold">Consulta cerrada</h2>
+                            <p className="text-muted-foreground text-sm">
+                                La nota y el registro de la atención ya quedaron en la historia. Para corregir algo, agrega una aclaración desde la
+                                historia clínica del paciente.
                             </p>
+                            <Button variant="outline" className="w-full" asChild>
+                                <Link href={route('medico.pacientes.show', appointment.patient.id)}>Ir a la ficha del paciente</Link>
+                            </Button>
                         </div>
+                    ) : (
+                        <form onSubmit={submit} className="bg-card border-border/70 h-fit space-y-4 rounded-xl border p-5 shadow-sm">
+                            <div>
+                                <h2 className="font-display text-base font-bold">Notas de la consulta</h2>
+                                <p className="text-muted-foreground mt-1 text-sm">
+                                    Quedan en la historia del paciente y cierran la cita como completada.
+                                </p>
+                            </div>
 
-                        <Field htmlFor="notes" error={errors.notes}>
-                            <Textarea
-                                id="notes"
-                                className="min-h-56"
-                                placeholder="Motivo de consulta, hallazgos, conducta y próximo control…"
-                                value={data.notes}
-                                onChange={(e) => setData('notes', e.target.value)}
+                            <Field htmlFor="notes" error={errors.notes}>
+                                <Textarea
+                                    id="notes"
+                                    className="min-h-40"
+                                    placeholder="Hallazgos, conducta y próximo control…"
+                                    value={data.notes}
+                                    onChange={(e) => setData('notes', e.target.value)}
+                                />
+                            </Field>
+
+                            <AttentionRecordFields
+                                data={data}
+                                setData={setData}
+                                errors={errors as Record<string, string | undefined>}
+                                catalogs={attentionCatalogs}
                             />
-                        </Field>
 
-                        <Button className="w-full" disabled={processing}>
-                            {isFinished ? 'Actualizar notas' : 'Cerrar teleconsulta'}
-                        </Button>
-                    </form>
+                            <Button className="w-full" disabled={processing}>
+                                Cerrar teleconsulta
+                            </Button>
+                        </form>
+                    )}
                 </div>
             </div>
         </AppLayout>

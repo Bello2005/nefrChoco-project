@@ -70,6 +70,17 @@ return [
         'affiliation_type' => null, // TODO: régimen / tipo de usuario [CONFIRMAR]
     ],
 
+    /*
+    | Catálogos del registro de la atención (RIPS, Res. 948 de 2026).
+    | [CONFIRMAR] las claves contra el anexo técnico de la Res. 948: no se
+    | escribieron de memoria. Mientras sean null, el campo se guarda como texto.
+    */
+    'attention_fields' => [
+        'diagnosis_type' => null, // [CONFIRMAR] tipo de diagnóstico principal
+        'purpose' => null, // [CONFIRMAR] finalidad de la consulta
+        'external_cause' => null, // [CONFIRMAR] causa externa
+    ],
+
     'storage_path' => 'catalogos',
 
     // Resultados del buscador: pocos, porque viajan a un teléfono con mala señal.

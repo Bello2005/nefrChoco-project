@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Appointment extends Model
@@ -49,6 +50,10 @@ class Appointment extends Model
         return [
             'scheduled_at' => 'datetime',
             'connection_check_at' => 'datetime',
+            // Registro de la atención: contenido clínico, cifrado.
+            'consultation_reason' => 'encrypted',
+            'purpose' => 'encrypted',
+            'external_cause' => 'encrypted',
         ];
     }
 
@@ -65,6 +70,21 @@ class Appointment extends Model
     public function teleconsultation(): HasOne
     {
         return $this->hasOne(Teleconsultation::class);
+    }
+
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(AppointmentDiagnosis::class)->oldest('id');
+    }
+
+    public function procedures(): HasMany
+    {
+        return $this->hasMany(AppointmentProcedure::class)->oldest('id');
+    }
+
+    public function medications(): HasMany
+    {
+        return $this->hasMany(AppointmentMedication::class)->oldest('id');
     }
 
     /**

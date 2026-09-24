@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\ClinicalHistory;
+use App\Models\ClinicalHistoryDiagnosis;
 use App\Models\Patient;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class ClinicalHistoryService
 {
@@ -18,10 +20,21 @@ class ClinicalHistoryService
     public function create(Patient $patient, User $author, array $data): ClinicalHistory
     {
         // TODO doc: manual técnico — clinical_histories.author_id y el relleno desde activity_log.
-        $history = $patient->clinicalHistories()->make($data);
-        $history->author()->associate($author);
-        $history->save();
+        $diagnoses = $data['diagnoses'] ?? [];
+        unset($data['diagnoses']);
 
-        return $history;
+        return DB::transaction(function () use ($patient, $author, $data, $diagnoses) {
+            $history = $patient->clinicalHistories()->make($data);
+            $history->author()->associate($author);
+            $history->save();
+
+            foreach ($diagnoses as $code) {
+                (new ClinicalHistoryDiagnosis(['cie10_code' => $code]))
+                    ->forceFill(['clinical_history_id' => $history->id, 'author_id' => $author->id])
+                    ->save();
+            }
+
+            return $history;
+        });
     }
 }

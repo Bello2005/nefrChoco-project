@@ -1,3 +1,4 @@
+import { type AttentionCatalogs, AttentionRecordFields, cleanAttention, emptyAttention } from '@/components/forms/attention-record-fields';
 import { Field, FormCard } from '@/components/forms/field';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -29,13 +30,30 @@ function toDatetimeLocal(value: string): string {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-export default function CitasEdit({ appointment, patients }: { appointment: AppointmentData; patients: { id: number; full_name: string }[] }) {
-    const { data, setData, put, processing, errors } = useForm({
+export default function CitasEdit({
+    appointment,
+    patients,
+    attentionCatalogs,
+}: {
+    appointment: AppointmentData;
+    patients: { id: number; full_name: string }[];
+    attentionCatalogs: AttentionCatalogs;
+}) {
+    const { data, setData, put, processing, errors, transform } = useForm({
         patient_id: appointment.patient_id.toString(),
         scheduled_at: toDatetimeLocal(appointment.scheduled_at),
         type: appointment.type,
         status: appointment.status,
+        ...emptyAttention(),
     });
+
+    // Marcarla completada es cerrar la atención: solo entonces viaja el registro.
+    const closes = data.status === 'completada';
+    transform((values) =>
+        values.status === 'completada'
+            ? { ...values, ...cleanAttention(values) }
+            : { patient_id: values.patient_id, scheduled_at: values.scheduled_at, type: values.type, status: values.status },
+    );
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -89,8 +107,19 @@ export default function CitasEdit({ appointment, patients }: { appointment: Appo
                             </Field>
                         </div>
 
+                        {closes && (
+                            <div className="border-border/70 border-t pt-5">
+                                <AttentionRecordFields
+                                    data={data}
+                                    setData={setData}
+                                    errors={errors as Record<string, string | undefined>}
+                                    catalogs={attentionCatalogs}
+                                />
+                            </div>
+                        )}
+
                         <div className="flex items-center gap-3 pt-1">
-                            <Button disabled={processing}>Guardar cambios</Button>
+                            <Button disabled={processing}>{closes ? 'Guardar y cerrar la atención' : 'Guardar cambios'}</Button>
                             <Button type="button" variant="ghost" asChild>
                                 <Link href={route('medico.citas.index')}>Cancelar</Link>
                             </Button>

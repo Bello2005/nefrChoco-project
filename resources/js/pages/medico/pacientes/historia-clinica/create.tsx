@@ -1,3 +1,4 @@
+import { CodeSelect } from '@/components/forms/code-select';
 import { Field, FormCard } from '@/components/forms/field';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
@@ -24,12 +25,14 @@ const commonDiagnoses = [
     'Dislipidemia',
 ];
 
-export default function HistoriaClinicaCreate({ patient }: { patient: { id: number; full_name: string } }) {
+export default function HistoriaClinicaCreate({ patient, hasCie10 }: { patient: { id: number; full_name: string }; hasCie10: boolean }) {
     const { data, setData, post, processing, errors } = useForm({
         ecnt_diagnosis: '',
         medical_history: '',
         allergies: '',
         current_medication: '',
+        // Opcionales, además del diagnóstico ECNT en texto.
+        diagnoses: [] as string[],
     });
 
     const submit: FormEventHandler = (e) => {
@@ -60,6 +63,40 @@ export default function HistoriaClinicaCreate({ patient }: { patient: { id: numb
                                 ))}
                             </datalist>
                         </Field>
+
+                        {hasCie10 && (
+                            <Field label="Diagnósticos CIE-10 (opcional)" htmlFor="cie10-nuevo" error={errors.diagnoses}>
+                                {data.diagnoses.length > 0 && (
+                                    <ul className="flex flex-wrap gap-2">
+                                        {data.diagnoses.map((code) => (
+                                            <li key={code}>
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    aria-label={`Quitar ${code}`}
+                                                    onClick={() =>
+                                                        setData(
+                                                            'diagnoses',
+                                                            data.diagnoses.filter((item) => item !== code),
+                                                        )
+                                                    }
+                                                >
+                                                    {code} ×
+                                                </Button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                                <CodeSelect
+                                    id="cie10-nuevo"
+                                    system="cie10"
+                                    value=""
+                                    onChange={(code) => code && !data.diagnoses.includes(code) && setData('diagnoses', [...data.diagnoses, code])}
+                                    placeholder="Busca y agrega un diagnóstico CIE-10…"
+                                />
+                            </Field>
+                        )}
 
                         <Field label="Antecedentes" htmlFor="medical_history" error={errors.medical_history}>
                             <Textarea

@@ -1,8 +1,10 @@
+import { CodeSelect } from '@/components/forms/code-select';
 import { Field } from '@/components/forms/field';
 import { PageHeader } from '@/components/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { NativeSelect } from '@/components/ui/native-select';
 import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatDateTime } from '@/lib/format';
@@ -48,6 +50,42 @@ interface TeleconsultationNote {
     // Solo el médico de la cita, con la sala cerrada; el paciente lee sin formulario.
     canClarify: boolean;
     clarifications: Clarification[];
+    diagnoses: CodedDiagnosis[];
+}
+
+interface CodedDiagnosis {
+    id: number;
+    code: string;
+    display: string | null;
+    cie11Code: string | null;
+    cie11Display: string | null;
+    role: string;
+    isCurrent: boolean;
+    isCorrection: boolean;
+    authorName: string | null;
+    createdAt: string;
+}
+
+/** Diagnósticos de la atención: los reemplazados se ven tachados, nunca desaparecen. */
+function DiagnosisList({ diagnoses }: { diagnoses: CodedDiagnosis[] }) {
+    return (
+        <ul className="space-y-1 text-sm">
+            {diagnoses.map((diagnosis) => (
+                <li key={diagnosis.id} className={diagnosis.isCurrent ? '' : 'text-muted-foreground line-through'}>
+                    <span className="font-semibold">{diagnosis.code}</span>
+                    {diagnosis.display ? ` · ${diagnosis.display}` : ''}
+                    {diagnosis.cie11Code ? ` (CIE-11 ${diagnosis.cie11Code})` : ''}
+                    <span className="text-muted-foreground text-xs">
+                        {' '}
+                        · {diagnosis.role === 'principal' ? 'principal' : 'relacionado'}
+                        {diagnosis.isCorrection && diagnosis.authorName
+                            ? ` · corrección de ${diagnosis.authorName}, ${formatDateTime(diagnosis.createdAt)}`
+                            : ''}
+                    </span>
+                </li>
+            ))}
+        </ul>
+    );
 }
 
 /**
@@ -56,17 +94,26 @@ interface TeleconsultationNote {
  * La nota no se edita porque la auditoría guarda qué campo cambió, no su
  * valor: reescribirla borraría la versión anterior sin rastro.
  */
-function ClarificationForm({ appointmentId }: { appointmentId: number }) {
+function ClarificationForm({ appointmentId, diagnoses, hasCie10 }: { appointmentId: number; diagnoses: CodedDiagnosis[]; hasCie10: boolean }) {
     // TODO doc: guía de usuario — cómo corregir una nota cerrada con una aclaración.
-    const { data, setData, post, processing, errors, reset } = useForm({ body: '' });
+    const { data, setData, post, processing, errors, reset, transform } = useForm({ body: '', replaces_id: '', cie10_code: '' });
     const fieldId = `aclaracion-${appointmentId}`;
+    const current = diagnoses.filter((diagnosis) => diagnosis.isCurrent);
+
+    // El diagnóstico corregido solo viaja si se eligió cuál reemplaza y el nuevo código.
+    transform((values) => ({
+        body: values.body,
+        ...(values.replaces_id && values.cie10_code
+            ? { corrected_diagnosis: { replaces_id: Number(values.replaces_id), cie10_code: values.cie10_code } }
+            : {}),
+    }));
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         post(route('medico.citas.teleconsulta.aclaraciones.store', appointmentId), {
             preserveScroll: true,
-            onSuccess: () => reset('body'),
+            onSuccess: () => reset(),
         });
     };
 
@@ -80,6 +127,41 @@ function ClarificationForm({ appointmentId }: { appointmentId: number }) {
             >
                 <Textarea id={fieldId} rows={3} maxLength={5000} value={data.body} onChange={(e) => setData('body', e.target.value)} />
             </Field>
+            {hasCie10 && current.length > 0 && (
+                <div className="border-border/70 grid gap-3 rounded-lg border p-3">
+                    <p className="text-muted-foreground text-xs">
+                        Opcional: si la aclaración corrige un diagnóstico, elige cuál y el código correcto. El original se conserva tachado.
+                    </p>
+                    <Field
+                        htmlFor={`${fieldId}-replaces`}
+                        label="Diagnóstico que corriges"
+                        error={(errors as Record<string, string>)['corrected_diagnosis.replaces_id']}
+                    >
+                        <NativeSelect id={`${fieldId}-replaces`} value={data.replaces_id} onChange={(e) => setData('replaces_id', e.target.value)}>
+                            <option value="">Ninguno</option>
+                            {current.map((diagnosis) => (
+                                <option key={diagnosis.id} value={diagnosis.id}>
+                                    {diagnosis.code} {diagnosis.display ? `· ${diagnosis.display}` : ''}
+                                </option>
+                            ))}
+                        </NativeSelect>
+                    </Field>
+                    {data.replaces_id && (
+                        <Field
+                            htmlFor={`${fieldId}-code`}
+                            label="Código correcto (CIE-10)"
+                            error={(errors as Record<string, string>)['corrected_diagnosis.cie10_code']}
+                        >
+                            <CodeSelect
+                                id={`${fieldId}-code`}
+                                system="cie10"
+                                value={data.cie10_code}
+                                onChange={(code) => setData('cie10_code', code)}
+                            />
+                        </Field>
+                    )}
+                </div>
+            )}
             <Button type="submit" size="sm" variant="outline" disabled={processing}>
                 Agregar aclaración
             </Button>
@@ -89,10 +171,14 @@ function ClarificationForm({ appointmentId }: { appointmentId: number }) {
 
 export default function HistoriaClinicaShow({
     clinicalHistory,
+    historyDiagnoses,
     teleconsultationNotes,
+    hasCie10,
 }: {
     clinicalHistory: ClinicalHistoryData;
+    historyDiagnoses: { code: string; display: string | null }[];
     teleconsultationNotes: TeleconsultationNote[];
+    hasCie10: boolean;
 }) {
     const sections = [
         { label: 'Antecedentes', value: clinicalHistory.medical_history },
@@ -134,6 +220,19 @@ export default function HistoriaClinicaShow({
                         </Badge>
                     </CardHeader>
                     <CardContent>
+                        {historyDiagnoses.length > 0 && (
+                            <div className="mb-4 space-y-1">
+                                <p className="text-muted-foreground text-sm font-medium">Diagnósticos CIE-10</p>
+                                <ul className="text-sm">
+                                    {historyDiagnoses.map((diagnosis) => (
+                                        <li key={diagnosis.code}>
+                                            <span className="font-semibold">{diagnosis.code}</span>
+                                            {diagnosis.display ? ` · ${diagnosis.display}` : ''}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                         <dl className="divide-border/70 divide-y">
                             {sections.map((section) => (
                                 <div key={section.label} className="grid gap-1 py-4 first:pt-0 last:pb-0 sm:grid-cols-4 sm:gap-4">
@@ -162,6 +261,7 @@ export default function HistoriaClinicaShow({
                                             {note.doctorName ? ` · ${note.doctorName}` : ''}
                                         </p>
                                         <p className="text-sm whitespace-pre-line">{note.notes}</p>
+                                        {note.diagnoses.length > 0 && <DiagnosisList diagnoses={note.diagnoses} />}
 
                                         {note.clarifications.length > 0 && (
                                             <ul className="border-border/70 mt-3 space-y-3 border-l-2 pl-4">
@@ -176,7 +276,9 @@ export default function HistoriaClinicaShow({
                                             </ul>
                                         )}
 
-                                        {note.canClarify && <ClarificationForm appointmentId={note.appointmentId} />}
+                                        {note.canClarify && (
+                                            <ClarificationForm appointmentId={note.appointmentId} diagnoses={note.diagnoses} hasCie10={hasCie10} />
+                                        )}
                                     </li>
                                 ))}
                             </ul>

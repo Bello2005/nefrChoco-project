@@ -78,6 +78,7 @@ interface Props {
     }[];
     vitalSigns: { id: number; label: string; value: number; unit: string; status: string; recordedAt: string }[];
     followUp: { level: string | null; options: { value: string; label: string }[]; isActive: boolean; overdue: string[] };
+    attentionDiagnoses: Record<number, { code: string; display: string | null; role: string }[]>;
 }
 
 /**
@@ -130,7 +131,7 @@ function FollowUpCard({ patientId, followUp }: { patientId: number; followUp: Pr
     );
 }
 
-export default function PacientesShow({ patient, recommendations, egfrSeries, clinicalForms, vitalSigns, followUp }: Props) {
+export default function PacientesShow({ patient, recommendations, egfrSeries, clinicalForms, vitalSigns, followUp, attentionDiagnoses }: Props) {
     const latestHistory = patient.clinical_histories[0];
 
     return (
@@ -177,8 +178,8 @@ export default function PacientesShow({ patient, recommendations, egfrSeries, cl
                     <div className="border-info/30 bg-info-soft flex items-start gap-3 rounded-xl border p-4">
                         <TriangleAlert className="text-info mt-0.5 size-5 shrink-0" aria-hidden="true" />
                         <p className="text-sm">
-                            <span className="font-semibold">La TFGe no se calcula para esta ficha.</span> La fórmula de función renal (CKD-EPI)
-                            solo contempla sexo biológico femenino o masculino, y en esta ficha está registrado como{' '}
+                            <span className="font-semibold">La TFGe no se calcula para esta ficha.</span> La fórmula de función renal (CKD-EPI) solo
+                            contempla sexo biológico femenino o masculino, y en esta ficha está registrado como{' '}
                             {patient.biological_sex === 'indeterminado' ? 'indeterminado' : 'desconocido'}.
                         </p>
                     </div>
@@ -300,6 +301,13 @@ export default function PacientesShow({ patient, recommendations, egfrSeries, cl
                                                 <div className="min-w-0 flex-1">
                                                     <p className="text-sm font-semibold">{formatDateTime(appointment.scheduled_at)}</p>
                                                     <p className="text-muted-foreground text-xs">{appointment.doctor?.name}</p>
+                                                    {attentionDiagnoses[appointment.id]?.map((diagnosis) => (
+                                                        <p key={diagnosis.code} className="text-xs">
+                                                            <span className="font-semibold">{diagnosis.code}</span>
+                                                            {diagnosis.display ? ` · ${diagnosis.display}` : ''}
+                                                            {diagnosis.role === 'principal' ? ' (principal)' : ''}
+                                                        </p>
+                                                    ))}
                                                 </div>
                                                 <AppointmentTypeBadge type={appointment.type} />
                                                 <AppointmentStatusBadge status={appointment.status} />

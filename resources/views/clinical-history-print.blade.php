@@ -142,6 +142,15 @@
             <h2>Diagnóstico ECNT</h2>
             <div class="block">{{ $history->ecnt_diagnosis ?: 'Sin diagnóstico registrado.' }}</div>
 
+            @if (count($diagnoses) > 0)
+                <h2>Diagnósticos CIE-10</h2>
+                <div class="block">
+                    @foreach ($diagnoses as $diagnosis)
+                        {{ $diagnosis['code'] }}@if ($diagnosis['display']) · {{ $diagnosis['display'] }}@endif<br>
+                    @endforeach
+                </div>
+            @endif
+
             <h2>Antecedentes</h2>
             <div class="block">{{ $history->medical_history ?: 'Sin antecedentes registrados.' }}</div>
 

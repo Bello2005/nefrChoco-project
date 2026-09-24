@@ -8,6 +8,7 @@ use App\Http\Requests\Appointment\UpdateAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Patient;
 use App\Services\AppointmentService;
+use App\Services\AttentionRecordService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -67,6 +68,7 @@ class AppointmentController extends Controller
 
         return Inertia::render('medico/citas/edit', [
             'appointment' => $appointment,
+            'attentionCatalogs' => app(AttentionRecordService::class)->availability(),
             'patients' => Patient::orderBy('full_name')->get(['id', 'full_name']),
         ]);
     }
@@ -75,7 +77,7 @@ class AppointmentController extends Controller
     {
         Gate::authorize('update', $appointment);
 
-        $this->appointmentService->update($appointment, $request->validated());
+        $this->appointmentService->update($appointment, $request->validated(), $request->user());
 
         return to_route('medico.citas.index')->with('success', 'Cita actualizada correctamente.');
     }

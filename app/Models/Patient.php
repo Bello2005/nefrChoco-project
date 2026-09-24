@@ -116,6 +116,11 @@ class Patient extends Model
         return FollowUpRiskLevel::tryFrom((string) $this->follow_up_risk_level);
     }
 
+    public function allergies(): HasMany
+    {
+        return $this->hasMany(PatientAllergy::class)->oldest('id');
+    }
+
     public function clinicalHistories(): HasMany
     {
         return $this->hasMany(ClinicalHistory::class);

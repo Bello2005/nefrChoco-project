@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Medico;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teleconsultation\UpdateTeleconsultationRequest;
 use App\Models\Appointment;
+use App\Services\AttentionRecordService;
 use App\Services\TeleconsultationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -35,6 +36,7 @@ class TeleconsultationController extends Controller
             'appointment' => $appointment->load('patient:id,full_name'),
             'teleconsultation' => $teleconsultation,
             'jitsiDomain' => config('services.jitsi.domain'),
+            'attentionCatalogs' => app(AttentionRecordService::class)->availability(),
             'connectionCheck' => $appointment->connection_check_level ? [
                 'level' => $appointment->connection_check_level,
                 'at' => $appointment->connection_check_at,
@@ -49,7 +51,12 @@ class TeleconsultationController extends Controller
         $teleconsultation = $this->teleconsultationService->findOrCreateForAppointment($appointment);
 
         try {
-            $this->teleconsultationService->complete($teleconsultation, $request->string('notes')->toString());
+            $this->teleconsultationService->complete(
+                $teleconsultation,
+                $request->string('notes')->toString(),
+                $request->user(),
+                $request->safe()->except('notes'),
+            );
         } catch (\DomainException) {
             return to_route('medico.citas.index')->with('error', 'Esta teleconsulta ya estaba cerrada. Para corregir la nota, agrega una aclaración desde la historia clínica.');
         }

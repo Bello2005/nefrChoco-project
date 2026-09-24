@@ -354,3 +354,7 @@ El RDA exige que el paciente coincida con el registro nacional en tipo y número
 
 `practitioner_profiles` guarda la identidad profesional del médico (documento en claro y único; profesión, registro, especialidad y nota de verificación cifrados). La verificación en RETHUS es manual y queda con autor y fecha. La institución (razón social, NIT, REPS, sede y municipio) no vive en la base sino en la configuración (`INSTITUTION_*`), porque es una sola y la administra quien opera el servidor.
 
+## Registro estructurado de la atención
+
+La atención (la cita, presencial o teleconsulta) guarda diagnósticos CIE-10 (con CIE-11 en paralelo durante la transición), procedimientos CUPS, medicamentos, alergias y motivo, finalidad y causa externa. Se escribe una sola vez, al cierre, dentro de la misma transacción que cierra la cita, y después es **append-only**: las correcciones llegan como filas nuevas desde una aclaración (`replaces_id`) y el original se conserva. Es la misma regla que ya tenían las notas cerradas.
+

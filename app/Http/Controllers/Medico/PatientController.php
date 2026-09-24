@@ -6,8 +6,10 @@ use App\Enums\FollowUpRiskLevel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
 use App\Http\Requests\Patient\UpdatePatientRequest;
+use App\Models\Appointment;
 use App\Models\ClinicalForm;
 use App\Models\Patient;
+use App\Services\AttentionRecordService;
 use App\Services\ClinicalAccessAuditor;
 use App\Services\ClinicalDecisionSupport;
 use App\Services\ClinicalFormService;
@@ -62,7 +64,7 @@ class PatientController extends Controller
 
         $patient->load([
             'clinicalHistories' => fn ($query) => $query->with('author:id,name')->latest(),
-            'appointments' => fn ($query) => $query->with('doctor:id,name')->latest('scheduled_at'),
+            'appointments' => fn ($query) => $query->with(['doctor:id,name', 'diagnoses'])->latest('scheduled_at'),
             'clinicalForms' => fn ($query) => $query->latest()->limit(5),
             'vitalSigns' => fn ($query) => $query->latest('recorded_at')->limit(5),
         ]);
@@ -91,6 +93,15 @@ class PatientController extends Controller
                 'status' => $sign->status(),
                 'recordedAt' => $sign->recorded_at->toIso8601String(),
             ]),
+            // Diagnósticos vigentes de cada atención cerrada (CIE-10).
+            'attentionDiagnoses' => $patient->appointments
+                ->mapWithKeys(fn (Appointment $appointment) => [
+                    $appointment->id => collect(app(AttentionRecordService::class)->presentDiagnoses($appointment))
+                        ->where('isCurrent', true)
+                        ->map(fn (array $diagnosis) => ['code' => $diagnosis['code'], 'display' => $diagnosis['display'], 'role' => $diagnosis['role']])
+                        ->values(),
+                ])
+                ->filter(fn ($diagnoses) => $diagnoses->isNotEmpty()),
             'followUp' => [
                 'level' => $patient->followUpRiskLevel()?->value,
                 'options' => FollowUpRiskLevel::options(),

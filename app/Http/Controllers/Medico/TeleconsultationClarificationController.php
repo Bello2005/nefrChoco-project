@@ -24,6 +24,7 @@ class TeleconsultationClarificationController extends Controller
                 $appointment->teleconsultation,
                 $request->user(),
                 $request->string('body')->toString(),
+                $request->validated('corrected_diagnosis'),
             );
         } catch (\DomainException $exception) {
             return back()->with('error', $exception->getMessage());

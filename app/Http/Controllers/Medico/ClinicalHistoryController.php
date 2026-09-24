@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Medico;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ClinicalHistory\StoreClinicalHistoryRequest;
 use App\Models\Patient;
+use App\Services\Catalogs\CodeCatalog;
 use App\Services\ClinicalHistoryService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +20,7 @@ class ClinicalHistoryController extends Controller
     {
         return Inertia::render('medico/pacientes/historia-clinica/create', [
             'patient' => $patient->only(['id', 'full_name']),
+            'hasCie10' => app(CodeCatalog::class)->has('cie10'),
         ]);
     }
 

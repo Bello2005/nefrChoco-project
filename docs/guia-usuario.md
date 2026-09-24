@@ -140,6 +140,22 @@ En **Citas** agendas y ves tu agenda en calendario. **Solo puedes modificar o ca
 
 Al entrar a una teleconsulta se abre la sala de video con el paciente. Al terminar, **cierras la consulta escribiendo tus notas**, que quedan en la historia clínica y marcan la cita como completada. Esa acción es exclusivamente tuya.
 
+### Registrar la atención
+
+Al **cerrar una teleconsulta**, o al marcar como **Completada** una cita presencial, aparece **Registro de la atención**. Queda en la historia y **no se edita después del cierre**.
+
+1. **Motivo de consulta**, **finalidad** y **causa externa**.
+2. **Diagnósticos (CIE-10):** busca por código o por nombre y elige. Uno tiene que ser **principal**: sin él la atención no se cierra, y la pantalla te lo dice. Con **Agregar** sumas diagnósticos relacionados. Si la IPS ya importó la CIE-11, aparece también un campo CIE-11 opcional (no se completa solo).
+3. **Procedimientos (CUPS)**, si aplica, con su cantidad.
+4. **Medicamentos:** nombre, dosis y frecuencia.
+5. **Alergias:** marca **Preguntado: sin alergias conocidas** si el paciente dice que no tiene, o agrega cada alergia. Dejarlo vacío significa que no se preguntó.
+
+**Ejemplo con códigos de prueba** (los del ambiente de pruebas son falsos, como `TESTDX1`): en *Diagnósticos* escribe `TESTDX1`, elige *Diagnóstico de prueba uno* y déjalo como *Principal*; agrega `TESTDX2` como *Relacionado*; marca *sin alergias conocidas* y toca **Cerrar teleconsulta**. En producción aparecen los códigos oficiales de la CIE-10.
+
+**Si te equivocaste de diagnóstico:** en la historia clínica, bajo la nota, agrega una **aclaración**, elige en *Diagnóstico que corriges* el que estaba mal y busca el código correcto. El original queda tachado y el nuevo muestra tu nombre y la fecha.
+
+Mientras la IPS no haya importado la CIE-10, la atención se puede cerrar sin diagnóstico codificado, y el formulario lo avisa.
+
 ### Formularios clínicos
 
 En **Formularios** aplicas los instrumentos disponibles (tamizaje de riesgo de diabetes, adherencia al tratamiento, seguimiento de hipertensión, seguimiento de enfermedad renal crónica). El puntaje y su interpretación se calculan solos y quedan guardados con la fecha.

@@ -41,9 +41,9 @@ class TeleconsultationService
      *
      * @throws \DomainException si la teleconsulta ya estaba cerrada
      */
-    public function complete(Teleconsultation $teleconsultation, string $notes): Teleconsultation
+    public function complete(Teleconsultation $teleconsultation, string $notes, ?User $author = null, array $attention = []): Teleconsultation
     {
-        return DB::transaction(function () use ($teleconsultation, $notes) {
+        return DB::transaction(function () use ($teleconsultation, $notes, $author, $attention) {
             $locked = Teleconsultation::whereKey($teleconsultation->id)->lockForUpdate()->firstOrFail();
 
             if ($locked->status === Teleconsultation::STATUS_FINISHED) {
@@ -56,6 +56,12 @@ class TeleconsultationService
             ]);
 
             $locked->appointment->update(['status' => Appointment::STATUS_COMPLETED]);
+
+            // En la misma transacción y bajo el mismo bloqueo: un doble envío no
+            // puede dejar dos registros de la misma atención.
+            if ($author !== null) {
+                app(AttentionRecordService::class)->record($locked->appointment, $author, $attention);
+            }
 
             return $locked;
         });
@@ -70,18 +76,26 @@ class TeleconsultationService
      *
      * @throws \DomainException si la teleconsulta todavía no está cerrada
      */
-    public function addClarification(Teleconsultation $teleconsultation, User $author, string $body): TeleconsultationClarification
+    public function addClarification(Teleconsultation $teleconsultation, User $author, string $body, ?array $correctedDiagnosis = null): TeleconsultationClarification
     {
         if ($teleconsultation->status !== Teleconsultation::STATUS_FINISHED) {
             throw new \DomainException('Solo se aclaran notas de teleconsultas cerradas.');
         }
 
-        $clarification = new TeleconsultationClarification(['body' => $body]);
-        $clarification->teleconsultation()->associate($teleconsultation);
-        $clarification->author()->associate($author);
-        $clarification->save();
+        return DB::transaction(function () use ($teleconsultation, $author, $body, $correctedDiagnosis) {
+            $clarification = new TeleconsultationClarification(['body' => $body]);
+            $clarification->teleconsultation()->associate($teleconsultation);
+            $clarification->author()->associate($author);
+            $clarification->save();
 
-        return $clarification;
+            // Una aclaración puede traer el diagnóstico corregido: se agrega como
+            // fila nueva que reemplaza a la anterior, sin tocarla.
+            if ($correctedDiagnosis !== null) {
+                app(AttentionRecordService::class)->addCorrection($clarification, $author, $correctedDiagnosis);
+            }
+
+            return $clarification;
+        });
     }
 
     /**

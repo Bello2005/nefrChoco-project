@@ -6,6 +6,7 @@ use App\Models\Concerns\LogsChangedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ClinicalHistory extends Model
@@ -42,6 +43,11 @@ class ClinicalHistory extends Model
      * en el formulario. Es null en entradas anteriores a este campo cuyo
      * autor no se pudo recuperar de la auditoría.
      */
+    public function diagnoses(): HasMany
+    {
+        return $this->hasMany(ClinicalHistoryDiagnosis::class)->oldest('id');
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
