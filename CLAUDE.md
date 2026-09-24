@@ -6,7 +6,7 @@ con señal intermitente y poca familiaridad con la tecnología. Toda decisión d
 con una pregunta: ¿funciona con mala señal y sin capacitación previa?
 
 ## Stack
-Laravel 12 (PHP ^8.2) + Inertia 2 + React 19 + TypeScript + Tailwind 4 con tokens propios.
+Laravel 12 (PHP ^8.4) + Inertia 2 + React 19 + TypeScript + Tailwind 4 con tokens propios.
 PostgreSQL es el único motor soportado. Pruebas con Pest (PHP) y Vitest (TS).
 Roles (spatie/laravel-permission): admin, medico, paciente.
 Auditoría: spatie/laravel-activitylog + trait LogsChangedFields + app/Services/ClinicalAccessAuditor.php.

@@ -16,7 +16,7 @@ Guía para instalar, operar y mantener la plataforma. Para entender *por qué* e
 
 ## Requisitos
 
-- PHP ^8.2 con las extensiones `xmlwriter` (genera el QR del segundo factor) y `pdo_pgsql`
+- PHP ^8.4 con las extensiones `xmlwriter` (genera el QR del segundo factor) y `pdo_pgsql`
 - Composer
 - Node 20+
 - PostgreSQL 14+

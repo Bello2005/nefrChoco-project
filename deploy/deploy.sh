@@ -21,7 +21,10 @@ APP_DIR=/var/www/nefrochoco-project
 DOMAIN=nefrochoco.bello.works
 DB_NAME=nefrochoco
 DB_USER=nefrochoco
-PHP_VERSION=8.3
+# 8.4: las dependencias bloqueadas (Symfony 8, spatie/laravel-activitylog 5)
+# exigen PHP >= 8.4.1. Con 8.3 la página responde 500 en todas las rutas. El
+# 8.3 del servidor sigue ahí para los otros sitios.
+PHP_VERSION=8.4
 
 if [ "$(id -u)" -ne 0 ]; then
   echo "Corre esto como root (sudo bash deploy/deploy.sh)." >&2
@@ -33,7 +36,7 @@ cd "$APP_DIR"
 echo "== 1/12 Paquetes del sistema =="
 apt-get update -y
 apt-get install -y \
-  php${PHP_VERSION}-xml php${PHP_VERSION}-pgsql php${PHP_VERSION}-mbstring \
+  php${PHP_VERSION}-fpm php${PHP_VERSION}-xml php${PHP_VERSION}-pgsql php${PHP_VERSION}-mbstring \
   php${PHP_VERSION}-curl php${PHP_VERSION}-zip php${PHP_VERSION}-gd \
   php${PHP_VERSION}-bcmath php${PHP_VERSION}-intl unzip git age
 systemctl reload php${PHP_VERSION}-fpm

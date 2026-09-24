@@ -47,7 +47,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 
 ## Stack técnico
 
-- **Backend:** Laravel 12 (PHP ^8.2), PostgreSQL
+- **Backend:** Laravel 12 (PHP ^8.4), PostgreSQL
 - **Frontend:** React 19 + TypeScript vía [Inertia.js](https://inertiajs.com/) — sin API REST separada
 - **Estilos:** Tailwind CSS 4, sistema de diseño propio (Plus Jakarta Sans)
 - **Roles:** [spatie/laravel-permission](https://spatie.be/docs/laravel-permission)
@@ -128,7 +128,7 @@ La matriz completa, con artículo, dónde se cumple, qué prueba lo cubre, estad
 
 ## Instalación
 
-Requisitos: PHP ^8.2 (con `xmlwriter` y `pdo_pgsql`), Composer, Node 20+, PostgreSQL.
+Requisitos: PHP ^8.4 (con `xmlwriter` y `pdo_pgsql`), Composer, Node 20+, PostgreSQL.
 
 ```bash
 composer install && npm install

@@ -43,6 +43,10 @@ sudo certbot --nginx -d nefrochoco.bello.works --non-interactive --redirect --ke
 
 El panel de Hostinger puede mostrar el SSL como "inactivo": ese panel no ve los certificados de Certbot dentro del VPS. Lo que vale es la prueba con `curl`.
 
+## Si la página responde 500 y `laravel.log` no dice nada
+
+Mira `tail /var/log/nginx/error.log`. Si dice *"Your Composer dependencies require a PHP version >= 8.4.1"*, nginx está usando el PHP-FPM equivocado. NefroChocó necesita PHP 8.4 (`PHP_VERSION=8.4` en `deploy.sh`); los otros sitios del servidor siguen en 8.3. Volver a correr `deploy.sh` rearma el sitio de nginx con el socket de 8.4.
+
 ## Pendiente: correo real (SMTP)
 
 Para que el correo de recuperación de contraseña llegue de verdad hace falta un proveedor SMTP. Con [Brevo](https://www.brevo.com) (plan gratuito, 300 correos/día) alcanza para el volumen de esta plataforma:
