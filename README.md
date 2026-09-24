@@ -97,7 +97,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | Registro estructurado de la atención (CIE-10/CIE-11, CUPS) | ✅ |
 | Tablero de preparación para interoperar | ✅ |
 | Generación y envío del RDA (FHIR) | ⏳ Esperando el paquete de la guía del IHCE |
-| Exportación de datos de atenciones para facturación (RIPS) | ⏳ Esperando el anexo de la Res. 948 |
+| Exportación de datos de atenciones para facturación (RIPS) | ⏳ Anexo recibido; falta la confirmación de Tania |
 | Autenticación JWT en la sala de Jitsi | ⏳ Pendiente para producción |
 | Pagos, IA predictiva | ❌ Fuera de alcance |
 

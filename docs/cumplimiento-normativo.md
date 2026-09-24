@@ -38,7 +38,7 @@ Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en 
 |---|---|---|---|---|
 | Identidad: tipo y número de documento, nombres y apellidos separados, sexo biológico | Ficha del paciente | `Pacientes/IdentidadPacienteTest`, `Medico/SexoBiologicoTest` | ✅ | Bello |
 | Residencia (DIVIPOLA), asegurador (EAPB) | Ficha, validada contra catálogo cuando está importado | `Pacientes/IdentidadPacienteTest` | 🟡 importar DIVIPOLA y EAPB | Bello |
-| Género, etnia, discapacidad, ocupación, zona, tipo de afiliación | Ficha, cifrados, validados contra los CodeSystem de la guía RDA 1.0.0 | `Pacientes/IdentidadPacienteTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 importarlos en el servidor; el tipo de afiliación usa el tipo de usuario del RIPS [CONFIRMAR con la Res. 948] | Bello |
+| Género, etnia, discapacidad, ocupación, zona, tipo de afiliación | Ficha, cifrados, validados contra los CodeSystem de la guía RDA 1.0.0 | `Pacientes/IdentidadPacienteTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 importarlos en el servidor; el tipo de afiliación usa el tipo de usuario del RIPS (campo `tipoUsuario` de la Res. 948) | Bello |
 | Fichas viejas completadas sin adivinar | Migración de datos y "Fichas por revisar" | `Pacientes/IdentidadPacienteTest` | ✅ | IPS (revisar las fichas marcadas) |
 
 ## Resolución 1888 de 2025 — Resumen Digital de Atención (RDA)
@@ -68,8 +68,8 @@ Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en 
 
 | Requisito | Dónde se cumple | Prueba Pest | Estado | Responsable |
 |---|---|---|---|---|
-| Datos de la atención codificados (diagnóstico, procedimiento, finalidad, causa externa) | Registro estructurado de la atención, con los catálogos RIPS*Version2 de la guía RDA | `Atencion/RegistroAtencionTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 confirmar con el anexo de la Res. 948 que siguen vigentes para RIPS | Bello |
-| Exportar los datos de las atenciones para facturación (camino b) | — | — | ❌ prompt 13, esperando el anexo técnico y la confirmación de Tania | Tania / Bello |
+| Datos de la atención codificados (diagnóstico, procedimiento, finalidad, causa externa) | Registro estructurado de la atención, con los catálogos RIPS*Version2 de la guía RDA | `Atencion/RegistroAtencionTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 tablas confirmadas en el Documento técnico 1 (v001, 4-jun-2026); falta filtrar los códigos válidos para consultas con las tablas de SISPRO | Bello |
+| Exportar los datos de las atenciones para facturación (camino b) | — | — | ❌ prompt 13: el anexo ya está; falta la confirmación de Tania | Tania / Bello |
 
 ## Resolución 1442 de 2024 y Resolución 1657 de 2025 — CIE-11
 

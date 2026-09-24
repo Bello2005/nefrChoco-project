@@ -61,9 +61,9 @@ return [
         'tipo_diagnostico' => ['name' => 'Tipo de diagnóstico principal'],
 
         // Tabla RIPSTipoUsuarioVersion2 de SISPRO (exportada el 24-sep-2026,
-        // actualizada el 23-jul-2026): régimen o tipo de usuario del RIPS.
-        // Se usa como tipo de afiliación porque la guía RDA 1.0.0 no trae ese
-        // CodeSystem. [CONFIRMAR] contra el anexo técnico de la Res. 948 de 2026.
+        // actualizada el 23-jul-2026). Es la que pide el campo tipoUsuario del
+        // RIPS (Documento técnico 1 de la Res. 948 de 2026, versión 001 del 4-jun-2026): la condición del usuario frente al sistema de salud. Se
+        // usa como tipo de afiliación porque la guía RDA 1.0.0 no trae ese CodeSystem.
         'tipo_usuario' => ['name' => 'Tipo de usuario (RIPS)', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
     ],
 
@@ -101,15 +101,21 @@ return [
         'occupation' => 'ocupacion',
         'residence_zone' => 'zona_residencia',
         // La guía RDA 1.0.0 no trae un CodeSystem de régimen o tipo de afiliación:
-        // se usa el tipo de usuario del RIPS. [CONFIRMAR] con la Res. 948 de 2026.
+        // se usa el tipo de usuario del RIPS (campo tipoUsuario de la Res. 948).
         'affiliation_type' => 'tipo_usuario',
     ],
 
     /*
     | Catálogos del registro de la atención (RDA y RIPS). Son los CodeSystem
-    | RIPS*Version2 que usa la guía RDA 1.0.0. [CONFIRMAR] contra el anexo
-    | técnico de la Res. 948 de 2026 que siguen vigentes para los RIPS.
+    | RIPS*Version2 que usa la guía RDA 1.0.0, y los mismos que pide el
+    | Documento técnico 1 de la Res. 948 de 2026, versión 001 del 4-jun-2026:
+    | tipoDiagnosticoPrincipal, finalidadTecnologiaSalud y causaMotivoAtencion.
     | Mientras el catálogo no esté importado, el campo se guarda como texto.
+    |
+    | TODO: el anexo dice que en consultas solo valen los códigos que la tabla
+    | de SISPRO marca "para consultas". Los JSON del IHCE no traen esa columna:
+    | hace falta exportar de SISPRO RIPSFinalidadConsultaVersion2 y
+    | RIPSCausaExternaVersion2 para ver la columna y filtrar con ella.
     */
     'attention_fields' => [
         'diagnosis_type' => 'tipo_diagnostico',
