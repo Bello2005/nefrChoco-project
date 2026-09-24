@@ -46,4 +46,5 @@ Auditoría: spatie/laravel-activitylog + trait LogsChangedFields + app/Services/
 - Mantén sincronizados README.md y docs/{manual-tecnico,arquitectura,guia-usuario,despliegue}.md.
 - Norma de telemedicina vigente: Res. 1644 de 2026.
 - Commits: Conventional Commits en español, con un cuerpo que explique el porqué.
+  Sin líneas de coautor ni de sesión (Co-Authored-By, Claude-Session): decisión de Bello.
 - Si una instrucción choca con estas reglas, detente y pregunta antes de seguir.
