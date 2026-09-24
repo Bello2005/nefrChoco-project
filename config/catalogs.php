@@ -59,6 +59,12 @@ return [
         'finalidad_consulta' => ['name' => 'Finalidad de la consulta'],
         'causa_externa' => ['name' => 'Causa externa'],
         'tipo_diagnostico' => ['name' => 'Tipo de diagnóstico principal'],
+
+        // Tabla RIPSTipoUsuarioVersion2 de SISPRO (exportada el 24-sep-2026,
+        // actualizada el 23-jul-2026): régimen o tipo de usuario del RIPS.
+        // Se usa como tipo de afiliación porque la guía RDA 1.0.0 no trae ese
+        // CodeSystem. [CONFIRMAR] contra el anexo técnico de la Res. 948 de 2026.
+        'tipo_usuario' => ['name' => 'Tipo de usuario (RIPS)', 'csv_columns' => ['code' => 'Codigo', 'display' => 'Nombre'], 'active_column' => ['name' => 'Habilitado', 'value' => 'SI']],
     ],
 
     /*
@@ -94,8 +100,9 @@ return [
         'disability' => 'discapacidad',
         'occupation' => 'ocupacion',
         'residence_zone' => 'zona_residencia',
-        // La guía RDA 1.0.0 no trae un CodeSystem de régimen o tipo de afiliación.
-        'affiliation_type' => null, // TODO: catálogo oficial [CONFIRMAR]
+        // La guía RDA 1.0.0 no trae un CodeSystem de régimen o tipo de afiliación:
+        // se usa el tipo de usuario del RIPS. [CONFIRMAR] con la Res. 948 de 2026.
+        'affiliation_type' => 'tipo_usuario',
     ],
 
     /*

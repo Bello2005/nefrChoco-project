@@ -38,7 +38,7 @@ Qué exige cada norma, dónde lo cumple la plataforma, qué prueba lo cubre, en 
 |---|---|---|---|---|
 | Identidad: tipo y número de documento, nombres y apellidos separados, sexo biológico | Ficha del paciente | `Pacientes/IdentidadPacienteTest`, `Medico/SexoBiologicoTest` | ✅ | Bello |
 | Residencia (DIVIPOLA), asegurador (EAPB) | Ficha, validada contra catálogo cuando está importado | `Pacientes/IdentidadPacienteTest` | 🟡 importar DIVIPOLA y EAPB | Bello |
-| Género, etnia, discapacidad, ocupación, zona, tipo de afiliación | Ficha, cifrados, validados contra los CodeSystem de la guía RDA 1.0.0 | `Pacientes/IdentidadPacienteTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 importarlos en el servidor; el tipo de afiliación sigue como texto (la guía no trae ese catálogo) | Bello |
+| Género, etnia, discapacidad, ocupación, zona, tipo de afiliación | Ficha, cifrados, validados contra los CodeSystem de la guía RDA 1.0.0 | `Pacientes/IdentidadPacienteTest`, `Catalogos/ListasYAgrupadoresTest` | 🟡 importarlos en el servidor; el tipo de afiliación usa el tipo de usuario del RIPS [CONFIRMAR con la Res. 948] | Bello |
 | Fichas viejas completadas sin adivinar | Migración de datos y "Fichas por revisar" | `Pacientes/IdentidadPacienteTest` | ✅ | IPS (revisar las fichas marcadas) |
 
 ## Resolución 1888 de 2025 — Resumen Digital de Atención (RDA)

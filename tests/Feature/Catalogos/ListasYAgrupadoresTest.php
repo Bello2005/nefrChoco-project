@@ -98,3 +98,32 @@ test('el registro de la atención recibe las listas de finalidad, causa externa 
     expect($disponibles['options'])->not->toHaveKey('externalCause');
     expect($disponibles['externalCause'])->toBeNull();
 });
+
+test('el tipo de afiliación se elige de la lista de tipo de usuario del RIPS', function () {
+    $medico = User::factory()->create();
+    $medico->assignRole('medico');
+    importarFixture('tipo_usuario', 'sispro-prueba.csv');
+
+    // Los códigos deshabilitados en SISPRO no se ofrecen.
+    $this->actingAs($medico)->get(route('medico.pacientes.create'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('catalogs.affiliation_type', 'tipo_usuario')
+            ->where('catalogOptions.affiliation_type', fn ($opciones) => collect($opciones)->pluck('code')->all() === ['TESTSP1', 'TESTSP2']));
+
+    $ficha = [
+        'first_name' => 'Ana',
+        'first_surname' => 'Rentería',
+        'document_type' => 'CC',
+        'document_number' => '1077000333',
+        'birth_date' => '1965-05-05',
+        'biological_sex' => 'femenino',
+        'municipality' => 'Quibdó',
+        'phone' => '3001234567',
+    ];
+
+    $this->actingAs($medico)->post(route('medico.pacientes.store'), [...$ficha, 'affiliation_type' => 'Subsidiado'])
+        ->assertSessionHasErrors('affiliation_type');
+
+    $this->actingAs($medico)->post(route('medico.pacientes.store'), [...$ficha, 'affiliation_type' => 'TESTSP1'])
+        ->assertSessionHasNoErrors();
+});
