@@ -16,6 +16,7 @@ import {
     ScrollText,
     ShieldCheck,
     UserRound,
+    UserRoundSearch,
     Users,
 } from 'lucide-react';
 import AppLogo from './app-logo';
@@ -31,6 +32,7 @@ const navByRole: Record<string, NavSection[]> = {
             items: [
                 { title: 'Usuarios', url: '/admin/usuarios', icon: Users },
                 { title: 'Pacientes', url: '/admin/pacientes', icon: UserRound },
+                { title: 'Fichas por revisar', url: '/fichas-por-revisar', icon: UserRoundSearch },
                 { title: 'Contenido educativo', url: '/admin/educativo', icon: BookOpen },
             ],
         },
@@ -49,6 +51,7 @@ const navByRole: Record<string, NavSection[]> = {
             items: [
                 { title: 'Dashboard', url: '/medico/dashboard', icon: LayoutDashboard },
                 { title: 'Pacientes', url: '/medico/pacientes', icon: Users },
+                { title: 'Fichas por revisar', url: '/fichas-por-revisar', icon: UserRoundSearch },
                 { title: 'Citas', url: '/medico/citas', icon: CalendarDays },
             ],
         },

@@ -173,6 +173,17 @@ export default function PacientesShow({ patient, recommendations, egfrSeries, cl
                     </div>
                 </div>
 
+                {(patient.biological_sex === 'indeterminado' || patient.biological_sex === 'desconocido') && (
+                    <div className="border-info/30 bg-info-soft flex items-start gap-3 rounded-xl border p-4">
+                        <TriangleAlert className="text-info mt-0.5 size-5 shrink-0" aria-hidden="true" />
+                        <p className="text-sm">
+                            <span className="font-semibold">La TFGe no se calcula para esta ficha.</span> La fórmula de función renal (CKD-EPI)
+                            solo contempla sexo biológico femenino o masculino, y en esta ficha está registrado como{' '}
+                            {patient.biological_sex === 'indeterminado' ? 'indeterminado' : 'desconocido'}.
+                        </p>
+                    </div>
+                )}
+
                 {!patient.biological_sex && (
                     <div className="border-warning/30 bg-warning-soft flex items-start gap-3 rounded-xl border p-4">
                         <TriangleAlert className="text-warning mt-0.5 size-5 shrink-0" aria-hidden="true" />

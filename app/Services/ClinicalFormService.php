@@ -41,7 +41,8 @@ class ClinicalFormService
      */
     private function renalResult(Patient $patient, string $formType, array $answers): array
     {
-        if ($formType !== self::RENAL_FORM || $patient->biological_sex === null) {
+        // Sin sexo biológico, o con indeterminado/desconocido, CKD-EPI no aplica.
+        if ($formType !== self::RENAL_FORM || ! $patient->biological_sex?->supportsEgfr()) {
             return [];
         }
 

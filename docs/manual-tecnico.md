@@ -235,3 +235,11 @@ sudo -u www-data php artisan catalogos:importar cie10 storage/app/catalogos/cie1
 ### Búsqueda
 
 `GET /catalogos/{sistema}/buscar?q=` (médico y admin, límite `catalogos` de 90 por minuto) devuelve los 20 primeros códigos **activos** por código o por nombre. En PostgreSQL la migración intenta crear la extensión `pg_trgm` y un índice GIN sobre `codes.display`; si el usuario de la base no tiene permiso, deja un índice normal y la búsqueda usa `ILIKE`. **Admin → Catálogos** muestra cuál quedó. En PostgreSQL 13 o superior `pg_trgm` es una extensión confiable, así que normalmente se crea sin ser superusuario.
+
+## Identidad del paciente (Res. 866 de 2021)
+
+- Campos nuevos en `patients`: `first_name`, `middle_name`, `first_surname`, `second_surname` y `municipality_code` (sin cifrar); `gender_identity`, `ethnicity`, `disability`, `occupation`, `residence_zone`, `eapb_code` y `affiliation_type` (cifrados, con `LogsChangedFields`); `identity_review_pending` e `identity_review_reasons`.
+- `full_name` lo calcula `PatientService` a partir de los nombres. `municipality` se toma del catálogo DIVIPOLA cuando se elige un código.
+- Validación: `config/catalogs.php` → `patient_fields` dice contra qué catálogo se valida cada campo. Si el catálogo no está importado, o la clave es `null` (hoy: identidad de género, etnia, discapacidad, ocupación, zona y tipo de afiliación, pendientes de confirmar contra el paquete FHIR del IHCE), el campo se acepta como texto.
+- Después de importar `tipo_documento` o `divipola`, corre `php artisan pacientes:revisar-identidad` para mapear las fichas viejas. Nunca pisa lo que ya completó una persona, y el marcador de nombres solo se quita guardando la ficha.
+- Sexo biológico → FHIR: `config/catalogs.php` → `biological_sex_fhir`, tomado del ValueSet `IHCE-SexoBiologico-VS` del paquete oficial.

@@ -23,7 +23,8 @@ beforeEach(function () {
 function fichaNueva(array $extra = []): array
 {
     return array_merge([
-        'full_name' => 'Rosalba Mosquera',
+        'first_name' => 'Rosalba',
+        'first_surname' => 'Mosquera',
         'document_type' => 'CC',
         'document_number' => '1077445566',
         'birth_date' => '1955-03-21',
@@ -44,7 +45,7 @@ test('registrar una ficha sin sexo biológico falla la validación', function ()
     expect(Patient::count())->toBe(0);
 });
 
-test('solo se admiten los dos valores que contempla la fórmula', function (string $valor) {
+test('solo se admiten los valores del catálogo de sexo biológico del IHCE', function (string $valor) {
     $this->actingAs($this->medico)
         ->post(route('medico.pacientes.store'), fichaNueva(['biological_sex' => $valor]))
         ->assertSessionHasErrors('biological_sex');
@@ -104,7 +105,7 @@ test('el formulario recibe las opciones desde el enum, no fijas en el frontend',
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('medico/pacientes/create')
-            ->has('biologicalSexOptions', 2)
+            ->has('biologicalSexOptions', 4)
             ->where('biologicalSexOptions.0.value', BiologicalSex::Female->value)
         );
 });

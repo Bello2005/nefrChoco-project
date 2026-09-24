@@ -18,11 +18,16 @@ class PatientFactory extends Factory
             'consent_version' => config('privacy.consent_version'),
             'teleconsultation_consent_accepted_at' => now(),
             'teleconsultation_consent_version' => config('privacy.teleconsultation_consent_version'),
-            'full_name' => $this->faker->name(),
+            'first_name' => $firstName = $this->faker->firstName(),
+            'first_surname' => $firstSurname = $this->faker->lastName(),
+            'second_surname' => $secondSurname = $this->faker->lastName(),
+            'full_name' => "{$firstName} {$firstSurname} {$secondSurname}",
             'document_type' => 'CC',
             'document_number' => $this->faker->unique()->numerify('##########'),
             'birth_date' => $this->faker->date(),
-            'biological_sex' => $this->faker->randomElement(array_column(BiologicalSex::cases(), 'value')),
+            // Solo los dos valores con los que se calcula la TFGe: indeterminado y
+            // desconocido se piden explícitamente en las pruebas que los usan.
+            'biological_sex' => $this->faker->randomElement([BiologicalSex::Female->value, BiologicalSex::Male->value]),
             'municipality' => $this->faker->randomElement(['Quibdó', 'Istmina', 'Condoto', 'Tadó', 'Nuquí']),
             'phone' => $this->faker->numerify('3#########'),
             'emergency_contact_name' => $this->faker->name(),

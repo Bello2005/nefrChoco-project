@@ -1,5 +1,11 @@
 import { FormCard } from '@/components/forms/field';
-import { PatientFields, type BiologicalSexOption } from '@/components/forms/patient-fields';
+import {
+    PatientFields,
+    patientFormFrom,
+    type BiologicalSexOption,
+    type PatientCatalogs,
+    type PatientCodeLabels,
+} from '@/components/forms/patient-fields';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
@@ -14,18 +20,14 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Registrar', href: '/medico/pacientes/create' },
 ];
 
-export default function PacientesCreate({ biologicalSexOptions }: { biologicalSexOptions: BiologicalSexOption[] }) {
-    const { data, setData, post, processing, errors } = useForm({
-        full_name: '',
-        document_type: 'CC',
-        document_number: '',
-        birth_date: '',
-        biological_sex: '',
-        municipality: '',
-        phone: '',
-        emergency_contact_name: '',
-        emergency_contact_phone: '',
-    });
+interface Props {
+    biologicalSexOptions: BiologicalSexOption[];
+    catalogs: PatientCatalogs;
+    codeLabels: PatientCodeLabels;
+}
+
+export default function PacientesCreate({ biologicalSexOptions, catalogs, codeLabels }: Props) {
+    const { data, setData, post, processing, errors } = useForm(patientFormFrom());
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -45,7 +47,14 @@ export default function PacientesCreate({ biologicalSexOptions }: { biologicalSe
 
                 <form onSubmit={submit}>
                     <FormCard>
-                        <PatientFields data={data} errors={errors} setData={setData} biologicalSexOptions={biologicalSexOptions} />
+                        <PatientFields
+                            data={data}
+                            errors={errors}
+                            setData={setData}
+                            biologicalSexOptions={biologicalSexOptions}
+                            catalogs={catalogs}
+                            codeLabels={codeLabels}
+                        />
 
                         <div className="flex items-center gap-3 pt-1">
                             <Button disabled={processing}>Registrar paciente</Button>

@@ -3,6 +3,7 @@
 use App\Http\Controllers\CatalogSearchController;
 use App\Http\Controllers\ClinicalHistoryController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PatientReviewController;
 use App\Http\Controllers\SusController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -50,3 +51,11 @@ Route::middleware(['auth', 'role:admin|medico', 'throttle:catalogos'])
     ->get('catalogos/{sistema}/buscar', CatalogSearchController::class)
     ->where('sistema', '[a-z0-9_]+')
     ->name('catalogos.buscar');
+
+// Fichas por revisar (Res. 866 de 2021): admin y médico, porque el padrón es
+// institucional. Solo datos de identidad.
+Route::middleware(['auth', 'role:admin|medico', 'throttle:zona-clinica'])->group(function () {
+    Route::get('fichas-por-revisar', [PatientReviewController::class, 'index'])->name('fichas-por-revisar.index');
+    Route::get('fichas-por-revisar/{patient}/editar', [PatientReviewController::class, 'edit'])->name('fichas-por-revisar.edit');
+    Route::put('fichas-por-revisar/{patient}', [PatientReviewController::class, 'update'])->name('fichas-por-revisar.update');
+});

@@ -33,6 +33,43 @@ return [
         'tipo_documento' => ['name' => 'Tipos de documento', 'csv_columns' => ['code' => null, 'display' => null]], // [CONFIRMAR]
     ],
 
+    /*
+    | Sexo biológico → código FHIR.
+    |
+    | Fuente: ValueSet IHCE-SexoBiologico-VS
+    | (http://ihcecol.gov.co/fhir/ValueSet/IHCE-SexoBiologico-VS) del paquete
+    | co.gov.minsalud.rda 1.0.0, que usa http://hl7.org/fhir/administrative-gender.
+    | Copiado del package.tgz oficial (confirmado por Bello el 24-sep-2026). La
+    | portada publicada de la guía dice otro canonical (fhir.minsalud.gov.co):
+    | se revisa en el prompt 10 contra el paquete, con el validador de HL7.
+    */
+    'biological_sex_fhir' => [
+        'femenino' => 'female',
+        'masculino' => 'male',
+        'indeterminado' => 'other',
+        'desconocido' => 'unknown',
+    ],
+
+    /*
+    | Catálogo contra el que se valida cada dato de la ficha (Res. 866 de 2021).
+    |
+    | Clave del catálogo importado con catalogos:importar. Mientras el
+    | catálogo no esté importado, o la clave sea null, el campo se guarda como
+    | texto libre. [CONFIRMAR] las claves de los CodeSystem del paquete FHIR
+    | del IHCE que correspondan: no se escribieron de memoria.
+    */
+    'patient_fields' => [
+        'document_type' => 'tipo_documento',
+        'municipality_code' => 'divipola',
+        'eapb_code' => 'eapb',
+        'gender_identity' => null, // TODO: catálogo del IHCE [CONFIRMAR]
+        'ethnicity' => null, // TODO: catálogo del IHCE [CONFIRMAR]
+        'disability' => null, // TODO: catálogo del IHCE [CONFIRMAR]
+        'occupation' => null, // TODO: catálogo de ocupaciones [CONFIRMAR]
+        'residence_zone' => null, // TODO: catálogo del IHCE [CONFIRMAR]
+        'affiliation_type' => null, // TODO: régimen / tipo de usuario [CONFIRMAR]
+    ],
+
     'storage_path' => 'catalogos',
 
     // Resultados del buscador: pocos, porque viajan a un teléfono con mala señal.

@@ -23,12 +23,24 @@ class Patient extends Model
         'teleconsultation_consent_accepted_at',
         'teleconsultation_consent_version',
         'full_name',
+        'first_name',
+        'middle_name',
+        'first_surname',
+        'second_surname',
         'document_type',
         'document_number',
         'birth_date',
         'biological_sex',
         'municipality',
+        'municipality_code',
         'phone',
+        'gender_identity',
+        'ethnicity',
+        'disability',
+        'occupation',
+        'residence_zone',
+        'eapb_code',
+        'affiliation_type',
         'emergency_contact_name',
         'emergency_contact_phone',
     ];
@@ -54,6 +66,16 @@ class Patient extends Model
             'emergency_contact_phone' => 'encrypted',
             // Dato clínico: cifrado. Se lee como enum con followUpRiskLevel().
             'follow_up_risk_level' => 'encrypted',
+            // Datos mínimos de la Res. 866 de 2021: sensibles, van cifrados.
+            'gender_identity' => 'encrypted',
+            'ethnicity' => 'encrypted',
+            'disability' => 'encrypted',
+            'occupation' => 'encrypted',
+            'residence_zone' => 'encrypted',
+            'eapb_code' => 'encrypted',
+            'affiliation_type' => 'encrypted',
+            'identity_review_pending' => 'boolean',
+            'identity_review_reasons' => 'array',
         ];
     }
 

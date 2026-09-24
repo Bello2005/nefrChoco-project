@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Medico;
 
-use App\Enums\BiologicalSex;
 use App\Enums\FollowUpRiskLevel;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Patient\StorePatientRequest;
@@ -13,6 +12,7 @@ use App\Services\ClinicalAccessAuditor;
 use App\Services\ClinicalDecisionSupport;
 use App\Services\ClinicalFormService;
 use App\Services\FollowUpScheduleService;
+use App\Services\PatientFormOptions;
 use App\Services\PatientService;
 use App\Support\ClinicalRules\Recommendation;
 use Carbon\CarbonImmutable;
@@ -27,6 +27,7 @@ class PatientController extends Controller
         private readonly ClinicalDecisionSupport $clinicalDecisionSupport,
         private readonly ClinicalAccessAuditor $auditor,
         private readonly FollowUpScheduleService $followUpSchedule,
+        private readonly PatientFormOptions $formOptions,
     ) {}
 
     public function index(): Response
@@ -42,9 +43,7 @@ class PatientController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('medico/pacientes/create', [
-            'biologicalSexOptions' => BiologicalSex::options(),
-        ]);
+        return Inertia::render('medico/pacientes/create', $this->formOptions->for());
     }
 
     public function store(StorePatientRequest $request)
@@ -133,7 +132,7 @@ class PatientController extends Controller
     {
         return Inertia::render('medico/pacientes/edit', [
             'patient' => $patient,
-            'biologicalSexOptions' => BiologicalSex::options(),
+            ...$this->formOptions->for($patient),
         ]);
     }
 

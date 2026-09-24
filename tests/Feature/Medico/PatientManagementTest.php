@@ -13,7 +13,8 @@ beforeEach(function () {
 
 test('un médico puede registrar un paciente', function () {
     $response = $this->actingAs($this->medico)->post(route('medico.pacientes.store'), [
-        'full_name' => 'María Palacios',
+        'first_name' => 'María',
+        'first_surname' => 'Palacios',
         'document_type' => 'CC',
         'document_number' => '1077123456',
         'birth_date' => '1980-05-10',
@@ -26,6 +27,8 @@ test('un médico puede registrar un paciente', function () {
 
     $patient = Patient::where('document_number', '1077123456')->first();
     expect($patient)->not->toBeNull();
+    // full_name se arma de los nombres separados, para que la búsqueda siga funcionando.
+    expect($patient->full_name)->toBe('María Palacios');
     $response->assertRedirect(route('medico.pacientes.show', $patient));
 });
 

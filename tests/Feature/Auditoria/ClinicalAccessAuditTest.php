@@ -44,7 +44,8 @@ test('crear un paciente queda registrado en el log de cambios', function () {
     $medico->assignRole('medico');
 
     $this->actingAs($medico)->post(route('medico.pacientes.store'), [
-        'full_name' => 'Auditoría Prueba',
+        'first_name' => 'Auditoría',
+        'first_surname' => 'Prueba',
         'document_type' => 'CC',
         'document_number' => '1099887766',
         'birth_date' => '1990-01-01',

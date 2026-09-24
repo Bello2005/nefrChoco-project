@@ -65,6 +65,11 @@ class StoreClinicalFormRequest extends FormRequest
                     'patient_id',
                     'Esta ficha no tiene registrado el sexo biológico, que se necesita para calcular la función renal. Complétalo en la ficha del paciente antes de aplicar el seguimiento.',
                 );
+            } elseif ($patient && ! $patient->biological_sex->supportsEgfr()) {
+                $validator->errors()->add(
+                    'patient_id',
+                    'La fórmula de función renal (CKD-EPI) solo contempla sexo biológico femenino o masculino. Con "'.$patient->biological_sex->label().'" la TFGe no se puede calcular.',
+                );
             }
         });
     }

@@ -103,11 +103,25 @@ erDiagram
     PATIENTS {
         id bigint PK
         user_id bigint FK "opcional"
-        full_name string "sin cifrar: se busca"
+        full_name string "sin cifrar: se busca; se calcula de los nombres"
+        first_name string "sin cifrar: RDA, registro nacional"
+        middle_name string
+        first_surname string "sin cifrar: RDA, registro nacional"
+        second_surname string
+        document_type string "catálogo tipo_documento"
         document_number string UK "sin cifrar: índice único"
-        municipality string "sin cifrar: se agrupa"
+        municipality string "sin cifrar: se agrupa; nombre DIVIPOLA"
+        municipality_code string "DIVIPOLA"
         birth_date date
-        biological_sex string "femenino|masculino: entra en la fórmula de TFGe"
+        biological_sex string "femenino|masculino|indeterminado|desconocido"
+        gender_identity text "cifrado · Res. 866"
+        ethnicity text "cifrado · Res. 866"
+        disability text "cifrado · Res. 866"
+        occupation text "cifrado · Res. 866"
+        residence_zone text "cifrado · Res. 866"
+        eapb_code text "cifrado · Res. 866"
+        affiliation_type text "cifrado · Res. 866"
+        identity_review_pending boolean "fichas por revisar"
         phone text "cifrado"
         emergency_contact_name text "cifrado"
         emergency_contact_phone text "cifrado"
@@ -327,3 +341,12 @@ Cada recomendación **debe** decir qué regla se disparó y con qué dato. Sin e
 | Sin Content-Security-Policy todavía | La teleconsulta carga hoy un script de `meet.jit.si` y la tipografía viene de un CDN; una CSP mal ajustada rompe la videollamada en silencio. Se define junto con el autoalojamiento de Jitsi, que sí es parte del proyecto: con el video en origen propio la política deja de tener que permitir un tercero |
 | Cuerpo del material educativo en Markdown, no en HTML | El contenido lo escribe el personal desde el panel y lo lee todo paciente. Se convierte con el HTML crudo descartado, así que el panel no puede inyectar `<script>` en la pantalla de nadie; Markdown alcanza para títulos, negritas y listas |
 | Una sola respuesta de usabilidad por persona | El promedio SUS debe reflejar a cuánta gente se le preguntó, no cuántas veces respondió cada quien. El reporte agrega por rol y nunca muestra nombres: quien dice que la plataforma le resultó incómoda no debería quedar señalado ante quien la administra |
+
+## Identidad del paciente e interoperabilidad (Res. 866 de 2021)
+
+El RDA exige que el paciente coincida con el registro nacional en tipo y número de documento, primer nombre, primer apellido y sexo biológico. Por eso la ficha guarda los nombres separados (sin cifrar, como `full_name`, que ahora se calcula a partir de ellos) y valida los datos codificados contra los catálogos oficiales importados (`code_systems`/`codes`, ver el manual técnico). Mientras un catálogo no esté importado, su campo se acepta como texto, para no bloquear el registro de pacientes.
+
+- **Sexo biológico:** los cuatro valores del ValueSet `IHCE-SexoBiologico-VS` (HL7 `administrative-gender`: `female`, `male`, `other`, `unknown`), mapeados en `config/catalogs.php`. CKD-EPI solo usa femenino y masculino: con indeterminado o desconocido la TFGe no se calcula.
+- **Fichas existentes:** la migración `backfill_patient_identity` propone los nombres separados con una heurística (y siempre marca la ficha), y mapea tipo de documento y municipio solo cuando coinciden exactamente con el catálogo. Lo demás queda en **Fichas por revisar** (admin y médico). Después de importar catálogos se vuelve a correr con `php artisan pacientes:revisar-identidad`.
+- **Guía FHIR del IHCE:** el `package.tgz` oficial se llama `co.gov.minsalud.rda` (versión 1.0.0, FHIR 4.0.1) y sus artefactos usan URLs `http://ihcecol.gov.co/fhir/...`, pero la portada publicada de la guía dice `minsalud.fhir.co.rda` y `https://fhir.minsalud.gov.co/rda/...`. Para los artefactos manda el paquete; la diferencia se valida con el validador de HL7 cuando se construya el RDA.
+

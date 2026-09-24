@@ -120,7 +120,17 @@ El padrón es de la IPS: puedes consultar y editar la ficha de cualquier persona
 
 Desde la ficha registras entradas de historia clínica, aplicas formularios, ves el telemonitoreo y consultas el apoyo a la decisión de esa persona.
 
-**Por qué se pide el sexo biológico.** La fórmula con la que se calcula la función renal (TFGe) usa coeficientes distintos para mujeres y hombres, así que sin ese dato el control renal no se puede calcular. Es un campo de sexo biológico, no de identidad de género, y por eso solo admite los dos valores que la fórmula contempla. Las fichas antiguas lo tienen vacío: hay que completarlo la primera vez que se vaya a calcular la TFGe.
+**Nombres y apellidos por separado.** La ficha pide primer nombre, segundo nombre, primer apellido y segundo apellido, tal como aparecen en el documento: la historia clínica interoperable los compara con el registro nacional.
+
+**Datos con buscador.** Cuando la IPS ya importó los catálogos oficiales, el tipo de documento, el municipio y el asegurador (EAPB) se eligen con un buscador: escribe parte del nombre y toca el que corresponde. Si todavía no están importados, se escriben como antes.
+
+**Datos del asegurador y sociodemográficos.** Al final de la ficha están EAPB, tipo de afiliación, zona de residencia, ocupación, pertenencia étnica, discapacidad e identidad de género. Si no los sabes todavía, puedes dejarlos vacíos y completarlos después.
+
+**Por qué se pide el sexo biológico.** La fórmula con la que se calcula la función renal (TFGe) usa coeficientes distintos para mujeres y hombres. Además de femenino y masculino, la ficha admite **indeterminado / otro** y **desconocido**, como pide la historia clínica interoperable: con esos dos la TFGe no se calcula, y la ficha lo explica. No es la identidad de género, que va en su propio campo.
+
+### Fichas por revisar
+
+En el menú, **Fichas por revisar** lista las fichas antiguas a las que la plataforma no quiso completarles un dato adivinando: nombres que se separaron automáticamente, un tipo de documento o un municipio que no coincidió con el catálogo oficial, o el sexo biológico vacío. Abre cada una con **Completar**, revisa los datos contra el documento del paciente y toca **Guardar y marcar como revisada**. La pueden usar médicos y administradores.
 
 Eliminar una ficha no está a tu alcance: arrastra toda la historia clínica y queda en administración.
 
