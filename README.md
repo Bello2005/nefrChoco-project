@@ -13,6 +13,7 @@ No es un producto multi-tenant: es un desarrollo a medida para un solo cliente i
 | [docs/arquitectura.md](docs/arquitectura.md) | Diagramas, modelo de datos y el porqué de cada decisión |
 | [docs/manual-tecnico.md](docs/manual-tecnico.md) | Instalar, operar y mantener |
 | [docs/guia-usuario.md](docs/guia-usuario.md) | Cómo se usa, por rol |
+| [docs/casos-de-uso.docx](docs/casos-de-uso.docx) | 46 casos de uso por actor: diagramas UML, fichas de especificación con captura, ciclos de vida y reglas de negocio (capturas sueltas en `docs/capturas/`) |
 | [docs/despliegue.md](docs/despliegue.md) | Desplegar en el VPS de pruebas (nginx + PHP-FPM + PostgreSQL, junto al Jitsi autoalojado), respaldos cifrados y Hora Legal |
 | [docs/cumplimiento-normativo.md](docs/cumplimiento-normativo.md) | Matriz norma → requisito → dónde se cumple → prueba → estado → responsable |
 | [docs/protocolo-baja-conectividad.md](docs/protocolo-baja-conectividad.md) | Plantilla de contingencia por mala señal y tabla de pruebas reales (por validar con la IPS) |
