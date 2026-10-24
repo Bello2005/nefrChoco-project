@@ -5,6 +5,7 @@ use App\Models\ClinicalHistory;
 use App\Models\Patient;
 use App\Models\User;
 use App\Models\VitalSign;
+use Carbon\CarbonImmutable;
 use Database\Seeders\RoleSeeder;
 
 beforeEach(function () {
@@ -12,6 +13,11 @@ beforeEach(function () {
 });
 
 test('el dashboard del médico resume su propia agenda y no la de otros médicos', function () {
+    // Un miércoles fijo: las citas van dos días después y deben caer en la misma
+    // semana. Con la fecha real, de viernes a domingo caían en la siguiente y la
+    // prueba fallaba según el día en que se corriera.
+    $this->travelTo(CarbonImmutable::parse('2026-10-21 09:00'));
+
     $medico = User::factory()->create();
     $medico->assignRole('medico');
 
