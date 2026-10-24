@@ -6,6 +6,8 @@ Cómo queda IPS NefroChocó corriendo en el mismo VPS (Hostinger, Ubuntu 24.04) 
 
 **Datos de demostración** (solo en pruebas; crea cuentas con la contraseña `password`, no usar en producción): `sudo -u www-data php artisan db:seed --class=DemoDataSeeder --force`. Se corre una sola vez: repetirlo duplica citas e historias.
 
+**Respuestas de usabilidad de demostración** (para ver el reporte SUS con datos sin que nadie responda): `sudo -u www-data php artisan db:seed --class=SusDemoSeeder --force`. Crea doce respuestas al azar (seis de médicos, seis de pacientes) con cuentas desactivadas `@encuesta-demo.nefrochoco.co`, de modo que las cuentas de demo con las que sí se entra siguen libres para responder a mano. Se puede repetir sin duplicar y se niega a correr en producción.
+
 ## Por qué nativo y no Docker
 
 El servidor ya sirve más de diez sitios con nginx + PHP-FPM + PostgreSQL nativos; Docker solo se usa para el stack oficial de Jitsi (`docker-jitsi-meet`), porque así es como Jitsi se distribuye. Meter la app en un contenedor habría duplicado PHP-FPM y PostgreSQL sin necesidad, en una máquina de 2 vCPU / 8 GB compartida entre varios clientes. Un sitio nativo más, con el mismo patrón que los otros sitios del servidor, es lo que menos sorpresas trae.
