@@ -31,7 +31,7 @@ La plataforma sigue abierta. Lo que registres queda guardado en tu teléfono y s
 
 ### Contarnos cómo te va usando la plataforma
 
-En **Usabilidad** hay un cuestionario de diez afirmaciones sobre tu experiencia. No hay respuestas correctas y se responde una sola vez. Lo que escribas en el espacio de comentarios se lee **sin tu nombre**.
+En **Tu opinión**, en el menú lateral, hay un cuestionario de diez afirmaciones sobre tu experiencia. No hay respuestas correctas y se responde una sola vez. Lo que escribas en el espacio de comentarios se lee **sin tu nombre**.
 
 ---
 
@@ -216,7 +216,7 @@ Para escribir el contenido puedes usar `##` para títulos, `**negrita**` y `-` p
 
 ### Usabilidad
 
-En **Usabilidad** ves los resultados del cuestionario SUS: el puntaje de 0 a 100, cómo se compara con el promedio de referencia de la escala (68), el desglose por rol y el aporte de cada afirmación.
+En **Usabilidad** ves los resultados del cuestionario SUS (médicos y pacientes lo responden desde **Tu opinión**, en su propio menú): el puntaje de 0 a 100, cómo se compara con el promedio de referencia de la escala (68), el desglose por rol y el aporte de cada afirmación.
 
 El puntaje total te dice si la plataforma se deja usar, pero no qué arreglar. Para eso está el desglose por afirmación: los aportes más bajos señalan dónde la gente se está trabando.
 

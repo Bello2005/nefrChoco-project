@@ -97,3 +97,16 @@ test('un médico no puede ver el reporte de usabilidad', function () {
 
     $this->actingAs($medico)->get(route('admin.usabilidad.index'))->assertForbidden();
 });
+
+test('médicos y pacientes abren el cuestionario al que lleva su menú', function (string $rol) {
+    $usuario = User::factory()->create();
+    $usuario->assignRole($rol);
+
+    // La URL es la misma que «Tu opinión» en resources/js/lib/navigation.ts.
+    $this->actingAs($usuario)->get('/usabilidad')
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('usabilidad/index')
+            ->has('statements', 10)
+            ->where('alreadyAnswered', false));
+})->with(['medico', 'paciente']);

@@ -42,7 +42,7 @@ export default function UsabilidadReporte({ total, average, interpretation, refe
                     <EmptyState
                         icon={ClipboardCheck}
                         title="Todavía nadie ha respondido"
-                        description="Cuando el personal y los pacientes respondan el cuestionario, aquí aparecerá el puntaje y su desglose."
+                        description="Esta pantalla solo muestra resultados. Médicos y pacientes responden el cuestionario desde «Tu opinión» en su menú (/usabilidad); cuando lo hagan, aquí aparecerá el puntaje y su desglose."
                     />
                 ) : (
                     <>
