@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
 
         // Los datos de demostración solo tienen sentido fuera de producción.
         if (app()->environment('local')) {
-            $this->call(DemoDataSeeder::class);
+            $this->call([DemoDataSeeder::class, SusDemoSeeder::class]);
         }
     }
 }

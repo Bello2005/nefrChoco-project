@@ -153,7 +153,7 @@ Sin vincular, el paciente entra pero ve "tu cuenta no está vinculada": sin cita
 
 **Material educativo.** Se publica desde `/admin/educativo`. Un contenido tiene **cuerpo propio o enlace externo**, y solo el cuerpo propio puede marcarse como disponible sin conexión —un enlace vive en otro dominio y el service worker no lo intercepta, así que marcarlo prometería algo que no ocurre—. El cuerpo se escribe en Markdown y se convierte descartando el HTML crudo.
 
-**Usabilidad.** `/admin/usabilidad` reporta el puntaje SUS con su desglose por rol y el aporte medio de cada afirmación. El cuestionario lo responde cualquier rol desde `/usabilidad`, una sola vez por persona; médicos y pacientes lo tienen en su menú como «Tu opinión» (`resources/js/lib/navigation.ts`, que define el menú de cada rol). El reporte no muestra nombres, tampoco en los comentarios.
+**Usabilidad.** `/admin/usabilidad` reporta el puntaje SUS con su desglose por rol y el aporte medio de cada afirmación. El cuestionario lo responde cualquier rol desde `/usabilidad`, una sola vez por persona; médicos y pacientes lo tienen en su menú como «Tu opinión» (`resources/js/lib/navigation.ts`, que define el menú de cada rol). `SusDemoSeeder` llena el reporte con respuestas de prueba en entornos que no sean producción; `DatabaseSeeder` lo corre en local junto con `DemoDataSeeder`. El reporte no muestra nombres, tampoco en los comentarios.
 
 **Auditoría.** `/admin/auditoria` permite filtrar entre accesos y cambios. Los cambios guardan qué campos se tocaron, nunca sus valores.
 
