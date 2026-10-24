@@ -15,7 +15,7 @@ Auditoría: spatie/laravel-activitylog + trait LogsChangedFields + app/Services/
 - Rutas por zona: routes/admin.php, medico.php, paciente.php (auth, role:<rol>, throttle:zona-clinica).
 - Controladores delgados en app/Http/Controllers/{Admin,Medico,Paciente}.
 - Lógica en app/Services, validación en app/Http/Requests, autorización en app/Policies.
-- Menú por rol: resources/js/components/app-sidebar.tsx.
+- Menú por rol: resources/js/lib/navigation.ts (lo pinta resources/js/components/app-sidebar.tsx).
 
 ## Decisiones que no se cambian sin preguntar
 - El padrón es institucional (cualquier médico ve y edita cualquier ficha); la agenda es personal
