@@ -6,7 +6,7 @@ Cómo queda IPS NefroChocó corriendo en el mismo VPS (Hostinger, Ubuntu 24.04) 
 
 **Datos de demostración** (solo en pruebas; crea cuentas con la contraseña `password`, no usar en producción): `sudo -u www-data php artisan db:seed --class=DemoDataSeeder --force`. Se corre una sola vez: repetirlo duplica citas e historias.
 
-**Respuestas de usabilidad de demostración** (para ver el reporte SUS con datos sin que nadie responda): `sudo -u www-data php artisan db:seed --class=SusDemoSeeder --force`. Crea doce respuestas al azar (seis de médicos, seis de pacientes) con cuentas desactivadas `@encuesta-demo.nefrochoco.co`, de modo que las cuentas de demo con las que sí se entra siguen libres para responder a mano. Se puede repetir sin duplicar y se niega a correr en producción.
+**Respuestas de usabilidad de demostración** (para ver el reporte SUS con datos sin que nadie responda): `sudo -u www-data php artisan db:seed --class=SusDemoSeeder --force`. Crea doce respuestas al azar (seis de médicos, seis de pacientes) con cuentas desactivadas `@encuesta-demo.nefrochoco.co`, de modo que las cuentas de demo con las que sí se entra siguen libres para responder a mano. Se puede repetir sin duplicar. Como el VPS corre con `APP_ENV=production`, antes hay que poner `ALLOW_DEMO_DATA=true` en su `.env` y correr `sudo -u www-data php artisan config:cache` (la configuración está cacheada); sin esa línea se niega a correr, y así debe quedar en el servidor de la IPS.
 
 ## Por qué nativo y no Docker
 

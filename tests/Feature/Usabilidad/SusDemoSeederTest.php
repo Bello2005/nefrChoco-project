@@ -50,3 +50,12 @@ test('los datos de demo se niegan a correr en producción', function () {
     expect(fn () => app(SusDemoSeeder::class)->run())->toThrow(RuntimeException::class);
     expect(SusResponse::count())->toBe(0);
 });
+
+test('en el VPS de pruebas, que corre como producción, los datos de demo se permiten con el interruptor', function () {
+    app()['env'] = 'production';
+    config(['nefrochoco.allow_demo_data' => true]);
+
+    app(SusDemoSeeder::class)->run();
+
+    expect(SusResponse::count())->toBe(12);
+});
