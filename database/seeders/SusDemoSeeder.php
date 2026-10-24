@@ -42,9 +42,10 @@ class SusDemoSeeder extends Seeder
     public function run(): void
     {
         // Datos inventados en producción dañarían un reporte que la IPS usa
-        // para decidir: aquí se detiene aunque se pase --force.
-        if (app()->environment('production')) {
-            throw new RuntimeException('SusDemoSeeder no se corre en producción.');
+        // para decidir: aquí se detiene aunque se pase --force, salvo en el VPS
+        // de pruebas, que corre como producción y enciende ALLOW_DEMO_DATA.
+        if (app()->environment('production') && ! config('nefrochoco.allow_demo_data')) {
+            throw new RuntimeException('SusDemoSeeder no se corre en producción. En el VPS de pruebas, pon ALLOW_DEMO_DATA=true en el .env.');
         }
 
         foreach ([Role::Medico, Role::Paciente] as $role) {

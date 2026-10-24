@@ -25,6 +25,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Datos de demostración en un servidor en modo producción
+    |--------------------------------------------------------------------------
+    |
+    | El VPS de pruebas corre con APP_ENV=production, igual que correrá el
+    | servidor de la IPS. Por eso el entorno no basta para distinguirlos: los
+    | seeders de datos inventados (SusDemoSeeder) solo corren en producción si
+    | este interruptor está encendido a mano. Sin él, un reporte que la IPS usa
+    | para decidir nunca se mezcla con respuestas de prueba.
+    |
+    */
+
+    'allow_demo_data' => (bool) env('ALLOW_DEMO_DATA', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Presupuesto del material educativo
     |--------------------------------------------------------------------------
     |
