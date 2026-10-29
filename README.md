@@ -169,9 +169,11 @@ php artisan test
 npm run test
 ```
 
-**429 pruebas con Pest** (1.995 aserciones), que pasan tanto en SQLite como en PostgreSQL. Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el cifrado de todo el contenido clínico nuevo, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los consentimientos y su revocación, la custodia (la base rechaza borrados en cascada), las notas y registros inmutables con aclaraciones, los catálogos oficiales con códigos de prueba falsos, la identidad del paciente y su migración sin adivinar, el perfil RETHUS, el registro estructurado de la atención y el tablero de preparación para interoperar.
+**447 pruebas con Pest** (2.164 aserciones), que pasan tanto en SQLite como en PostgreSQL. Incluyen la matriz de autorización entre profesionales, el flujo completo del segundo factor, la idempotencia de la cola sin conexión, el cifrado de todo el contenido clínico nuevo, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, los consentimientos y su revocación, la custodia (la base rechaza borrados en cascada), las notas y registros inmutables con aclaraciones, los catálogos oficiales con códigos de prueba falsos, la identidad del paciente y su migración sin adivinar, el perfil RETHUS, el registro estructurado de la atención y el tablero de preparación para interoperar.
 
-**15 pruebas con Vitest**: la cola sin conexión (`offline-queue.ts`) y la clasificación de "Probar mi conexión" (`connection-check.ts`).
+**33 pruebas con Vitest**: la cola sin conexión (`offline-queue.ts`), el envío con respaldo en el dispositivo (`submit-or-queue.ts`), la navegación sin señal (`offline-navigation.ts`, `offline-warmup.ts`) y la clasificación de "Probar mi conexión" (`connection-check.ts`).
+
+**Escenario sin conexión de extremo a extremo** (`npm run e2e:sin-conexion`): Chromium real, corte total y red que no pasa datos. Resultados y capturas en [`docs/evidencias/sin-conexion/`](docs/evidencias/sin-conexion/resultado.md).
 
 ## Pendiente para producción
 

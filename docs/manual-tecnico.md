@@ -131,11 +131,14 @@ php artisan test                                   # todo
 php artisan test tests/Feature/Autorizacion        # una carpeta
 php artisan test --filter="contraste"              # por nombre
 npm run test                                        # Vitest: lógica de frontend (cola sin conexión)
+npm run build && npm run e2e:sin-conexion           # escenario sin conexión de extremo a extremo
 ```
 
-Las pruebas de backend corren sobre SQLite en memoria con `RefreshDatabase`. Son **320** y cubren, entre otras cosas, la matriz de autorización entre profesionales, el segundo factor completo, la idempotencia de la cola sin conexión, el cifrado de las respuestas de los formularios clínicos, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, el puntaje SUS sobre sets de respuestas calculados a mano, y el contraste de color de ambos temas leyendo los tokens del CSS.
+El escenario de extremo a extremo necesita Chromium de Playwright (`npx playwright install chromium`, una vez). Crea y borra su propia base SQLite (`database/e2e-sin-conexion.sqlite`), así que no toca la base de desarrollo, y deja el resultado en `docs/evidencias/sin-conexion/resultado.md` con capturas. Sale con código 1 si algún paso falla.
 
-**5 pruebas con Vitest** cubren `resources/js/lib/offline-queue.ts` con `fake-indexeddb`: aislamiento de la cola por `ownerId`, que 401/403/419 se conservan para reintentar en vez de descartarse como un 422, y que las entradas de antes de este cambio (sin `ownerId`) se migran conservándolas en vez de perderlas o de atribuírselas a quien inicie sesión primero. Config en `vitest.config.ts`.
+Las pruebas de backend corren sobre SQLite en memoria con `RefreshDatabase`. Son **447** y cubren, entre otras cosas, la matriz de autorización entre profesionales, el segundo factor completo, la idempotencia de la cola sin conexión, el cifrado de las respuestas de los formularios clínicos, el motor de reglas clínicas caso por caso, la TFGe contrastada contra la calculadora oficial, el puntaje SUS sobre sets de respuestas calculados a mano, y el contraste de color de ambos temas leyendo los tokens del CSS.
+
+**Las pruebas con Vitest** cubren el envío con respaldo en el dispositivo (`submit-or-queue.ts`: red caída, red que no pasa datos, tiempo vencido, 422, 419 y 5xx), el respaldo de navegación sin señal (`offline-navigation.ts`), la precarga del código del paciente desde el manifest (`offline-warmup.ts`) y `resources/js/lib/offline-queue.ts` con `fake-indexeddb`: aislamiento de la cola por `ownerId`, que 401/403/419 se conservan para reintentar en vez de descartarse como un 422, y que las entradas de antes de este cambio (sin `ownerId`) se migran conservándolas en vez de perderlas o de atribuírselas a quien inicie sesión primero. Config en `vitest.config.ts`.
 
 Al agregar una prueba que renderiza una página nueva, compilar antes con `npm run build`.
 
@@ -173,6 +176,7 @@ Se registra la lectura de cuatro pantallas: ficha del paciente, historia clínic
 | Un médico recibe 403 sobre una cita | Correcto: solo gestiona las suyas. El padrón sí es compartido |
 | No se puede guardar un usuario del personal | El correo no está en el dominio de `ALLOWED_EMAIL_DOMAIN`, o tiene mayúsculas |
 | Un paciente no ve citas ni historia | Su cuenta no está vinculada a una ficha. Se vincula desde `/admin/usuarios` |
+| Sin señal, una pantalla del paciente muestra «Sin conexión» | Solo inicio, signos vitales y educación se dejan en el teléfono, y se descargan cuando el paciente entra con señal después del despliegue. Las demás pantallas necesitan haberse abierto antes con señal |
 | El material educativo no queda disponible sin conexión | Solo se precarga el que tiene cuerpo propio y la marca de disponible sin conexión, y se descarga al abrir la pantalla de Educación con señal |
 | Los errores de formulario salen como `validation.algo` | Falta la línea en `lang/es/validation.php`, o `APP_LOCALE` no es `es` |
 | Un recurso externo nuevo no carga (fuente, script, iframe) | La Content-Security-Policy de `SecurityHeaders::contentSecurityPolicy()` solo deja pasar los orígenes ya listados ahí; hay que agregar el nuevo. En local no pasa: la CSP se salta a propósito porque bloquearía el servidor de Vite |

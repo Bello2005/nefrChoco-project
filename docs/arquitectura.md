@@ -249,21 +249,25 @@ sequenceDiagram
     participant Q as Cola IndexedDB
     participant API as Servidor
 
-    P->>SW: registra una medición sin señal
-    SW->>Q: encola con client_uuid propio
-    Note over Q: la medición no se pierde
+    P->>API: registra una medición (con client_uuid)
+    alt sin red, red que no pasa datos o 20 s sin respuesta
+        P->>Q: encola con el mismo client_uuid
+        Note over Q: la medición no se pierde
+    end
 
-    P-->>SW: vuelve la señal (evento online)
-    SW->>API: reenvía la cola
+    P-->>Q: vuelve la señal (evento online, o reintento cada 30 s)
+    Q->>API: reenvía la cola
     API->>API: firstOrCreate por client_uuid
     alt ya existía
-        API-->>SW: 200 sin duplicar ni volver a alertar
+        API-->>Q: 200 sin duplicar ni volver a alertar
     else nueva
         API->>API: notifica al médico si está fuera de rango
-        API-->>SW: 200
+        API-->>Q: 200
     end
-    SW->>Q: descarta lo sincronizado
+    Q->>Q: descarta lo sincronizado
 ```
+
+**No se confía en `navigator.onLine`.** Ese indicador dice si el teléfono está conectado a una red, no si pasa internet: con una antena sin datos o un Wi-Fi caído marca «en línea». Por eso el formulario (`resources/js/lib/submit-or-queue.ts`) siempre intenta enviar y, ante una falla de red, un 5xx, una sesión vencida (401/403/419) o 20 s sin respuesta, guarda la medición en la cola con el **mismo** `client_uuid` del intento. Solo un 422 se devuelve al formulario, porque ahí el problema es el dato. Como en esa situación el navegador nunca dispara el evento `online`, `use-offline-sync.tsx` reintenta la cola cada 30 s mientras haya pendientes, y al volver a la pestaña. Los envíos usan la cookie `XSRF-TOKEN` (`resources/js/lib/csrf.ts`) y no la meta del HTML, que queda vieja cuando el login ocurre por Inertia sin recargar la página.
 
 La clave de idempotencia la genera el dispositivo. Si el servidor guardó pero la respuesta se perdió antes de llegar, el reintento no duplica la medición **ni vuelve a alertar** al médico por algo que ya revisó. Un 422 se descarta en vez de reintentarse por siempre.
 
@@ -272,6 +276,18 @@ La clave de idempotencia la genera el dispositivo. Si el servidor guardó pero l
 Las entradas guardadas antes de este cambio no tenían `ownerId`. Adivinar el dueño —por ejemplo, asignárselo a quien inicie sesión primero— es exactamente el bug que se corrige, así que la migración de `DB_VERSION` 1 a 2 las marca con `ownerId: null` en vez de descartarlas: las mediciones clínicas no se pueden perder, y un `null` las deja fuera del conteo y del `flush()` de cualquier cuenta para siempre, inertes pero intactas por si alguna vez hace falta revisarlas a mano.
 
 **Al cerrar sesión con pendientes propios**, se avisa antes de salir —sin bloquear el cierre de sesión— con cuántas mediciones quedan guardadas en el teléfono y que se enviarán solas cuando su dueño vuelva a entrar con señal.
+
+### Navegar sin señal
+
+Inertia no carga páginas completas: al tocar un enlace pide JSON a la misma URL (cabecera `X-Inertia`) y descarga el código de la pantalla la primera vez que se abre. Eso causaba la pantalla en blanco de la primera navegación tras un corte. Tres piezas lo resuelven:
+
+1. **El service worker no toca las peticiones de Inertia.** La caché guarda por URL, y mezclar el JSON de Inertia con el HTML de la página completa hacía que una carga sin señal recibiera lo que no era. Ahora solo se guardan páginas completas.
+2. **Si una visita de lectura falla, se repite como carga completa** (`resources/js/lib/offline-navigation.ts`, instalado en `app.tsx`). La carga completa sí la resuelve el service worker: última copia de la página o `offline.html`. No aplica a envíos, recargas en segundo plano ni precargas.
+3. **Con señal, se deja en el teléfono lo necesario** (`resources/js/lib/offline-warmup.ts`): el código de las pantallas del paciente, sacado de `public/build/manifest.json`, y las tres pantallas que se usan sin señal (inicio, signos vitales y educación). Ninguna de ellas audita lecturas, así que precargarlas no deja registros de acceso que la persona no hizo. Las páginas van a la caché que se borra al cerrar sesión.
+
+Las cargas completas esperan a la red **8 s** si hay copia guardada; después muestran la copia y la respuesta tardía actualiza la caché. El manifest de Vite no se guarda «para siempre» como el resto de `/build/`, porque no lleva hash. La versión de las cachés es `v3`: al desplegar se borran las copias v2, que podían tener respuestas mezcladas.
+
+**Evidencia:** `tests/e2e/sin-conexion.mjs` (`npm run e2e:sin-conexion`) prueba el corte total y la red que no pasa datos con Chromium real, contra una base SQLite aparte con datos de demostración. Los resultados y las capturas quedan en `docs/evidencias/sin-conexion/`; en `antes-del-arreglo/` está la misma corrida contra la versión anterior.
 
 **El material educativo va en la dirección contraria**: no es algo que el paciente envía, sino algo que necesita tener encima antes de quedarse sin señal. Por eso el contenido se escribe dentro de la plataforma en vez de enlazarse a otro sitio —el service worker solo intercepta el mismo origen, así que un enlace externo nunca se podría guardar— y la pantalla de Educación le pide al service worker que descargue el material marcado como disponible sin conexión en cuanto se abre, aprovechando que en ese momento sí hay red.
 

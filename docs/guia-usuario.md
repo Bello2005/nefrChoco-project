@@ -84,7 +84,9 @@ Ahí anotas tu presión, peso, glucemia u otras medidas que te haya pedido tu pr
 
 **La presión arterial se anota completa, en un solo paso.** El tensiómetro muestra dos cifras, la de arriba (sistólica) y la de abajo (diastólica): el formulario te pide las dos juntas y las guarda como una sola medición. No las registres por separado ni anotes solo una.
 
-Puedes registrarlas **sin conexión**: se guardan y se envían solas después. No hace falta que hagas nada.
+Puedes registrarlas **sin conexión**: se guardan y se envían solas después. No hace falta que hagas nada. Esto también vale cuando el teléfono muestra señal pero el internet no pasa: si la medición no alcanza a llegar, verás el aviso **«Guardada en este dispositivo»** y se enviará sola cuando la señal mejore.
+
+**Para usar la plataforma sin señal, entra al menos una vez con señal.** Ese día el teléfono guarda Inicio, Signos vitales y Educación, y después las puedes abrir aunque no haya internet.
 
 ### Tu historia y material educativo
 

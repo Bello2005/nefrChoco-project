@@ -1,0 +1,68 @@
+{
+  "fecha": "2026-10-29T19:53:54.194Z",
+  "results": [
+    {
+      "scenario": "A",
+      "paso": "Abrir Signos vitales desde el menú, sin red",
+      "esperado": "Se ve el formulario",
+      "obtenido": "Se ve el formulario",
+      "ok": true
+    },
+    {
+      "scenario": "A",
+      "paso": "Registrar 3 mediciones sin red",
+      "esperado": "0 en el servidor; 3 en el dispositivo",
+      "obtenido": "0 en el servidor; 3 en el dispositivo",
+      "ok": true
+    },
+    {
+      "scenario": "A",
+      "paso": "Volver la conexión",
+      "esperado": "3 registros en el servidor",
+      "obtenido": "3 registros",
+      "ok": true
+    },
+    {
+      "scenario": "A",
+      "paso": "Segundo reenvío forzado",
+      "esperado": "Sin duplicados (3)",
+      "obtenido": "3 registros",
+      "ok": true
+    },
+    {
+      "scenario": "A",
+      "paso": "Primera navegación tras el corte",
+      "esperado": "Muestra el artículo (no pantalla vacía)",
+      "obtenido": "Muestra el artículo",
+      "ok": true
+    },
+    {
+      "scenario": "A",
+      "paso": "Leer los 5 artículos marcados sin conexión",
+      "esperado": "5 legibles",
+      "obtenido": "5 legibles",
+      "ok": true
+    },
+    {
+      "scenario": "B",
+      "paso": "Registrar 1 medición con red que no pasa datos",
+      "esperado": "Queda en el dispositivo (no se pierde)",
+      "obtenido": "navigator.onLine=true; 1 en el dispositivo",
+      "ok": true
+    },
+    {
+      "scenario": "B",
+      "paso": "Navegar a Educación con red que no pasa datos",
+      "esperado": "Muestra la pantalla (no queda en blanco)",
+      "obtenido": "Muestra la pantalla",
+      "ok": true
+    },
+    {
+      "scenario": "B",
+      "paso": "Vuelve la red",
+      "esperado": "1 registro sincronizado",
+      "obtenido": "1 registros",
+      "ok": true
+    }
+  ]
+}
