@@ -8,13 +8,25 @@
  * cacheados a quien ya cerró sesión.
  */
 
-const VERSION = 'v2';
+// v3: deja de mezclar respuestas de Inertia (JSON) con páginas completas en la
+// misma clave de caché. Subir la versión borra las copias v2 que quedaron mezcladas.
+const VERSION = 'v3';
 const SHELL_CACHE = `nefrochoco-shell-${VERSION}`;
 const ASSET_CACHE = `nefrochoco-assets-${VERSION}`;
 const CONTENT_CACHE = `nefrochoco-content-${VERSION}`;
 const MATERIAL_CACHE = `nefrochoco-material-${VERSION}`;
 
 const OFFLINE_URL = '/offline.html';
+
+/**
+ * Cuánto esperar a la red antes de mostrar la copia guardada de una página.
+ *
+ * Sin este límite, con una red que no pasa datos (la señal de una rayita) el
+ * navegador se queda esperando sin fin y el paciente ve la pantalla congelada.
+ * Solo aplica si hay copia: sin copia se sigue esperando, porque la otra
+ * opción es el aviso de sin conexión.
+ */
+const NAVIGATION_TIMEOUT_MS = 8000;
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -36,9 +48,25 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-/** Los assets de Vite llevan hash en el nombre: si están en caché, nunca cambiaron. */
+/**
+ * Los assets de Vite llevan hash en el nombre: si están en caché, nunca cambiaron.
+ * El manifest es la excepción: no lleva hash y cambia en cada despliegue, así que
+ * guardarlo «para siempre» haría precargar código de una versión vieja.
+ */
 function isBuildAsset(url) {
-    return url.pathname.startsWith('/build/');
+    return url.pathname.startsWith('/build/') && url.pathname !== '/build/manifest.json';
+}
+
+/**
+ * Las visitas de Inertia (al tocar un enlace) piden JSON a la misma URL que la
+ * página completa. La caché guarda por URL, así que si se mezclan, una carga
+ * completa sin señal podía recibir el JSON (o Inertia recibir el HTML) y la
+ * pantalla quedaba en blanco. Esas peticiones no se tocan: si fallan, la app
+ * repite la visita como carga completa (resources/js/lib/offline-navigation.ts)
+ * y esa sí se resuelve aquí.
+ */
+function isInertiaRequest(request) {
+    return request.headers.has('X-Inertia');
 }
 
 function isEducationalContent(url) {
@@ -68,19 +96,46 @@ async function cacheFirst(request, cacheName) {
     return response;
 }
 
-async function networkFirst(request, cacheName) {
-    try {
-        const response = await fetch(request);
+async function networkFirst(request, cacheName, timeoutMs = 0) {
+    const network = fetch(request).then(async (response) => {
         if (response.ok) {
             const cache = await caches.open(cacheName);
             cache.put(request, response.clone());
         }
         return response;
-    } catch (error) {
-        const cached = await caches.match(request);
-        if (cached) return cached;
-        throw error;
+    });
+
+    const cached = await caches.match(request);
+
+    // Sin copia no hay nada mejor que esperar a la red.
+    if (!cached) {
+        return network;
     }
+
+    if (timeoutMs <= 0) {
+        return network.catch(() => cached);
+    }
+
+    // Con copia: la red tiene un plazo; si no responde, se muestra la copia y la
+    // respuesta tardía igual actualiza la caché para la próxima vez.
+    const timeout = new Promise((resolve) => setTimeout(() => resolve(cached), timeoutMs));
+
+    return Promise.race([network.catch(() => cached), timeout]);
+}
+
+/** Guarda una lista de URLs del mismo origen; lo que falle se ignora (se reintenta en otra visita). */
+function precache(cacheName, urls, accept) {
+    return caches.open(cacheName).then((cache) =>
+        Promise.all(
+            urls
+                .filter((url) => typeof url === 'string' && accept(url))
+                .map((url) =>
+                    fetch(url, { credentials: 'same-origin' })
+                        .then((response) => (response.ok && !response.redirected ? cache.put(url, response) : null))
+                        .catch(() => null),
+                ),
+        ),
+    );
 }
 
 /**
@@ -123,6 +178,10 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
+    if (isInertiaRequest(request)) {
+        return;
+    }
+
     if (isBuildAsset(url)) {
         event.respondWith(cacheFirst(request, ASSET_CACHE));
         return;
@@ -139,7 +198,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (request.mode === 'navigate') {
-        event.respondWith(networkFirst(request, SHELL_CACHE).catch(() => caches.match(OFFLINE_URL)));
+        event.respondWith(networkFirst(request, SHELL_CACHE, NAVIGATION_TIMEOUT_MS).catch(() => caches.match(OFFLINE_URL)));
     }
 });
 
@@ -158,18 +217,18 @@ self.addEventListener('message', (event) => {
     // La pantalla de Educación pide que se baje el material marcado para sin
     // conexión, aprovechando que en ese momento hay señal.
     if (event.data?.type === 'PRECACHE_MATERIAL' && Array.isArray(event.data.urls)) {
-        event.waitUntil(
-            caches.open(MATERIAL_CACHE).then((cache) =>
-                Promise.all(
-                    event.data.urls
-                        .filter((url) => typeof url === 'string' && /^\/paciente\/educativo\/\d+$/.test(url))
-                        .map((url) =>
-                            fetch(url)
-                                .then((response) => (response.ok ? cache.put(url, response) : null))
-                                .catch(() => null),
-                        ),
-                ),
-            ),
-        );
+        event.waitUntil(precache(MATERIAL_CACHE, event.data.urls, (url) => /^\/paciente\/educativo\/\d+$/.test(url)));
+    }
+
+    // El código de las pantallas del paciente (resources/js/lib/offline-warmup.ts).
+    // Solo /build/: nada fuera de los archivos versionados entra a esta caché.
+    if (event.data?.type === 'PRECACHE_ASSETS' && Array.isArray(event.data.urls)) {
+        event.waitUntil(precache(ASSET_CACHE, event.data.urls, (url) => /^\/build\/assets\/[\w.-]+$/.test(url)));
+    }
+
+    // Las pantallas del paciente que se usan sin señal. Van a SHELL_CACHE, que se
+    // borra al cerrar sesión como cualquier otra página con datos del paciente.
+    if (event.data?.type === 'PRECACHE_PAGES' && Array.isArray(event.data.urls)) {
+        event.waitUntil(precache(SHELL_CACHE, event.data.urls, (url) => /^\/paciente\/[a-z-]+$/.test(url)));
     }
 });

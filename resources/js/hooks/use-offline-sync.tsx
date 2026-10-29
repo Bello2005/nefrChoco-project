@@ -1,4 +1,5 @@
 import { flush, listPending } from '@/lib/offline-queue';
+import { warmUpPatientOffline } from '@/lib/offline-warmup';
 import { type SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -11,12 +12,17 @@ interface OfflineSyncValue {
     syncNow: () => Promise<void>;
 }
 
+/** Cada cuánto reintentar la cola cuando hay pendientes y el navegador dice «en línea». */
+export const RETRY_INTERVAL_MS = 30_000;
+
 const OfflineSyncContext = createContext<OfflineSyncValue | null>(null);
 
 export function OfflineSyncProvider({ children }: { children: ReactNode }) {
     // Cada cuenta ve y sincroniza solo su propia cola: lo de otra cuenta en el
     // mismo teléfono se queda intacto hasta que su dueño vuelva a entrar.
-    const ownerId = usePage<SharedData>().props.auth.user.id;
+    const { user, roles } = usePage<SharedData>().props.auth;
+    const ownerId = user.id;
+    const isPatient = roles.includes('paciente');
 
     const [isOnline, setIsOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine));
     const [pendingCount, setPendingCount] = useState(0);
@@ -43,6 +49,13 @@ export function OfflineSyncProvider({ children }: { children: ReactNode }) {
         }
     }, [ownerId, refreshPending]);
 
+    // Con señal, se deja en el teléfono lo necesario para seguir sin ella.
+    useEffect(() => {
+        if (isPatient) {
+            void warmUpPatientOffline();
+        }
+    }, [isPatient, isOnline]);
+
     useEffect(() => {
         void refreshPending();
 
@@ -64,6 +77,26 @@ export function OfflineSyncProvider({ children }: { children: ReactNode }) {
             window.removeEventListener('offline', handleOffline);
         };
     }, [refreshPending, syncNow]);
+
+    // Con una red que no pasa datos el navegador nunca deja de estar «en línea»,
+    // así que el evento online no llega cuando la señal vuelve de verdad. Mientras
+    // haya pendientes se reintenta cada cierto tiempo y al volver a la pestaña.
+    useEffect(() => {
+        if (pendingCount === 0) return;
+
+        const retry = () => {
+            if (navigator.onLine && !isSyncing) void syncNow();
+        };
+        const onVisible = () => document.visibilityState === 'visible' && retry();
+
+        const timer = window.setInterval(retry, RETRY_INTERVAL_MS);
+        document.addEventListener('visibilitychange', onVisible);
+
+        return () => {
+            window.clearInterval(timer);
+            document.removeEventListener('visibilitychange', onVisible);
+        };
+    }, [pendingCount, isSyncing, syncNow]);
 
     const value = useMemo(
         () => ({ isOnline, pendingCount, isSyncing, refreshPending, syncNow }),
