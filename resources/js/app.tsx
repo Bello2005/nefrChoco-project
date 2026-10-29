@@ -1,10 +1,11 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { route as routeFn } from 'ziggy-js';
 import { initializeTheme } from './hooks/use-appearance';
+import { installOfflineNavigationFallback } from './lib/offline-navigation';
 import { registerServiceWorker } from './lib/register-service-worker';
 
 declare global {
@@ -28,3 +29,4 @@ createInertiaApp({
 
 initializeTheme();
 registerServiceWorker();
+installOfflineNavigationFallback(router);

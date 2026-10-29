@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\VitalSignType;
+use App\Models\Appointment;
 use App\Models\Patient;
 use App\Models\User;
 use App\Models\VitalSign;
@@ -83,4 +84,43 @@ test('una cuenta sin ficha de paciente recibe 422 al sincronizar', function () {
     ])->assertStatus(422);
 
     expect(VitalSign::count())->toBe(0);
+});
+
+test('un rechazo por validación devuelve los errores por campo que pinta el formulario', function () {
+    // El formulario de mediciones ya no envía por Inertia sino por fetch (para
+    // poder guardar en el dispositivo si la red falla), así que depende de que
+    // el 422 traiga los errores por campo y no una redirección.
+    $response = $this->actingAs($this->user)->postJson(route('paciente.signos-vitales.store'), [
+        'client_uuid' => Str::uuid()->toString(),
+        'type' => VitalSignType::Glucose->value,
+        'value' => '',
+        'recorded_at' => now()->format('Y-m-d H:i:s'),
+    ]);
+
+    $response->assertStatus(422)->assertJsonValidationErrors(['value']);
+});
+
+test('un envío en línea cuya respuesta se perdió y luego llega por la cola no duplica ni vuelve a alertar', function () {
+    $medico = User::factory()->create();
+    $medico->assignRole('medico');
+    Appointment::factory()->create(['patient_id' => $this->patient->id, 'doctor_id' => $medico->id]);
+
+    $this->actingAs($this->user);
+    $clientUuid = Str::uuid()->toString();
+
+    // Fuera de rango a propósito: así se puede contar la alerta al médico.
+    $payload = [
+        'client_uuid' => $clientUuid,
+        'type' => VitalSignType::Glucose->value,
+        'value' => 400,
+        'recorded_at' => now()->subMinutes(5)->format('Y-m-d H:i:s'),
+    ];
+
+    $this->postJson(route('paciente.signos-vitales.store'), $payload)->assertOk();
+    expect($medico->notifications()->count())->toBe(1);
+
+    $this->postJson(route('paciente.signos-vitales.store'), $payload)->assertOk();
+
+    expect(VitalSign::where('client_uuid', $clientUuid)->count())->toBe(1);
+    expect($medico->notifications()->count())->toBe(1);
 });

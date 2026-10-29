@@ -23,3 +23,6 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+
+# Base temporal del escenario sin conexión (tests/e2e/sin-conexion.mjs)
+/database/e2e-sin-conexion.sqlite

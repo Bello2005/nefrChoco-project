@@ -4,10 +4,10 @@ import { Input } from '@/components/ui/input';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Textarea } from '@/components/ui/textarea';
 import { useOfflineSync } from '@/hooks/use-offline-sync';
-import { enqueue } from '@/lib/offline-queue';
+import { submitOrQueue } from '@/lib/submit-or-queue';
 import { type SharedData } from '@/types';
-import { useForm, usePage } from '@inertiajs/react';
-import { CloudOff } from 'lucide-react';
+import { router, useForm, usePage } from '@inertiajs/react';
+import { CheckCircle2, CloudOff } from 'lucide-react';
 import { FormEventHandler, useMemo, useState } from 'react';
 
 interface VitalSignCompanion {
@@ -61,9 +61,12 @@ function AvisoFueraDeRango({ estado, etiqueta }: { estado: 'alto' | 'bajo'; etiq
 export function VitalSignForm({ action, types }: { action: string; types: VitalSignTypeOption[] }) {
     const { isOnline, refreshPending } = useOfflineSync();
     const ownerId = usePage<SharedData>().props.auth.user.id;
-    const [queuedMessage, setQueuedMessage] = useState<string | null>(null);
+    const [result, setResult] = useState<{ kind: 'enviada' | 'encolada' | 'error'; text: string } | null>(null);
+    const [sending, setSending] = useState(false);
 
-    const { data, setData, post, processing, errors, reset } = useForm({
+    // useForm se conserva por el estado y los errores por campo, pero el envío no
+    // pasa por Inertia: necesita saber si falló la red para guardar en la cola.
+    const { data, setData, errors, setError, clearErrors, reset } = useForm({
         type: types[0]?.value ?? '',
         value: '',
         value_diastolic: '',
@@ -98,32 +101,50 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
 
     const submit: FormEventHandler = async (e) => {
         e.preventDefault();
-        setQueuedMessage(null);
+        setResult(null);
 
-        if (pairError) return;
+        if (pairError || sending) return;
 
-        // Sin conexión la medición no se pierde: se guarda en el dispositivo con
-        // su clave de idempotencia y se envía sola cuando vuelve la señal. El par
-        // de presión viaja en un mismo envío, así que nunca queda a medias.
-        if (!isOnline) {
-            await enqueue({
+        setSending(true);
+        clearErrors();
+
+        try {
+            // Se intenta enviar aunque el teléfono diga «en línea»: si la red no pasa
+            // datos, la medición queda en el dispositivo con su clave de idempotencia
+            // y se envía sola cuando vuelva la señal. El par de presión viaja en un
+            // mismo envío, así que nunca queda a medias.
+            const outcome = await submitOrQueue({
                 url: action,
                 label: selectedType?.label ?? 'Medición',
-                payload: { ...data, client_uuid: crypto.randomUUID() },
+                payload: data,
                 ownerId,
+                isOnline,
             });
 
-            await refreshPending();
+            if (outcome.kind === 'rechazada') {
+                for (const [field, message] of Object.entries(outcome.errors)) {
+                    setError(field as keyof typeof data, message);
+                }
+                if (Object.keys(outcome.errors).length === 0 && outcome.message) {
+                    setResult({ kind: 'error', text: outcome.message });
+                }
+                return;
+            }
+
             reset('value', 'value_diastolic', 'notes');
-            setQueuedMessage('Guardada en este dispositivo. Se enviará cuando vuelva la conexión.');
 
-            return;
+            if (outcome.kind === 'encolada') {
+                await refreshPending();
+                setResult({ kind: 'encolada', text: 'Guardada en este dispositivo. Se enviará cuando vuelva la conexión.' });
+                return;
+            }
+
+            setResult({ kind: 'enviada', text: 'Medición registrada correctamente.' });
+            // Trae la serie con la medición nueva sin perder la posición en la pantalla.
+            router.reload();
+        } finally {
+            setSending(false);
         }
-
-        post(action, {
-            preserveScroll: true,
-            onSuccess: () => reset('value', 'value_diastolic', 'notes'),
-        });
     };
 
     return (
@@ -218,15 +239,37 @@ export function VitalSignForm({ action, types }: { action: string; types: VitalS
                 <Textarea id="notes" className="min-h-20" value={data.notes} onChange={(e) => setData('notes', e.target.value)} />
             </Field>
 
-            {queuedMessage && (
-                <p className="border-info/30 bg-info-soft text-info flex items-start gap-2 rounded-lg border px-3 py-2 text-xs font-medium">
+            {result?.kind === 'encolada' && (
+                <p
+                    role="status"
+                    className="border-info/30 bg-info-soft text-info flex items-start gap-2 rounded-lg border px-3 py-2 text-xs font-medium"
+                >
                     <CloudOff className="mt-0.5 size-3.5 shrink-0" />
-                    {queuedMessage}
+                    {result.text}
                 </p>
             )}
 
-            <Button className="w-full" disabled={processing || pairError !== null}>
-                {isOnline ? 'Registrar medición' : 'Guardar sin conexión'}
+            {result?.kind === 'enviada' && (
+                <p
+                    role="status"
+                    className="border-success/30 bg-success-soft text-success flex items-start gap-2 rounded-lg border px-3 py-2 text-xs font-medium"
+                >
+                    <CheckCircle2 className="mt-0.5 size-3.5 shrink-0" />
+                    {result.text}
+                </p>
+            )}
+
+            {result?.kind === 'error' && (
+                <p
+                    role="alert"
+                    className="border-destructive/30 bg-destructive-soft text-destructive rounded-lg border px-3 py-2 text-xs font-medium"
+                >
+                    {result.text}
+                </p>
+            )}
+
+            <Button className="w-full" disabled={sending || pairError !== null}>
+                {sending ? 'Guardando…' : isOnline ? 'Registrar medición' : 'Guardar sin conexión'}
             </Button>
         </form>
     );
