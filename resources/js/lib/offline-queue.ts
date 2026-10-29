@@ -6,6 +6,8 @@
  * mitad de una escritura no deja la cola corrupta ni bloquea la interfaz.
  */
 
+import { csrfHeaders } from '@/lib/csrf';
+
 const DB_NAME = 'nefrochoco-offline';
 const DB_VERSION = 2;
 const STORE = 'pending-requests';
@@ -115,10 +117,6 @@ export async function clear(): Promise<void> {
     await runTransaction('readwrite', (store) => store.clear() as unknown as IDBRequest<undefined>);
 }
 
-function csrfToken(): string {
-    return document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
-}
-
 /**
  * Reenvía lo pendiente de `ownerId`. Cada payload lleva su propia clave de
  * idempotencia, así que un reenvío duplicado no crea una medición repetida
@@ -137,9 +135,10 @@ export async function flush(ownerId: number): Promise<number> {
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/json',
-                    'X-CSRF-TOKEN': csrfToken(),
                     'X-Requested-With': 'XMLHttpRequest',
+                    ...csrfHeaders(),
                 },
+                credentials: 'same-origin',
                 body: JSON.stringify(item.payload),
             });
 
